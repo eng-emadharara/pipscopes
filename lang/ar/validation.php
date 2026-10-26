@@ -1,0 +1,55 @@
+<?php
+
+return [
+    'accepted' => 'يجب قبول :attribute.',
+    'array' => 'يجب أن يكون :attribute مصفوفة.',
+    'between' => [
+        'numeric' => 'يجب أن تكون قيمة :attribute بين :min و :max.',
+        'string' => 'يجب أن يكون طول :attribute بين :min و :max حرفاً.',
+        'array' => 'يجب أن يحتوي :attribute على عدد عناصر بين :min و :max.',
+    ],
+    'boolean' => 'قيمة :attribute غير صالحة.',
+    'confirmed' => 'تأكيد :attribute غير مطابق.',
+    'email' => 'يجب أن يكون :attribute بريداً إلكترونياً صحيحاً.',
+    'exists' => 'القيمة المختارة لـ :attribute غير موجودة.',
+    'image' => 'يجب أن يكون :attribute صورة.',
+    'in' => 'القيمة المختارة لـ :attribute غير صالحة.',
+    'integer' => 'يجب أن يكون :attribute رقماً صحيحاً.',
+    'max' => [
+        'numeric' => 'يجب ألا تتجاوز قيمة :attribute :max.',
+        'string' => 'يجب ألا يتجاوز طول :attribute :max حرفاً.',
+        'file' => 'يجب ألا يتجاوز حجم :attribute :max كيلوبايت.',
+        'array' => 'يجب ألا يحتوي :attribute على أكثر من :max عناصر.',
+    ],
+    'min' => [
+        'numeric' => 'يجب أن تكون قيمة :attribute على الأقل :min.',
+        'string' => 'يجب أن يكون طول :attribute على الأقل :min حرفاً.',
+        'array' => 'يجب أن يحتوي :attribute على الأقل على :min عناصر.',
+    ],
+    'numeric' => 'يجب أن يكون :attribute رقماً.',
+    'password' => [
+        'letters' => 'يجب أن تحتوي :attribute على حرف واحد على الأقل.',
+        'mixed' => 'يجب أن تحتوي :attribute على حرف كبير وحرف صغير على الأقل.',
+        'numbers' => 'يجب أن تحتوي :attribute على رقم واحد على الأقل.',
+        'symbols' => 'يجب أن تحتوي :attribute على رمز واحد على الأقل.',
+        'uncompromised' => ':attribute ظهرت في تسريب بيانات، الرجاء اختيار :attribute مختلفة.',
+    ],
+    'required' => 'حقل :attribute مطلوب.',
+    'string' => 'يجب أن يكون :attribute نصاً.',
+    'unique' => ':attribute مستخدم مسبقاً.',
+    'url' => 'يجب أن يكون :attribute رابطاً صحيحاً يبدأ بـ https://',
+
+    'attributes' => [
+        'name' => 'الاسم',
+        'email' => 'البريد الإلكتروني',
+        'password' => 'كلمة المرور',
+        'website_url' => 'رابط الموقع',
+        'twitter_url' => 'رابط X / تويتر',
+        'instagram_url' => 'رابط إنستغرام',
+        'youtube_url' => 'رابط يوتيوب',
+        'tiktok_url' => 'رابط تيك توك',
+        'facebook_url' => 'رابط فيسبوك',
+        'description' => 'النبذة',
+        'markets' => 'الأسواق',
+    ],
+];

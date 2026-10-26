@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Provider;
+use App\Models\Review;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class ReviewController extends Controller
+{
+    public function create(Request $request, Provider $provider)
+    {
+        abort_unless($provider->is_active, 404);
+
+        return view('reviews.form', [
+            'provider' => $provider,
+            'review' => $provider->reviews()->where('user_id', $request->user()->id)->first() ?? new Review(['show_name' => true]),
+        ]);
+    }
+
+    public function store(Request $request, Provider $provider)
+    {
+        abort_unless($provider->is_active, 404);
+
+        $criteria = array_keys(__('trust.criteria'));
+        $rules = [
+            'rating' => ['required', 'integer', 'between:1,5'],
+            'title' => ['required', 'string', 'min:3', 'max:120'],
+            'body' => ['required', 'string', 'min:20', 'max:3000'],
+            'show_name' => ['nullable', 'boolean'],
+            'pros' => ['nullable', 'array'],
+            'pros.*' => [Rule::in(array_keys(__('trust.pros')))],
+            'cons' => ['nullable', 'array'],
+            'cons.*' => [Rule::in(array_keys(__('trust.cons')))],
+            'experience_duration' => ['nullable', Rule::in(array_keys(__('trust.experience_durations')))],
+        ];
+        foreach ($criteria as $field) {
+            $rules[$field] = ['nullable', 'integer', 'between:1,5'];
+        }
+
+        $data = $request->validate($rules, [], [
+            'rating' => __('التقييم العام'),
+            'title' => __('عنوان التقييم'),
+            'body' => __('تفاصيل التجربة'),
+        ]);
+
+        $data['show_name'] = $request->boolean('show_name');
+        $data['pros'] = $data['pros'] ?? [];
+        $data['cons'] = $data['cons'] ?? [];
+        $data['status'] = config('trust.reviews_require_approval') ? Review::STATUS_PENDING : Review::STATUS_APPROVED;
+
+        $review = $provider->reviews()->updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $data
+        );
+
+        $message = $review->status === Review::STATUS_PENDING
+            ? __('شكراً لك! تم استلام تقييمك وسيظهر بعد المراجعة.')
+            : __('شكراً لك! تم نشر تقييمك.');
+
+        return redirect()->route('providers.show', $provider)->with('success', $message);
+    }
+
+    public function destroy(Request $request, Provider $provider)
+    {
+        $provider->reviews()->where('user_id', $request->user()->id)->first()?->delete();
+
+        return redirect()->route('providers.show', $provider)->with('success', __('تم حذف تقييمك.'));
+    }
+}
