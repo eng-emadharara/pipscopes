@@ -12,7 +12,23 @@ class HomeSections
         'account_check' => 'أداة "هل هذا الحساب حقيقي؟"',
         'alerts' => 'تنبيهات (حسابات منتحلة وقنوات عليها مؤشرات خطيرة)',
         'trust' => 'كيف نضمن المصداقية',
+        'telegram_join' => 'دعوة للانضمام لقناة تيليجرام',
     ];
+
+    /** Admin-edited texts of the Telegram section: telegram_join.{title|text}.{locale} */
+    public static function telegramText(string $field, string $default): string
+    {
+        $values = (array) data_get(Setting::get('telegram_join', []), $field, []);
+        $base = array_key_first(config('trust.locales'));
+
+        foreach ([app()->getLocale(), $base] as $locale) {
+            if (filled($values[$locale] ?? null)) {
+                return $values[$locale];
+            }
+        }
+
+        return $default;
+    }
 
     public static function enabled(string $key): bool
     {

@@ -84,6 +84,11 @@
         @include('home._trust')
     @endif
 
+    {{-- Shown only once the Telegram link is set in the site settings --}}
+    @if ($sections['telegram_join'] && filled(\App\Support\Site::socials()['telegram'] ?? null))
+        @include('home._telegram-join')
+    @endif
+
     {{-- CTA --}}
     <section class="mx-auto mt-14 max-w-6xl px-4">
         <div class="card flex flex-col items-center justify-between gap-4 bg-brand-50 p-8 md:flex-row">

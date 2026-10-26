@@ -111,6 +111,23 @@ class HomeSectionsTest extends TestCase
         $this->get('/')->assertDontSee(__('قنوات عليها مؤشرات خطيرة'));
     }
 
+    public function test_telegram_join_section_needs_a_link_and_uses_admin_texts(): void
+    {
+        $this->get('/')->assertDontSee(__('انضم للقناة'));
+
+        Setting::put([\App\Support\Site::KEY => ['socials' => ['telegram' => 'https://t.me/pipscopes', 'instagram' => 'https://instagram.com/pipscopes']]]);
+        $this->get('/')
+            ->assertSee(__('انضم لقناتنا على تيليجرام'))
+            ->assertSee('href="https://t.me/pipscopes"', false)
+            ->assertSee(__('تابعنا أيضاً على'));
+
+        Setting::put(['telegram_join' => ['title' => ['ar' => 'كن أول من يعرف']]]);
+        $this->get('/')->assertSee('كن أول من يعرف');
+
+        Setting::put(['home_sections' => ['telegram_join' => false]]);
+        $this->get('/')->assertDontSee('كن أول من يعرف');
+    }
+
     public function test_admin_can_toggle_sections(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => true]))
