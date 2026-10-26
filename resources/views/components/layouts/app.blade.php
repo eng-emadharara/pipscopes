@@ -90,6 +90,7 @@
             <x-site-logo />
 
             <nav class="hidden items-center gap-6 text-sm md:flex">
+                <a href="{{ route('home') }}" @class(['hover:text-brand-500', 'text-brand-500' => request()->routeIs('home')])>{{ __('الرئيسية') }}</a>
                 @unless ($prelaunch)
                     <a href="{{ route('providers.index') }}" class="hover:text-brand-500">{{ __('تصفح مقدمي الخدمة') }}</a>
                 @endunless
@@ -123,6 +124,7 @@
             </div>
         </div>
         <nav class="flex gap-4 overflow-x-auto border-t border-white/10 px-4 py-2 text-sm md:hidden">
+            <a href="{{ route('home') }}" @class(['whitespace-nowrap', 'text-brand-500' => request()->routeIs('home')])>{{ __('الرئيسية') }}</a>
             @unless ($prelaunch)
                 <a href="{{ route('providers.index') }}" class="whitespace-nowrap">{{ __('تصفح مقدمي الخدمة') }}</a>
             @endunless
