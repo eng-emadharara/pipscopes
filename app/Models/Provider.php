@@ -89,7 +89,7 @@ class Provider extends Model
         }
 
         foreach ($words as $word) {
-            $query->whereRaw("search_index LIKE ? ESCAPE '\\'", [SearchText::like($word)]);
+            $query->whereRaw('search_index LIKE ? '.SearchText::LIKE_ESCAPE, [SearchText::like($word)]);
         }
 
         if (! $rankByName) {
@@ -99,8 +99,8 @@ class Provider extends Model
         $phrase = implode(' ', $words);
 
         return $query->orderByRaw(
-            "CASE WHEN lower(name) LIKE ? ESCAPE '\\' THEN 0 WHEN lower(name) LIKE ? ESCAPE '\\' THEN 1 ELSE 2 END",
-            [addcslashes($phrase, '%_\\').'%', SearchText::like($phrase)]
+            'CASE WHEN lower(name) LIKE ? '.SearchText::LIKE_ESCAPE.' THEN 0 WHEN lower(name) LIKE ? '.SearchText::LIKE_ESCAPE.' THEN 1 ELSE 2 END',
+            [SearchText::escapeLike($phrase).'%', SearchText::like($phrase)]
         );
     }
 

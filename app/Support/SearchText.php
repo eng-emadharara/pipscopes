@@ -38,9 +38,21 @@ class SearchText
         return array_values(array_filter(array_map(fn ($w) => ltrim($w, '@'), $words), fn ($w) => $w !== ''));
     }
 
-    /** Escapes LIKE wildcards so "_" in handles like demo_channel matches literally. */
+    /**
+     * Goes after "LIKE ?". "!" rather than a backslash: in MySQL a backslash inside ESCAPE '\'
+     * escapes the closing quote and breaks the query (SQLite accepts it, so it only failed live).
+     */
+    public const LIKE_ESCAPE = "ESCAPE '!'";
+
+    /** Escapes LIKE wildcards (for LIKE_ESCAPE) so "_" in handles like demo_channel matches literally. */
+    public static function escapeLike(string $value): string
+    {
+        return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
+    }
+
+    /** "%word%" with the word's own wildcards escaped. */
     public static function like(string $word): string
     {
-        return '%'.addcslashes($word, '%_\\').'%';
+        return '%'.static::escapeLike($word).'%';
     }
 }

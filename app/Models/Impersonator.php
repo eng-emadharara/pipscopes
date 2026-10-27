@@ -70,7 +70,7 @@ class Impersonator extends Model
             ->with('provider')
             ->whereHas('provider', fn ($q) => $q->where('is_active', true))
             ->where(fn ($q) => $q->where('account_key', $parsed['key'])
-                ->orWhereRaw("account_key LIKE ? ESCAPE '\\'", ['%:'.addcslashes($name, '%_\\')]))
+                ->orWhereRaw('account_key LIKE ? '.\App\Support\SearchText::LIKE_ESCAPE, ['%:'.\App\Support\SearchText::escapeLike($name)]))
             ->limit(3)
             ->get();
     }
