@@ -21,13 +21,15 @@ class Provider extends Model
 
     protected $fillable = [
         'name', 'slug', 'service_type', 'pricing', 'bio', 'avatar',
-        'telegram_url', 'telegram_members', 'website_url', 'twitter_url', 'instagram_url',
+        'telegram_url', 'telegram_members', 'telegram_data', 'telegram_checked_at', 'telegram_status', 'telegram_failures', 'website_url', 'twitter_url', 'instagram_url',
         'youtube_url', 'tiktok_url', 'facebook_url', 'whatsapp', 'extra_links',
         'is_verified', 'is_featured', 'is_active',
     ];
 
     protected $casts = [
         'extra_links' => 'array',
+        'telegram_data' => 'array',
+        'telegram_checked_at' => 'datetime',
         'is_verified' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
@@ -171,6 +173,11 @@ class Provider extends Model
         }
 
         return $keys->filter()->unique()->values()->all();
+    }
+
+    public function telegramSnapshots(): HasMany
+    {
+        return $this->hasMany(TelegramSnapshot::class);
     }
 
     public function approvedReviews(): HasMany

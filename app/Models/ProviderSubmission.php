@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProviderSubmission extends Model
 {
@@ -22,18 +24,29 @@ class ProviderSubmission extends Model
         'submitter_name', 'submitter_contact', 'relation', 'category_ids', 'market_ids', 'name', 'service_type',
         'pricing', 'description', 'telegram_url', 'website_url', 'twitter_url',
         'instagram_url', 'youtube_url', 'tiktok_url', 'facebook_url',
-        'status', 'admin_notes', 'provider_id',
+        'status', 'admin_notes', 'provider_id', 'avatar', 'telegram_data',
     ];
 
     protected $casts = [
         'category_ids' => 'array',
         'market_ids' => 'array',
+        'telegram_data' => 'array',
     ];
 
     /** @return \Illuminate\Database\Eloquent\Collection<int, Category> */
     public function categories()
     {
         return Category::whereIn('id', $this->category_ids ?? [])->orderBy('sort_order')->get();
+    }
+
+    /** The channel photo: our stored copy, or Telegram's URL when the download failed. */
+    public function avatarUrl(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        return Str::startsWith($this->avatar, ['http://', 'https://']) ? $this->avatar : Storage::disk('public')->url($this->avatar);
     }
 
     public function provider(): BelongsTo
@@ -49,7 +62,10 @@ class ProviderSubmission extends Model
             'service_type' => $this->service_type,
             'pricing' => $this->pricing,
             'bio' => $this->description,
+            'avatar' => $this->avatar,
             'telegram_url' => $this->telegram_url,
+            'telegram_data' => $this->telegram_data,
+            'telegram_members' => $this->telegram_data['subscribers'] ?? null,
             'website_url' => $this->website_url,
             'twitter_url' => $this->twitter_url,
             'instagram_url' => $this->instagram_url,

@@ -206,6 +206,10 @@
                 @endif
             </section>
 
+            @if (\App\Support\TelegramTrend::enabled() && \App\Support\TelegramTrend::drawable($trend = \App\Support\TelegramTrend::lastDays($provider)))
+                @include('providers._telegram-trend', ['trend' => $trend])
+            @endif
+
             {{-- Reviews --}}
             <section id="reviews">
                 <div class="mb-4 flex items-center justify-between">
@@ -285,6 +289,12 @@
                     @endif
                     @if ($provider->telegram_members)
                         <div class="flex justify-between gap-2"><dt class="text-gray-500">{{ __('مشتركو التيليجرام') }}</dt><dd class="font-medium">{{ number_format($provider->telegram_members) }}</dd></div>
+                    @endif
+                    @if ($avgViews = $provider->telegram_data['avg_views'] ?? null)
+                        <div class="flex justify-between gap-2"><dt class="text-gray-500">{{ __('متوسط مشاهدات المنشور') }}</dt><dd class="font-medium">{{ number_format($avgViews) }}</dd></div>
+                    @endif
+                    @if ($provider->telegram_status === \App\Services\TelegramChannel::CHANNEL && $provider->telegram_checked_at)
+                        <p class="text-end text-xs text-gray-400">{{ __('أرقام تيليجرام محدّثة :time', ['time' => $provider->telegram_checked_at->diffForHumans()]) }}</p>
                     @endif
                     <div class="flex justify-between gap-2"><dt class="text-gray-500">{{ __('على المنصة منذ') }}</dt><dd class="font-medium">{{ $provider->created_at->translatedFormat('F Y') }}</dd></div>
                 </dl>

@@ -7,11 +7,13 @@ use App\Models\Market;
 use App\Models\Provider;
 use App\Models\ProviderSubmission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
+use Tests\Concerns\FakesTelegram;
 use Tests\TestCase;
 
 class MarketsAndPaginationTest extends TestCase
 {
-    use RefreshDatabase;
+    use FakesTelegram, RefreshDatabase;
 
     protected Category $category;
 
@@ -63,6 +65,9 @@ class MarketsAndPaginationTest extends TestCase
 
     public function test_submission_requires_markets_and_carries_them_to_the_provider(): void
     {
+        Storage::fake('public');
+        $this->fakeTelegram(['new_channel' => []]);
+
         $payload = [
             'submitter_name' => 'Tester', 'submitter_contact' => '@tester', 'relation' => 'owner',
             'category_ids' => [$this->category->id], 'name' => 'New Channel', 'service_type' => 'Gold signals',

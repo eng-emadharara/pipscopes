@@ -12,6 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class ProviderSubmissionResource extends Resource
 {
@@ -40,11 +41,21 @@ class ProviderSubmissionResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('مرسل الطلب')->columns(3)->schema([
-                Forms\Components\TextInput::make('submitter_name')->label('الاسم')->required(),
-                Forms\Components\TextInput::make('submitter_contact')->label('وسيلة التواصل')->required(),
-                Forms\Components\Select::make('relation')->label('العلاقة')->options(ProviderSubmission::RELATIONS),
-            ]),
+            // The form no longer asks who sends a channel; only older requests have a sender
+            Forms\Components\Section::make('مرسل الطلب')->columns(3)
+                ->visible(fn (?ProviderSubmission $record) => filled($record?->submitter_name))
+                ->schema([
+                    Forms\Components\TextInput::make('submitter_name')->label('الاسم'),
+                    Forms\Components\TextInput::make('submitter_contact')->label('وسيلة التواصل'),
+                    Forms\Components\Select::make('relation')->label('العلاقة')->options(ProviderSubmission::RELATIONS),
+                ]),
+            Forms\Components\Section::make('بيانات القناة من تيليجرام')
+                ->description('قُرئت من صفحة القناة العامة لحظة الإرسال.')
+                ->visible(fn (?ProviderSubmission $record) => filled($record?->telegram_data))
+                ->schema([
+                    Forms\Components\Placeholder::make('telegram_summary')->hiddenLabel()
+                        ->content(fn (ProviderSubmission $record) => static::telegramSummary($record)),
+                ]),
             Forms\Components\Section::make('بيانات مقدم الخدمة')->columns(2)->schema([
                 Forms\Components\TextInput::make('name')->label('الاسم')->required(),
                 Forms\Components\Select::make('category_ids')->label('التصنيفات')
@@ -78,16 +89,15 @@ class ProviderSubmissionResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->label('مقدم الخدمة')->searchable()
+                Tables\Columns\ImageColumn::make('avatar')->label('')->circular()->size(40)
+                    ->getStateUsing(fn (ProviderSubmission $r) => $r->avatarUrl()),
+                Tables\Columns\TextColumn::make('name')->label('القناة')->searchable()
                     ->description(fn (ProviderSubmission $r) => $r->service_type),
+                Tables\Columns\TextColumn::make('telegram_data.subscribers')->label('المشتركون')->numeric()->placeholder('—'),
                 Tables\Columns\TextColumn::make('category_ids')->label('التصنيفات')->badge()->wrap()
                     ->formatStateUsing(fn ($state) => Category::find($state)?->name),
                 Tables\Columns\TextColumn::make('telegram_url')->label('تيليجرام')->limit(30)
                     ->url(fn (ProviderSubmission $r) => $r->telegram_url, shouldOpenInNewTab: true)->color('info'),
-                Tables\Columns\TextColumn::make('submitter_name')->label('المرسل')
-                    ->description(fn (ProviderSubmission $r) => $r->submitter_contact),
-                Tables\Columns\TextColumn::make('relation')->label('العلاقة')
-                    ->formatStateUsing(fn ($state) => $state === 'owner' ? 'صاحب الخدمة' : 'مستخدم'),
                 Tables\Columns\TextColumn::make('status')->label('الحالة')->badge()
                     ->formatStateUsing(fn ($state) => ProviderSubmission::STATUSES[$state] ?? $state)
                     ->color(fn ($state) => match ($state) {
@@ -129,6 +139,29 @@ class ProviderSubmissionResource extends Resource
 
                 return redirect(ProviderResource::getUrl('edit', ['record' => $provider]));
             });
+    }
+
+    /** Photo, subscribers and recent activity read from Telegram, for the review screen. */
+    public static function telegramSummary(ProviderSubmission $record): HtmlString
+    {
+        $d = $record->telegram_data ?? [];
+        $rows = array_filter([
+            'المعرّف' => isset($d['username']) ? '<span dir="ltr">@'.e($d['username']).'</span>' : null,
+            'المشتركون' => isset($d['subscribers']) ? number_format($d['subscribers']) : null,
+            'موثّقة من تيليجرام' => ($d['verified'] ?? false) ? 'نعم' : null,
+            'آخر منشور' => isset($d['last_post_at']) ? e(\Illuminate\Support\Carbon::parse($d['last_post_at'])->diffForHumans()) : null,
+            'متوسط المشاهدات (آخر المنشورات)' => isset($d['avg_views']) ? number_format($d['avg_views']) : null,
+            'صور / فيديو / روابط' => isset($d['photos']) || isset($d['videos']) || isset($d['links'])
+                ? ($d['photos'] ?? 0).' / '.($d['videos'] ?? 0).' / '.($d['links'] ?? 0) : null,
+            'معاينة المنشورات' => ($d['preview_enabled'] ?? null) === false ? 'مغلقة من صاحب القناة' : null,
+        ]);
+
+        $photo = $record->avatarUrl()
+            ? '<img src="'.e($record->avatarUrl()).'" alt="" style="width:64px;height:64px;border-radius:9999px;object-fit:cover">'
+            : '';
+        $list = collect($rows)->map(fn ($v, $k) => '<div style="display:flex;gap:.5rem"><dt style="color:#6b7280;min-width:12rem">'.$k.'</dt><dd>'.$v.'</dd></div>')->implode('');
+
+        return new HtmlString('<div style="display:flex;gap:1rem;align-items:flex-start">'.$photo.'<dl style="display:grid;gap:.25rem">'.$list.'</dl></div>');
     }
 
     public static function getPages(): array

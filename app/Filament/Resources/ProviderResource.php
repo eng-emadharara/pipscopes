@@ -9,11 +9,14 @@ use App\Filament\Resources\ProviderResource\RelationManagers\ImpersonatorsRelati
 use App\Filament\Resources\ProviderResource\RelationManagers\OwnersRelationManager;
 use App\Filament\Resources\ProviderResource\RelationManagers\ReviewsRelationManager;
 use App\Models\Provider;
+use App\Services\TelegramChannel;
+use App\Services\TelegramRefresh;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class ProviderResource extends Resource
 {
@@ -70,7 +73,11 @@ class ProviderResource extends Resource
                 ]),
                 Forms\Components\Section::make('روابط التيليجرام والسوشيال ميديا')->columns(2)->schema([
                     Forms\Components\TextInput::make('telegram_url')->label('رابط قناة التيليجرام')->url()->prefixIcon('heroicon-o-paper-airplane'),
-                    Forms\Components\TextInput::make('telegram_members')->label('عدد مشتركي التيليجرام')->numeric(),
+                    Forms\Components\TextInput::make('telegram_members')->label('عدد مشتركي التيليجرام')->numeric()
+                        ->helperText('يُحدَّث تلقائياً مرة يومياً من تيليجرام.'),
+                    Forms\Components\Placeholder::make('telegram_sync')->label('التحديث التلقائي من تيليجرام')->columnSpanFull()
+                        ->visible(fn (?Provider $record) => filled($record?->telegram_url))
+                        ->content(fn (Provider $record) => static::telegramSyncStatus($record)),
                     Forms\Components\TextInput::make('website_url')->label('الموقع')->url(),
                     Forms\Components\TextInput::make('twitter_url')->label('X / تويتر')->url(),
                     Forms\Components\TextInput::make('instagram_url')->label('إنستغرام')->url(),
@@ -161,6 +168,34 @@ class ProviderResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /** When the channel was last read from Telegram, what came back, and its latest numbers. */
+    public static function telegramSyncStatus(Provider $record): HtmlString
+    {
+        if (! $record->telegram_checked_at) {
+            return new HtmlString('<span style="color:#6b7280">لم تُقرأ بعد. ستُقرأ في التحديث القادم، أو اضغط "تحديث من تيليجرام" أعلى الصفحة.</span>');
+        }
+
+        $outcome = [
+            TelegramChannel::CHANNEL => '<span style="color:#059669">ناجح</span>',
+            TelegramChannel::PRIVATE => '<span style="color:#dc2626">القناة أصبحت خاصة</span>',
+            TelegramChannel::NOT_FOUND => '<span style="color:#dc2626">القناة غير موجودة (حُذفت أو تغيّر اسمها)</span>',
+            TelegramChannel::NOT_CHANNEL => '<span style="color:#dc2626">الرابط لم يعد لقناة</span>',
+            TelegramChannel::UNREACHABLE => '<span style="color:#d97706">تعذّر الوصول لتيليجرام</span>',
+        ][$record->telegram_status] ?? e($record->telegram_status);
+
+        $d = $record->telegram_data ?? [];
+        $parts = array_filter([
+            'آخر قراءة: '.e($record->telegram_checked_at->diffForHumans()).' — '.$outcome,
+            $record->telegram_failures > 1 ? 'فشلت '.$record->telegram_failures.' مرات متتالية'
+                .($record->telegram_failures >= TelegramRefresh::GIVE_UP_AFTER ? '، لذلك تُعاد المحاولة أسبوعياً فقط' : '') : null,
+            isset($d['avg_views']) ? 'متوسط مشاهدات آخر المنشورات: '.number_format($d['avg_views']) : null,
+            isset($d['last_post_at']) ? 'آخر منشور: '.e(\Illuminate\Support\Carbon::parse($d['last_post_at'])->diffForHumans()) : null,
+            'سجل الأرقام: '.$record->telegramSnapshots()->count().' نقطة',
+        ]);
+
+        return new HtmlString(implode('<br>', $parts));
     }
 
     public static function getRelations(): array

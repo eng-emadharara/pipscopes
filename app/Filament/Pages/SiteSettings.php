@@ -129,6 +129,11 @@ class SiteSettings extends Page implements HasForms
                     ),
                 ]),
 
+                Forms\Components\Tabs\Tab::make('صفحة القناة')->icon('heroicon-o-presentation-chart-line')->schema([
+                    Forms\Components\Toggle::make('telegram_chart')->label('رسم أداء القناة على تيليجرام لآخر 7 أيام')->default(true)
+                        ->helperText('ثلاثة خطوط في صفحة كل قناة: المشتركون، متوسط المشاهدات، ونسبة المشاهدات للمشتركين. يظهر فقط للقنوات التي لها يومان على الأقل من الأرقام المسجّلة.'),
+                ]),
+
                 Forms\Components\Tabs\Tab::make('الإحصائيات')->icon('heroicon-o-chart-bar')->schema([
                     Forms\Components\TextInput::make('ga_id')->label('معرّف Google Analytics')
                         ->placeholder('G-XXXXXXXXXX')->regex('/^G-[A-Z0-9]+$/')->maxLength(30)->extraInputAttributes(['dir' => 'ltr'])
