@@ -23,6 +23,12 @@
                 <label class="label" for="password_confirmation">{{ __('تأكيد كلمة المرور') }}</label>
                 <input id="password_confirmation" type="password" name="password_confirmation" class="input" dir="ltr" required>
             </div>
+            <p class="text-xs leading-relaxed text-gray-500">
+                {!! __('بإنشائك حساباً فإنك توافق على :terms و:privacy.', [
+                    'terms' => '<a href="'.e(route('pages.show', 'terms')).'" target="_blank" class="font-semibold text-gray-700 underline">'.e(__('شروط الاستخدام')).'</a>',
+                    'privacy' => '<a href="'.e(route('pages.show', 'privacy')).'" target="_blank" class="font-semibold text-gray-700 underline">'.e(__('سياسة الخصوصية')).'</a>',
+                ]) !!}
+            </p>
             <button class="btn-primary w-full">{{ __('إنشاء الحساب') }}</button>
             <p class="text-center text-sm text-gray-600">{{ __('لديك حساب؟') }} <a href="{{ route('login') }}" class="font-semibold text-brand-600 hover:underline">{{ __('سجّل دخولك') }}</a></p>
         </form>

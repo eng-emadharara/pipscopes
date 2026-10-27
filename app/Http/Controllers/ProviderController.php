@@ -10,6 +10,7 @@ use App\Models\Review;
 use App\Models\ReviewReport;
 use App\Models\ReviewVote;
 use App\Services\RatingAnalysis;
+use App\Support\Analytics;
 use App\Support\OwnerPortal;
 use Illuminate\Http\Request;
 
@@ -66,6 +67,11 @@ class ProviderController extends Controller
             return redirect()->to($providers->url($providers->lastPage()));
         }
 
+        // GA's standard search event; a zero count shows channels people look for that aren't listed yet
+        if (filled($search ?? null) && $providers->currentPage() === 1) {
+            Analytics::event('search', ['search_term' => $search, 'results_count' => $providers->total()]);
+        }
+
         return view('providers.index', [
             'impersonatorWarnings' => $search ? Impersonator::matchingSearch($search) : collect(),
             'providers' => $providers,
@@ -95,6 +101,10 @@ class ProviderController extends Controller
     public function show(Request $request, Provider $provider)
     {
         abort_unless($provider->is_active, 404);
+
+        // Every event on this page carries the channel's properties (category, market, rating band…)
+        Analytics::context(Analytics::channel($provider));
+        Analytics::event('view_channel');
 
         $provider->load('categories');
 

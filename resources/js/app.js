@@ -5,6 +5,7 @@ import './review-feedback';
 import './share';
 import './account-check';
 import './submission-form';
+import './analytics';
 import './ui';
 
 // Prevent double submission (double-click / Enter + click) on every form

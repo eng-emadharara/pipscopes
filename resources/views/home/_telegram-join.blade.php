@@ -25,7 +25,7 @@
                     </div>
                 @endif
             </div>
-            <a href="{{ $socials['telegram'] }}" target="_blank" rel="noopener"
+            <a href="{{ $socials['telegram'] }}" target="_blank" rel="noopener" data-track="telegram_join" data-track-params='{"location":"home_section"}'
                class="inline-flex shrink-0 items-center gap-2 rounded-full bg-sky-500 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-sky-600">
                 <x-ui-icon name="telegram" class="h-5 w-5" />
                 {{ __('انضم للقناة') }}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Provider;
 use App\Models\Review;
+use App\Support\Analytics;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -12,6 +13,9 @@ class ReviewController extends Controller
     public function create(Request $request, Provider $provider)
     {
         abort_unless($provider->is_active, 404);
+
+        Analytics::context(Analytics::channel($provider));
+        Analytics::event('review_start');
 
         return view('reviews.form', [
             'provider' => $provider,
@@ -54,6 +58,13 @@ class ReviewController extends Controller
             ['user_id' => $request->user()->id],
             $data
         );
+
+        Analytics::flash('review_submit', [
+            ...Analytics::channel($provider),
+            'rating' => $review->rating,
+            'anonymous' => $review->show_name ? 'no' : 'yes',
+            'review_type' => $review->wasRecentlyCreated ? 'new' : 'edit',
+        ]);
 
         $message = $review->status === Review::STATUS_PENDING
             ? __('شكراً لك! تم استلام تقييمك وسيظهر بعد المراجعة.')

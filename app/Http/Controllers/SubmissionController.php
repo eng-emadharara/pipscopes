@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\ProviderSubmission;
 use App\Services\TelegramChannel;
+use App\Support\Analytics;
 use App\Support\Launch;
 use App\Support\SubmissionLinks;
 use Illuminate\Http\Request;
@@ -101,6 +102,12 @@ class SubmissionController extends Controller
                 ...$channel['stats'],
             ],
             'status' => 'new',
+        ]);
+
+        Analytics::flash('channel_submit', [
+            'channel_name' => $channel['title'],
+            'channel_category' => Category::whereIn('id', $categoryIds)->pluck('slug')->implode(','),
+            'channel_subscribers' => $channel['subscribers'],
         ]);
 
         // Back to wherever the form was (launch page or /submit)

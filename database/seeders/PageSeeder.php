@@ -54,6 +54,21 @@ class PageSeeder extends Seeder
             ]],
             'content' => $this->privacyAr(),
         ]);
+
+        $this->createIfMissing([
+            'slug' => 'terms',
+            'title' => 'شروط الاستخدام',
+            'subtitle' => 'القواعد التي تنظّم استخدامك للمنصة وكتابة التقييمات. آخر تحديث: 27 أكتوبر 2026.',
+            'show_in_header' => false,
+            'show_in_footer' => true,
+            'sort_order' => 3,
+            'translations' => ['en' => [
+                'title' => 'Terms of service',
+                'subtitle' => 'The rules for using the platform and writing reviews. Last updated: 27 October 2026.',
+                'content' => $this->termsEn(),
+            ]],
+            'content' => $this->termsAr(),
+        ]);
     }
 
     /** @param  array<string, mixed>  $attributes */
@@ -139,6 +154,188 @@ HTML;
 
 <h2>التغييرات على هذه السياسة</h2>
 <p>قد نحدّث هذه السياسة عند إضافة ميزات جديدة، وسنعدّل تاريخ «آخر تحديث» أعلى الصفحة. لأي سؤال حول خصوصيتك <a href="/contact">تواصل معنا</a>.</p>
+HTML;
+    }
+
+    protected function termsAr(): string
+    {
+        return <<<'HTML'
+<p>مرحباً بك. باستخدامك هذه المنصة أو إنشائك حساباً فيها، فإنك توافق على هذه الشروط وعلى <a href="/page/privacy">سياسة الخصوصية</a>. إذا كنت لا توافق عليها، فيُرجى عدم استخدام المنصة.</p>
+
+<h2>1. ما هي المنصة؟</h2>
+<p>منصة مستقلة تجمع تقييمات المستخدمين لقنوات التوصيات على تيليجرام، وخدمات نسخ الصفقات، ومقدمي خدمات التداول.</p>
+<ul>
+<li><strong>لسنا مستشاراً مالياً:</strong> لا نقدّم توصيات تداول ولا نصائح استثمارية، ولا يُعد أي محتوى على المنصة دعوة للاشتراك في خدمة معينة أو تجنّبها.</li>
+<li><strong>لسنا وسيطاً:</strong> لا نبيع اشتراكات، ولا نستلم أموالاً نيابةً عن أي مقدم خدمة، ولا نتدخل في أي اتفاق بينك وبينه.</li>
+<li><strong>لا نتقاضى مقابلاً من مقدمي الخدمات</strong> لرفع تقييمهم أو إخفاء أي تقييم.</li>
+</ul>
+
+<h2>2. حسابك</h2>
+<ul>
+<li>يجب أن يكون عمرك 18 عاماً على الأقل لإنشاء حساب أو كتابة تقييم.</li>
+<li>عليك تقديم بريد إلكتروني صحيح وتأكيده، فلا يمكن نشر تقييمات قبل التأكيد.</li>
+<li>حساب واحد لكل شخص. إنشاء حسابات متعددة للتأثير على التقييمات مخالفة تؤدي إلى حذفها جميعاً.</li>
+<li>أنت مسؤول عن سرية كلمة مرورك وعن كل ما يُنشر من حسابك.</li>
+</ul>
+
+<h2>3. قواعد كتابة التقييمات</h2>
+<p>التقييم يجب أن يعبّر عن <strong>تجربتك الشخصية الحقيقية</strong> مع مقدم الخدمة. يُسمح لكل حساب بتقييم واحد لكل مقدم خدمة، ويمكنك تعديله أو حذفه في أي وقت.</p>
+<p>يُمنع نشر:</p>
+<ul>
+<li>تقييمات مزيفة أو مدفوعة، أو مكتوبة مقابل أي منفعة أو خصم أو اشتراك مجاني.</li>
+<li>تقييمات يكتبها مقدم الخدمة لنفسه، أو منافسوه، أو أي شخص يعمل لديهم.</li>
+<li>الشتائم أو التهديد أو التحريض أو أي محتوى عنصري أو مسيء.</li>
+<li>بيانات شخصية لأي شخص: أرقام هواتف، عناوين، صور خاصة، أو بيانات حسابات بنكية.</li>
+<li>اتهامات بارتكاب جرائم بلا أساس من تجربتك. اذكر ما حدث معك بالوقائع.</li>
+<li>روابط تسويقية، أو دعوة للاشتراك في قنوات أخرى، أو أي إعلان.</li>
+</ul>
+
+<h2>4. حقوقك على ما تنشره</h2>
+<p>يبقى تقييمك ملكاً لك. بنشره تمنحنا ترخيصاً غير حصري ومجانياً لعرضه على المنصة، ومشاركته في صور المشاركة وعلى حسابات المنصة في مواقع التواصل، وترجمته أو اقتباس أجزاء منه دون تغيير معناه. ينتهي هذا الترخيص عند حذفك للتقييم، باستثناء ما سبق نشره خارج المنصة.</p>
+
+<h2>5. المراجعة والبلاغات</h2>
+<ul>
+<li>نراجع التقييمات، ونحتفظ بحق إخفاء أو حذف أي تقييم يخالف هذه الشروط، دون أن نكون ملزمين بمراجعة كل محتوى قبل نشره.</li>
+<li>يمكن لأي زائر الإبلاغ عن تقييم مخالف، ويمكن لصاحب القناة الإبلاغ عن التقييمات المنشورة على قناته.</li>
+<li><strong>لا نحذف تقييماً لمجرد أنه سلبي</strong>، ولا مقابل أي مبلغ.</li>
+</ul>
+
+<h2>6. أصحاب القنوات</h2>
+<ul>
+<li>تُنشأ حسابات أصحاب القنوات من قِبل إدارة المنصة بعد التحقق من الملكية، ولا يوجد تسجيل ذاتي لها.</li>
+<li>يحق لصاحب القناة الرد علناً على التقييمات وتعديل بيانات قناته. كل تعديل مسجّل، وتغيير الروابط الرسمية يخضع للمراجعة.</li>
+<li>لا يحق لصاحب القناة حذف أي تقييم أو تعديله، ولا كتابة تقييمات لأي قناة، ولا التصويت على التقييمات.</li>
+<li>أي محاولة للتلاعب بالتقييمات، أو الضغط على المقيّمين أو تهديدهم أو مكافأتهم، تؤدي إلى إيقاف الحساب، وقد نذكر ذلك علناً في صفحة القناة.</li>
+</ul>
+
+<h2>7. إضافة القنوات وبياناتها</h2>
+<ul>
+<li>يمكن لأي زائر اقتراح إضافة قناة. نقبل القنوات العامة فقط، ونحتفظ بحق رفض أي طلب دون ذكر السبب.</li>
+<li>اسم القناة ووصفها وصورتها وعدد مشتركيها ومتوسط مشاهداتها تُقرأ تلقائياً من صفحاتها العامة على تيليجرام، وتُحدَّث دورياً.</li>
+<li>هذه الأرقام <strong>مؤشرات وليست أحكاماً</strong>: قد تتأخر أو تكون غير دقيقة، ولا نضمن صحتها.</li>
+</ul>
+
+<h2>8. أداة التحقق من الحسابات والتنبيهات</h2>
+<p>تعتمد نتائج أداة «هل هذا الحساب حقيقي؟» وقائمة الحسابات المنتحلة على ما لدينا من بيانات وبلاغات مؤكدة فقط. نتيجة «غير معروف» لا تعني أن الحساب آمن. وقسم التنبيهات يعرض ما أشار إليه المقيّمون، ولا يُعد حكماً نهائياً على أي قناة.</p>
+
+<h2>9. الاستخدام الممنوع</h2>
+<ul>
+<li>جمع بيانات المنصة آلياً أو نسخها بكميات كبيرة دون إذن مكتوب منا.</li>
+<li>محاولة اختراق المنصة أو تعطيلها أو تجاوز أي حماية فيها.</li>
+<li>انتحال صفة شخص آخر أو صفة مقدم خدمة، أو انتحال صفة المنصة نفسها.</li>
+<li>استخدام المنصة لإرسال رسائل مزعجة أو للترويج لأي خدمة.</li>
+</ul>
+
+<h2>10. إخلاء المسؤولية</h2>
+<blockquote>التداول في الفوركس والذهب والعملات الرقمية والأسهم ينطوي على مخاطر عالية، وقد تخسر جزءاً من رأس مالك أو كله. الأداء السابق لأي قناة لا يضمن نتائجها المستقبلية.</blockquote>
+<ul>
+<li>التقييمات تعبّر عن آراء أصحابها، ولا تمثّل رأي المنصة.</li>
+<li>تُقدَّم المنصة «كما هي»، ولا نضمن دقة كل المحتوى أو اكتماله أو استمرار عمل الموقع دون انقطاع.</li>
+<li>أي قرار تتخذه بالاشتراك في خدمة أو التداول هو قرارك ومسؤوليتك وحدك.</li>
+</ul>
+
+<h2>11. حدود مسؤوليتنا</h2>
+<p>في الحدود التي يسمح بها القانون، لا نتحمّل مسؤولية أي خسارة مالية أو ضرر ينتج عن اعتمادك على محتوى المنصة، أو عن تعاملك مع أي مقدم خدمة أو أي حساب، بما في ذلك الحسابات المنتحلة.</p>
+
+<h2>12. إيقاف الحساب وحذفه</h2>
+<p>يمكنك طلب حذف حسابك في أي وقت كما هو موضح في <a href="/page/privacy">سياسة الخصوصية</a>. ويحق لنا إيقاف أي حساب أو حذفه إذا خالف هذه الشروط، وحذف تقييماته المخالفة.</p>
+
+<h2>13. التعديلات على الشروط</h2>
+<p>قد نعدّل هذه الشروط من وقت لآخر، وسنحدّث تاريخ «آخر تحديث» أعلى الصفحة. استمرارك في استخدام المنصة بعد التعديل يعني موافقتك على الشروط الجديدة.</p>
+
+<h2>14. التواصل</h2>
+<p>لأي سؤال حول هذه الشروط، أو للإبلاغ عن مخالفة، <a href="/contact">تواصل معنا</a>.</p>
+HTML;
+    }
+
+    protected function termsEn(): string
+    {
+        return <<<'HTML'
+<p>Welcome. By using this platform or creating an account, you agree to these terms and to our <a href="/page/privacy">privacy policy</a>. If you do not agree, please do not use the platform.</p>
+
+<h2>1. What the platform is</h2>
+<p>An independent platform that collects user reviews of Telegram signal channels, copy-trading services and trading service providers.</p>
+<ul>
+<li><strong>We are not a financial adviser:</strong> we give no trading signals or investment advice, and nothing on the platform invites you to join or avoid any service.</li>
+<li><strong>We are not a broker:</strong> we sell no subscriptions, take no money on behalf of any provider, and play no part in any agreement between you and them.</li>
+<li><strong>Providers cannot pay us</strong> to raise their rating or hide any review.</li>
+</ul>
+
+<h2>2. Your account</h2>
+<ul>
+<li>You must be at least 18 to create an account or write a review.</li>
+<li>You must give a valid email address and confirm it; reviews cannot be published before that.</li>
+<li>One account per person. Creating several accounts to influence ratings is a violation, and all their reviews will be removed.</li>
+<li>You are responsible for keeping your password secret and for everything posted from your account.</li>
+</ul>
+
+<h2>3. Rules for reviews</h2>
+<p>A review must reflect <strong>your own real experience</strong> with the provider. Each account may review a provider once, and you can edit or delete your review at any time.</p>
+<p>You may not post:</p>
+<ul>
+<li>Fake or paid reviews, or reviews written in exchange for any benefit, discount or free subscription.</li>
+<li>Reviews by a provider about themselves, by their competitors, or by anyone working for them.</li>
+<li>Insults, threats, incitement, or any racist or abusive content.</li>
+<li>Anyone's personal data: phone numbers, addresses, private photos or bank details.</li>
+<li>Accusations of crimes that your experience does not support. Describe what happened to you, factually.</li>
+<li>Promotional links, invitations to other channels, or any advertising.</li>
+</ul>
+
+<h2>4. Your rights in what you post</h2>
+<p>Your review remains yours. By posting it you give us a free, non-exclusive licence to show it on the platform, share it in share images and on the platform's social accounts, and translate or quote parts of it without changing its meaning. The licence ends when you delete the review, except for what was already published outside the platform.</p>
+
+<h2>5. Moderation and reports</h2>
+<ul>
+<li>We review content and may hide or remove any review that breaks these terms, without being obliged to check everything before it is published.</li>
+<li>Any visitor can report a review, and channel owners can report reviews of their own channel.</li>
+<li><strong>We never remove a review just because it is negative</strong>, and never for money.</li>
+</ul>
+
+<h2>6. Channel owners</h2>
+<ul>
+<li>Channel owner accounts are created by the platform's team after verifying ownership; there is no self sign-up.</li>
+<li>Owners may reply publicly to reviews and edit their channel's details. Every edit is logged, and changes to official links are reviewed.</li>
+<li>Owners cannot delete or edit any review, write reviews of any channel, or vote on reviews.</li>
+<li>Any attempt to manipulate ratings, or to pressure, threaten or reward reviewers, leads to suspension, and we may say so publicly on the channel's page.</li>
+</ul>
+
+<h2>7. Adding channels and their data</h2>
+<ul>
+<li>Any visitor may suggest a channel. We accept public channels only and may refuse any request without giving a reason.</li>
+<li>A channel's name, description, photo, subscriber count and average views are read automatically from its public Telegram pages and refreshed regularly.</li>
+<li>These numbers are <strong>indicators, not verdicts</strong>: they may be delayed or inaccurate, and we do not guarantee them.</li>
+</ul>
+
+<h2>8. The account checker and alerts</h2>
+<p>Results of the "Is this account real?" tool and the impersonator list rely only on the data and confirmed reports we hold. An "unknown" result does not mean an account is safe. The alerts section shows what reviewers reported and is not a final judgement on any channel.</p>
+
+<h2>9. Prohibited use</h2>
+<ul>
+<li>Scraping or copying the platform's data in bulk without our written permission.</li>
+<li>Trying to hack, disrupt or bypass any protection of the platform.</li>
+<li>Impersonating another person, a provider, or the platform itself.</li>
+<li>Using the platform to send spam or promote any service.</li>
+</ul>
+
+<h2>10. Disclaimer</h2>
+<blockquote>Trading forex, gold, cryptocurrencies and stocks carries high risk, and you may lose some or all of your capital. A channel's past performance does not guarantee future results.</blockquote>
+<ul>
+<li>Reviews reflect their authors' opinions, not the platform's.</li>
+<li>The platform is provided "as is". We do not guarantee that all content is accurate or complete, or that the site will run without interruption.</li>
+<li>Any decision to subscribe to a service or to trade is yours alone.</li>
+</ul>
+
+<h2>11. Limitation of liability</h2>
+<p>To the extent the law allows, we are not liable for any financial loss or damage resulting from your reliance on the platform's content, or from your dealings with any provider or account, including impersonator accounts.</p>
+
+<h2>12. Suspension and deletion</h2>
+<p>You can ask for your account to be deleted at any time as described in the <a href="/page/privacy">privacy policy</a>. We may suspend or delete any account that breaks these terms, and remove its violating reviews.</p>
+
+<h2>13. Changes to these terms</h2>
+<p>We may update these terms from time to time and will change the "Last updated" date at the top of the page. Continuing to use the platform after a change means you accept the new terms.</p>
+
+<h2>14. Contact</h2>
+<p>For any question about these terms, or to report a violation, <a href="/contact">contact us</a>.</p>
 HTML;
     }
 

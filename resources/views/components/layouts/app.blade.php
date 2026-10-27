@@ -80,6 +80,8 @@
     @if ($gaId = \App\Support\Site::get('ga_id'))
         <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
         <script>window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', @json($gaId));</script>
+        {{-- Events for this page (App\Support\Analytics), sent by resources/js/analytics.js --}}
+        <script>window.__analytics = @json(\App\Support\Analytics::payload());</script>
     @endif
     {{-- Admin-provided tracking code (Site settings → الإحصائيات), output as is --}}
     {!! \App\Support\Site::get('head_code') !!}
@@ -188,6 +190,7 @@
                     <div class="mt-4 flex flex-wrap gap-2">
                         @foreach ($siteSocials as $platform => $url)
                             <a href="{{ $url }}" target="_blank" rel="noopener" aria-label="{{ \App\Filament\Pages\SiteSettings::SOCIALS[$platform][0] ?? $platform }}"
+                               @if ($platform === 'telegram') data-track="telegram_join" data-track-params='{"location":"footer"}' @else data-track="social_follow" data-track-params='@json(['platform' => $platform, 'location' => 'footer'])' @endif
                                class="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white transition hover:bg-brand-500">
                                 <x-ui-icon :name="$platform" class="h-4 w-4" />
                             </a>

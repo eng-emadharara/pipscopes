@@ -141,6 +141,7 @@
             <nav class="card flex gap-1 overflow-x-auto p-1.5" role="tablist" aria-label="{{ __('أقسام صفحة القناة') }}">
                 @foreach ($tabs as $key => $label)
                     <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}#tabs" data-tab="{{ $key }}" role="tab"
+                       data-track="tab_view" data-track-params='@json(['tab' => $key])'
                        aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" aria-controls="{{ $key === 'reviews' ? 'reviews' : 'panel-'.$key }}"
                        class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white">
                         @if ($key === 'telegram') <x-ui-icon name="telegram" class="h-4 w-4" /> @endif
