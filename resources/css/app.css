@@ -78,6 +78,11 @@
     .social-last {
         @apply absolute -top-2.5 end-3 rounded-full bg-white px-2 py-0.5 text-[10px] leading-4 font-bold text-brand-700 shadow-sm ring-1 ring-brand-100;
     }
+    .social-btn:disabled { @apply cursor-not-allowed opacity-55 saturate-50 hover:shadow-none active:scale-100; }
+    .social-btn-google:disabled { @apply hover:border-gray-300 hover:bg-white; }
+    .social-btn-facebook:disabled { @apply hover:bg-[#1877F2]; }
+    .social-btn-telegram:disabled { @apply hover:bg-[#229ED9]; }
+    .social-soon { @apply text-gray-600 ring-gray-200; }
     .social-btn[aria-busy] .social-icon { @apply invisible; }
     .social-btn[aria-busy] .social-spinner { @apply block; }
     [data-social-login][data-busy] .social-btn { @apply pointer-events-none; }

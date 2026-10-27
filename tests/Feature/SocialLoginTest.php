@@ -54,13 +54,15 @@ class SocialLoginTest extends TestCase
         return $fields + ['hash' => hash_hmac('sha256', $check, hash('sha256', self::BOT_TOKEN, true))];
     }
 
-    public function test_buttons_show_only_for_configured_providers(): void
+    public function test_all_methods_show_and_unconfigured_ones_are_disabled(): void
     {
-        $this->get('/login')->assertSee('Google')->assertSee('Facebook')->assertSee('Telegram');
+        $this->get('/login')->assertSee('/auth/google/redirect')->assertSee('/auth/facebook/redirect')->assertSee('data-bot-id', false)
+            ->assertDontSee(__('قريباً'));
 
         config(['services.facebook.client_id' => null, 'services.telegram.bot_token' => null]);
 
-        $this->get('/login')->assertSee('Google')->assertDontSee('/auth/facebook/redirect')->assertDontSee('data-bot-id', false);
+        $this->get('/login')->assertSee('/auth/google/redirect')->assertSee('Facebook')->assertSee('Telegram')
+            ->assertDontSee('/auth/facebook/redirect')->assertDontSee('data-bot-id', false)->assertSee(__('قريباً'));
         $this->get('/auth/facebook/redirect')->assertNotFound();
     }
 

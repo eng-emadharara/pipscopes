@@ -1,12 +1,16 @@
 @props(['divider' => __('أو بالبريد الإلكتروني')])
 @php
-    $providers = \App\Support\SocialLogin::enabled();
+    // Every method is always listed; one without credentials yet shows as "coming soon"
+    $providers = array_keys(\App\Support\SocialLogin::LABELS);
+    $enabled = \App\Support\SocialLogin::enabled();
 @endphp
 @if ($providers)
     <div class="space-y-3" data-social-login>
         @foreach ($providers as $provider)
             @php $label = __('المتابعة باستخدام :provider', ['provider' => \App\Support\SocialLogin::LABELS[$provider]]); @endphp
-            @if ($provider === 'telegram')
+            @if (! in_array($provider, $enabled, true))
+                <button type="button" class="social-btn social-btn-{{ $provider }}" disabled aria-disabled="true" title="{{ __('قريباً') }}">
+            @elseif ($provider === 'telegram')
                 <button type="button" class="social-btn social-btn-telegram" data-social="telegram"
                         data-bot-id="{{ \App\Support\TelegramLogin::botId() }}" data-action="{{ route('social.telegram') }}">
             @else
@@ -26,8 +30,12 @@
                 </span>
                 <span class="social-spinner" aria-hidden="true"></span>
                 <span>{{ $label }}</span>
-                <span class="social-last" data-last-used hidden>{{ __('آخر استخدام') }}</span>
-            @if ($provider === 'telegram')
+                @if (in_array($provider, $enabled, true))
+                    <span class="social-last" data-last-used hidden>{{ __('آخر استخدام') }}</span>
+                @else
+                    <span class="social-last social-soon">{{ __('قريباً') }}</span>
+                @endif
+            @if ($provider === 'telegram' || ! in_array($provider, $enabled, true))
                 </button>
             @else
                 </a>
@@ -47,7 +55,7 @@
         <span class="h-px flex-1 bg-gray-200"></span>
     </div>
 
-    @if (in_array('telegram', $providers, true))
+    @if (in_array('telegram', $enabled, true))
         <script async src="https://telegram.org/js/telegram-widget.js?22"></script>
     @endif
     <script>
