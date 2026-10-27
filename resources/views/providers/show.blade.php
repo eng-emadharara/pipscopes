@@ -126,9 +126,34 @@
     @endif
 
     <div class="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[1fr_320px]">
-        <div class="space-y-6">
+        @php
+            $hasTrend = \App\Support\TelegramTrend::enabled() && \App\Support\TelegramTrend::drawable($trend = \App\Support\TelegramTrend::lastDays($provider));
+            $tabs = array_filter([
+                'reviews' => __('التقييمات'),
+                'analysis' => __('تحليل التقييم'),
+                'telegram' => $hasTrend ? __('أداء القناة على تيليجرام') : null,
+            ]);
+            // Reviews first; ?tab= opens another one
+            $activeTab = array_key_exists(request('tab'), $tabs) ? request('tab') : 'reviews';
+        @endphp
+        <div class="min-w-0 space-y-4" data-tabs data-tabs-url id="tabs">
+            {{-- Tab bar: real links (?tab=…) so it works without JS; resources/js/ui.js switches in place --}}
+            <nav class="card flex gap-1 overflow-x-auto p-1.5" role="tablist" aria-label="{{ __('أقسام صفحة القناة') }}">
+                @foreach ($tabs as $key => $label)
+                    <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}#tabs" data-tab="{{ $key }}" role="tab"
+                       aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" aria-controls="{{ $key === 'reviews' ? 'reviews' : 'panel-'.$key }}"
+                       class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white">
+                        @if ($key === 'telegram') <x-ui-icon name="telegram" class="h-4 w-4" /> @endif
+                        {{ $label }}
+                        @if ($key === 'reviews' && $provider->reviews_count)
+                            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{{ number_format($provider->reviews_count) }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            </nav>
+
             {{-- Rating analysis --}}
-            <section class="card p-6">
+            <section class="card p-6 {{ $activeTab === 'analysis' ? '' : 'hidden' }}" data-panel="analysis" id="panel-analysis" role="tabpanel">
                 <h2 class="mb-4 text-lg font-bold">{{ __('تحليل التقييم: لماذا هذا التقييم؟') }}</h2>
 
                 <ul class="mb-6 space-y-2 rounded-xl bg-gray-50 p-4 text-sm leading-relaxed">
@@ -206,12 +231,14 @@
                 @endif
             </section>
 
-            @if (\App\Support\TelegramTrend::enabled() && \App\Support\TelegramTrend::drawable($trend = \App\Support\TelegramTrend::lastDays($provider)))
-                @include('providers._telegram-trend', ['trend' => $trend])
+            @if ($hasTrend)
+                <div class="{{ $activeTab === 'telegram' ? '' : 'hidden' }}" data-panel="telegram" id="panel-telegram" role="tabpanel">
+                    @include('providers._telegram-trend', ['trend' => $trend])
+                </div>
             @endif
 
             {{-- Reviews --}}
-            <section id="reviews">
+            <section id="reviews" class="scroll-mt-6 {{ $activeTab === 'reviews' ? '' : 'hidden' }}" data-panel="reviews" role="tabpanel">
                 <div class="mb-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold">
                         {{ __('التقييمات') }}
@@ -241,7 +268,7 @@
                     </div>
                 @endif
 
-                <div class="space-y-4">
+                <div class="space-y-3">
                     @forelse ($reviews as $review)
                         <x-review-card :review="$review" :provider="$provider" :managing="$managing" :voted="in_array($review->id, $votedIds)" :reported="in_array($review->id, $reportedIds)" />
                     @empty

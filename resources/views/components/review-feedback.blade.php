@@ -6,7 +6,7 @@
     $canReport = ! $owner || $owner->provider_id === $review->provider_id;
 @endphp
 {{-- Works without JS (plain form posts); resources/js/review-feedback.js upgrades it to in-place updates --}}
-<div class="mt-4 flex flex-wrap items-start justify-between gap-3 border-t border-gray-100 pt-3 text-sm" data-review-feedback>
+<div class="mt-3 flex flex-wrap items-start justify-between gap-3 border-t border-gray-100 pt-2.5 text-sm" data-review-feedback>
     @if ($isOwn)
         <span class="text-gray-500">
             {{ trans_choice(':count شخص وجد تقييمك مفيداً', $review->helpful_count) }}
