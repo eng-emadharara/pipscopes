@@ -1,21 +1,19 @@
 {{-- Confirmed impersonators and channels with serious warning signs (see App\Support\RedFlags) --}}
-<section class="mx-auto mt-14 max-w-6xl px-4">
-    <div class="mb-5">
-        <h2 class="flex items-center gap-2 text-2xl font-bold">
-            <x-ui-icon name="alert" class="h-6 w-6 text-red-600" />
-            {{ __('تنبيهات') }}
-        </h2>
-        <p class="mt-1 text-sm text-gray-600">{{ __('حسابات تنتحل صفة قنوات معروفة، وقنوات أشار عدد ملحوظ من مقيّميها إلى مؤشرات خطيرة.') }}</p>
-    </div>
+<section class="mx-auto mt-24 max-w-6xl px-4">
+    <x-section-heading tone="danger" :eyebrow="__('قبل أن تشترك')" :title="__('تنبيهات')"
+                       :intro="__('حسابات تنتحل صفة قنوات معروفة، وقنوات أشار عدد ملحوظ من مقيّميها إلى مؤشرات خطيرة.')" />
 
     <div class="grid gap-4 {{ $alerts['impersonators']->isNotEmpty() && $alerts['flagged']->isNotEmpty() ? 'lg:grid-cols-2' : '' }}">
         @if ($alerts['impersonators']->isNotEmpty())
-            <div class="card p-5">
-                <h3 class="mb-3 font-bold">{{ __('أحدث الحسابات المنتحلة') }}</h3>
+            <div class="rounded-2xl bg-white p-5 shadow-float ring-1 ring-black/5 md:p-6">
+                <h3 class="mb-4 flex items-center gap-2 font-bold">
+                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-red-50 text-red-600"><x-ui-icon name="alert" class="h-4 w-4" /></span>
+                    {{ __('أحدث الحسابات المنتحلة') }}
+                </h3>
                 <ul class="space-y-2">
                     @foreach ($alerts['impersonators'] as $fake)
                         {{-- Deliberately not a link to the fake account: we never send traffic to it --}}
-                        <li class="flex items-center gap-3 rounded-lg border border-red-100 bg-red-50/60 px-3 py-2 text-sm">
+                        <li class="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50/50 px-3 py-2.5 text-sm">
                             <x-ui-icon :name="$fake->icon()" class="h-4 w-4 shrink-0 text-red-600" />
                             <div class="min-w-0 flex-1">
                                 <span class="block truncate font-mono font-semibold text-red-700 line-through decoration-red-300" dir="ltr">{{ $fake->handle }}</span>
@@ -32,12 +30,15 @@
         @endif
 
         @if ($alerts['flagged']->isNotEmpty())
-            <div class="card p-5">
-                <h3 class="mb-3 font-bold">{{ __('قنوات عليها مؤشرات خطيرة') }}</h3>
+            <div class="rounded-2xl bg-white p-5 shadow-float ring-1 ring-black/5 md:p-6">
+                <h3 class="mb-4 flex items-center gap-2 font-bold">
+                    <span class="grid h-8 w-8 place-items-center rounded-lg bg-amber-50 text-amber-600"><x-ui-icon name="alert" class="h-4 w-4" /></span>
+                    {{ __('قنوات عليها مؤشرات خطيرة') }}
+                </h3>
                 <ul class="space-y-2">
                     @foreach ($alerts['flagged'] as $row)
                         <li>
-                            <a href="{{ route('providers.show', $row['provider']) }}" class="flex items-center gap-3 rounded-lg border border-amber-100 bg-amber-50/60 px-3 py-2 text-sm transition hover:border-amber-300">
+                            <a href="{{ route('providers.show', $row['provider']) }}" class="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50/50 px-3 py-2.5 text-sm transition hover:border-amber-300 hover:bg-amber-50">
                                 <x-avatar :provider="$row['provider']" size="h-9 w-9 text-sm" />
                                 <div class="min-w-0 flex-1">
                                     <span class="block truncate font-semibold"><bdi>{{ $row['provider']->name }}</bdi></span>

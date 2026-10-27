@@ -6,6 +6,7 @@ import './share';
 import './account-check';
 import './submission-form';
 import './ui';
+import './reveal';
 
 // Prevent double submission (double-click / Enter + click) on every form
 document.addEventListener('submit', (event) => {
