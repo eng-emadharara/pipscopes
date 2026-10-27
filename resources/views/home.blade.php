@@ -1,4 +1,6 @@
 <x-layouts.app>
+    <x-structured-data :items="\App\Support\StructuredData::site()" />
+
     {{-- Hero --}}
     <section class="bg-ink pb-16 pt-12 text-white">
         <div class="mx-auto max-w-3xl px-4 text-center">

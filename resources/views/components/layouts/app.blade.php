@@ -83,6 +83,7 @@
         {{-- Events for this page (App\Support\Analytics), sent by resources/js/analytics.js --}}
         <script>window.__analytics = @json(\App\Support\Analytics::payload());</script>
     @endif
+    @stack('structured-data')
     {{-- Admin-provided tracking code (Site settings → الإحصائيات), output as is --}}
     {!! \App\Support\Site::get('head_code') !!}
 </head>

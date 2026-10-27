@@ -13,6 +13,7 @@ use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewFeedbackController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShareImageController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Middleware\AuthenticateOwner;
@@ -22,6 +23,10 @@ use App\Http\Middleware\EnsureOwnerPortalEnabled;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+
+// For search engines (public/robots.txt is removed so this one is served)
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 
 Route::get('/lang/{locale}', function (string $locale) {
     abort_unless(array_key_exists($locale, config('trust.locales')), 404);

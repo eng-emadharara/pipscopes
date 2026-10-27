@@ -14,6 +14,10 @@
 <x-layouts.app :title="$provider->name"
     :description="__('تقييمات وآراء المستخدمين حول :name - :service', ['name' => $provider->name, 'service' => $serviceType])"
     :og-image="route('share-images.provider', [app()->getLocale(), $provider])">
+    {{-- For search engines; not in owner mode, whose filters change which reviews the page shows --}}
+    @unless ($managing)
+        <x-structured-data :items="\App\Support\StructuredData::provider($provider)" />
+    @endunless
     {{-- Owner mode: a management toolbar at the very top, above the channel itself --}}
     @if ($managing)
         <div class="sticky top-0 z-30 bg-sky-800 text-white shadow-md">
