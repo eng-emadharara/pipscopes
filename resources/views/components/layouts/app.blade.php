@@ -112,7 +112,12 @@
                     @if (auth()->user()->is_admin)
                         <a href="{{ url('/admin') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 sm:inline">{{ __('لوحة التحكم') }}</a>
                     @endif
-                    <span class="hidden text-gray-300 lg:inline">{{ auth()->user()->name }}</span>
+                    <span class="hidden items-center gap-2 text-gray-300 lg:inline-flex">
+                        @if (auth()->user()->avatar_url)
+                            <img src="{{ auth()->user()->avatar_url }}" alt="" referrerpolicy="no-referrer" class="h-7 w-7 rounded-full object-cover ring-2 ring-white/20">
+                        @endif
+                        {{ auth()->user()->name }}
+                    </span>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
@@ -151,8 +156,13 @@
         @if (! auth()->user()->hasVerifiedEmail() && ! request()->routeIs('verification.*'))
             <div class="border-b border-amber-200 bg-amber-50">
                 <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm text-amber-900">
-                    <span>{{ __('أكّد بريدك الإلكتروني لتتمكن من كتابة التقييمات.') }}</span>
-                    <a href="{{ route('verification.notice') }}" class="font-semibold underline">{{ __('أدخل رمز التأكيد') }}</a>
+                    @if (auth()->user()->email)
+                        <span>{{ __('أكّد بريدك الإلكتروني لتتمكن من كتابة التقييمات.') }}</span>
+                        <a href="{{ route('verification.notice') }}" class="font-semibold underline">{{ __('أدخل رمز التأكيد') }}</a>
+                    @else
+                        <span>{{ __('أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.') }}</span>
+                        <a href="{{ route('verification.notice') }}" class="font-semibold underline">{{ __('أضف البريد') }}</a>
+                    @endif
                 </div>
             </div>
         @endif

@@ -36,6 +36,25 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    // Social sign-in. A button only shows when its credentials are set.
+    // Callback URLs to register with each provider: {APP_URL}/auth/google/callback and {APP_URL}/auth/facebook/callback
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => '/auth/google/callback',
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => '/auth/facebook/callback',
+    ],
+
+    // Telegram Login Widget: create a bot with @BotFather, then link the site's domain to it with /setdomain
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

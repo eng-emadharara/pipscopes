@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -25,6 +26,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'is_admin',
         'email_verified_at',
+        'avatar_url',
     ];
 
     /**
@@ -62,6 +64,11 @@ class User extends Authenticatable implements FilamentUser
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     public function canAccessPanel(Panel $panel): bool
