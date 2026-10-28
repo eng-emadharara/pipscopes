@@ -45,22 +45,7 @@ class SocialLogin
     {
         return DB::transaction(function () use ($provider, $profile) {
             $email = filled($profile['email']) ? Str::lower(trim($profile['email'])) : null;
-            $details = [
-                'email' => $email,
-                'name' => $profile['name'],
-                'nickname' => $profile['nickname'],
-                'avatar_url' => $profile['avatar'],
-                'raw_data' => $profile['raw'],
-                'token' => $profile['token'],
-                'token_expires_at' => $profile['expires_in'] ? now()->addSeconds($profile['expires_in']) : null,
-                'scopes' => $profile['scopes'] ?: null,
-                'last_login_at' => now(),
-            ];
-
-            // Google only hands out a refresh token on the first consent, so a later sign-in mustn't wipe it
-            if ($profile['refresh_token']) {
-                $details['refresh_token'] = $profile['refresh_token'];
-            }
+            $details = self::details($profile);
 
             $account = SocialAccount::where('provider', $provider)->where('provider_id', $profile['id'])->first();
             if ($account) {
@@ -109,6 +94,59 @@ class SocialLogin
 
             return $user;
         });
+    }
+
+    /**
+     * Links a provider identity to a member who is already signed in.
+     * Returns false when that identity already belongs to another member.
+     *
+     * @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}  $profile
+     */
+    public static function link(User $user, string $provider, array $profile): bool
+    {
+        return DB::transaction(function () use ($user, $provider, $profile) {
+            $owner = SocialAccount::where('provider', $provider)->where('provider_id', $profile['id'])->value('user_id');
+
+            if ($owner && $owner !== $user->id) {
+                return false;
+            }
+
+            $user->socialAccounts()->updateOrCreate(['provider' => $provider], ['provider_id' => $profile['id'], ...self::details($profile)]);
+
+            if (! $user->avatar_url && $profile['avatar']) {
+                $user->forceFill(['avatar_url' => $profile['avatar']])->save();
+            }
+
+            return true;
+        });
+    }
+
+    /**
+     * The columns stored on a social account for a profile.
+     *
+     * @param  array{email: ?string, name: ?string, nickname: ?string, avatar: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}  $profile
+     * @return array<string, mixed>
+     */
+    protected static function details(array $profile): array
+    {
+        $details = [
+            'email' => filled($profile['email']) ? Str::lower(trim($profile['email'])) : null,
+            'name' => $profile['name'],
+            'nickname' => $profile['nickname'],
+            'avatar_url' => $profile['avatar'],
+            'raw_data' => $profile['raw'],
+            'token' => $profile['token'],
+            'token_expires_at' => $profile['expires_in'] ? now()->addSeconds($profile['expires_in']) : null,
+            'scopes' => $profile['scopes'] ?: null,
+            'last_login_at' => now(),
+        ];
+
+        // Google only hands out a refresh token on the first consent, so a later sign-in mustn't wipe it
+        if ($profile['refresh_token']) {
+            $details['refresh_token'] = $profile['refresh_token'];
+        }
+
+        return $details;
     }
 
     /** @param  array{name: ?string, nickname: ?string}  $profile */

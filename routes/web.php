@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-email/email', [EmailVerificationController::class, 'updateEmail'])->middleware('throttle:5,10')->name('verification.email');
     Route::post('/verify-email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:5,10')->name('verification.resend');
 
+    Route::post('/auth/telegram/link', [SocialAuthController::class, 'linkTelegram'])->middleware('throttle:10,1')->name('social.telegram.link');
+
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 

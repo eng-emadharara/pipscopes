@@ -121,6 +121,7 @@
                         @endif
                         {{ auth()->user()->name }}
                     </span>
+                    <x-telegram-link />
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
