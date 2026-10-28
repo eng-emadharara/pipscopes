@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         // The .env name, used until a name is set in the admin panel (App\Support\Site)
         config(['trust.default_name' => config('app.name')]);
 
-        // Google / Facebook / Telegram keys set in the admin panel take over from .env
+        // Google / Facebook / Telegram keys come only from the admin panel
         SocialKeys::apply();
 
         // Translated, RTL-aware pagination for the public site (Filament uses its own)

@@ -12,7 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\HtmlString;
 
-/** Google / Facebook / Telegram sign-in keys, so they can be changed without editing .env (stored through App\Support\SocialKeys). */
+/** Google / Facebook / Telegram sign-in keys, the only place they are set (stored through App\Support\SocialKeys). */
 class SocialLoginSettings extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -67,7 +67,7 @@ class SocialLoginSettings extends Page implements HasForms
                     ->visible(fn () => filled(SocialKeys::stored()[$provider] ?? null))
                     ->requiresConfirmation()
                     ->modalHeading('حذف مفاتيح '.SocialLogin::LABELS[$provider].'؟')
-                    ->modalDescription('ستُستخدم القيم الموجودة في ملف .env إن وُجدت، وإلا يظهر الزر في صفحة الدخول بحالة "قريباً".')
+                    ->modalDescription('سيظهر الزر في صفحة الدخول بحالة "قريباً" حتى تُضاف مفاتيح جديدة.')
                     ->action(fn () => $this->clear($provider)),
             ])
             ->schema([
@@ -88,12 +88,8 @@ class SocialLoginSettings extends Page implements HasForms
                         ->maxLength(500)
                         ->autocomplete('off')
                         ->extraInputAttributes(['dir' => 'ltr'])
-                        ->hint(fn () => match (SocialKeys::source($provider, $key)) {
-                            'panel' => 'محفوظ في اللوحة',
-                            'env' => 'من ملف .env',
-                            default => 'غير مضبوط',
-                        })
-                        ->hintColor(fn () => SocialKeys::source($provider, $key) ? 'success' : 'gray');
+                        ->hint(fn () => SocialKeys::isSet($provider, $key) ? 'محفوظ' : 'غير مضبوط')
+                        ->hintColor(fn () => SocialKeys::isSet($provider, $key) ? 'success' : 'gray');
 
                     if ($provider === 'telegram') {
                         $input->regex('/^\d+:[\w-]+$/')->validationMessages(['regex' => 'التوكن بالشكل 123456789:ABC... كما يرسله BotFather.']);
@@ -101,7 +97,7 @@ class SocialLoginSettings extends Page implements HasForms
 
                     return $secret
                         ? $input->password()->revealable()
-                            ->placeholder(fn () => SocialKeys::source($provider, $key) === 'panel' ? '•••••••• (اتركه فارغاً للإبقاء على المحفوظ)' : null)
+                            ->placeholder(fn () => SocialKeys::isSet($provider, $key) ? '•••••••• (اتركه فارغاً للإبقاء على المحفوظ)' : null)
                         : $input;
                 })->values()->all()),
             ]))->values()->all();
@@ -109,8 +105,7 @@ class SocialLoginSettings extends Page implements HasForms
         return $form->statePath('data')->schema([
             Forms\Components\Section::make()->schema([
                 Forms\Components\Placeholder::make('intro')->hiddenLabel()->content(new HtmlString(
-                    'المفاتيح المحفوظة هنا تُخزَّن مشفّرة وتُستخدم بدلاً من قيم ملف <code>.env</code>. '
-                    .'أي حقل تتركه فارغاً هنا يعود لقيمة <code>.env</code> إن وُجدت. '
+                    'المفاتيح تُضبط من هنا فقط وتُخزَّن مشفّرة (لا تُقرأ من ملف <code>.env</code>). '
                     .'يظهر زر تسجيل الدخول للزوار فقط عندما تكتمل مفاتيحه.'
                 )),
             ]),
@@ -156,9 +151,6 @@ class SocialLoginSettings extends Page implements HasForms
             return '⚪ <strong>غير مفعّل:</strong> الزر يظهر في صفحة الدخول بحالة "قريباً" حتى تكتمل المفاتيح.';
         }
 
-        $fromPanel = collect(SocialKeys::FIELDS[$provider])->keys()->contains(fn ($key) => SocialKeys::source($provider, $key) === 'panel');
-
-        return '🟢 <strong>مفعّل:</strong> الزوار يمكنهم الدخول عبر '.SocialLogin::LABELS[$provider].'. المفاتيح '
-            .($fromPanel ? 'من لوحة التحكم.' : 'من ملف .env.');
+        return '🟢 <strong>مفعّل:</strong> الزوار يمكنهم الدخول عبر '.SocialLogin::LABELS[$provider].'.';
     }
 }

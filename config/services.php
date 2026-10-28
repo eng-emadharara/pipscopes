@@ -36,23 +36,24 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
-    // Social sign-in. A button only shows when its credentials are set.
+    // Social sign-in. The keys are set only in the admin panel (Settings → مفاتيح تسجيل الدخول) and filled in
+    // by App\Support\SocialKeys::apply(); a button only shows when its credentials are set.
     // Callback URLs to register with each provider: {APP_URL}/auth/google/callback and {APP_URL}/auth/facebook/callback
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'client_id' => null,
+        'client_secret' => null,
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
     'facebook' => [
-        'client_id' => env('FACEBOOK_CLIENT_ID'),
-        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'client_id' => null,
+        'client_secret' => null,
         'redirect' => env('FACEBOOK_REDIRECT_URI', '/auth/facebook/callback'),
     ],
 
     // Telegram Login Widget: create a bot with @BotFather, then link the site's domain to it with /setdomain
     'telegram' => [
-        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_token' => null,
     ],
 
     'slack' => [

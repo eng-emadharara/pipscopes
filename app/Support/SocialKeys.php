@@ -9,8 +9,8 @@ use Throwable;
 
 /**
  * Social sign-in keys edited in the admin panel (Settings → مفاتيح تسجيل الدخول).
- * Stored encrypted in the "social_keys" setting and applied over config/services.php,
- * so a key left empty in the panel falls back to the .env value.
+ * Stored encrypted in the "social_keys" setting and put into config/services.php; .env is not read,
+ * so a key left empty in the panel is simply not set.
  */
 class SocialKeys
 {
@@ -67,7 +67,7 @@ class SocialKeys
                 try {
                     $keys[$provider][$field] = Crypt::decryptString($encrypted);
                 } catch (DecryptException) {
-                    // Saved with another APP_KEY; the .env value (if any) is used instead
+                    // Saved with another APP_KEY; treated as not set until saved again
                 }
             }
         }
@@ -92,14 +92,8 @@ class SocialKeys
         Setting::put([self::KEY => $encrypted]);
     }
 
-    /** Where the key currently in use comes from: "panel", "env" or null when it isn't set anywhere. */
-    public static function source(string $provider, string $field): ?string
+    public static function isSet(string $provider, string $field): bool
     {
-        if (filled(static::stored()[$provider][$field] ?? null)) {
-            return 'panel';
-        }
-
-        // Without a panel value, config still holds what config/services.php read from .env
-        return filled(config("services.$provider.$field")) ? 'env' : null;
+        return filled(static::stored()[$provider][$field] ?? null);
     }
 }

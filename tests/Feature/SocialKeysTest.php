@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
 
-/** Social sign-in keys edited in the admin panel: stored encrypted, override .env, secrets kept when left empty. */
+/** Social sign-in keys edited in the admin panel: the only source (.env is ignored), stored encrypted, secrets kept when left empty. */
 class SocialKeysTest extends TestCase
 {
     use RefreshDatabase;
@@ -22,16 +22,18 @@ class SocialKeysTest extends TestCase
     {
         parent::setUp();
 
-        config([
-            'services.google' => ['client_id' => 'env-gid', 'client_secret' => 'env-gsecret', 'redirect' => '/auth/google/callback'],
-            'services.facebook' => ['client_id' => null, 'client_secret' => null, 'redirect' => '/auth/facebook/callback'],
-            'services.telegram.bot_token' => null,
-        ]);
-
         $this->actingAs(User::factory()->create(['is_admin' => true]));
     }
 
-    public function test_saved_keys_are_encrypted_and_override_env(): void
+    public function test_env_keys_are_ignored(): void
+    {
+        $this->assertNull(config('services.google.client_id'));
+        $this->assertNull(config('services.facebook.client_secret'));
+        $this->assertNull(config('services.telegram.bot_token'));
+        $this->assertSame([], SocialLogin::enabled());
+    }
+
+    public function test_saved_keys_are_encrypted_and_applied(): void
     {
         $this->get('/admin/social-login')->assertOk()->assertSee('مفاتيح تسجيل الدخول الاجتماعي');
 
@@ -51,10 +53,10 @@ class SocialKeysTest extends TestCase
 
         $this->assertSame('fid', config('services.facebook.client_id'));
         $this->assertSame('fsecret', config('services.facebook.client_secret'));
-        $this->assertSame('env-gid', config('services.google.client_id'));
-        $this->assertSame(['google', 'facebook', 'telegram'], SocialLogin::enabled());
-        $this->assertSame('panel', SocialKeys::source('facebook', 'client_secret'));
-        $this->assertSame('env', SocialKeys::source('google', 'client_secret'));
+        $this->assertNull(config('services.google.client_id'));
+        $this->assertSame(['facebook', 'telegram'], SocialLogin::enabled());
+        $this->assertTrue(SocialKeys::isSet('facebook', 'client_secret'));
+        $this->assertFalse(SocialKeys::isSet('google', 'client_secret'));
     }
 
     public function test_empty_secret_keeps_the_saved_one_and_secrets_are_not_sent_back(): void
@@ -81,7 +83,7 @@ class SocialKeysTest extends TestCase
         $this->assertArrayNotHasKey('telegram', SocialKeys::stored());
     }
 
-    public function test_clearing_a_provider_falls_back_to_env(): void
+    public function test_clearing_a_provider_unsets_its_keys(): void
     {
         SocialKeys::save(['google' => ['client_id' => 'panel-gid', 'client_secret' => 'panel-gsecret']]);
 
@@ -89,6 +91,6 @@ class SocialKeysTest extends TestCase
             ->call('clear', 'google');
 
         $this->assertArrayNotHasKey('google', SocialKeys::stored());
-        $this->assertSame('env', SocialKeys::source('google', 'client_id'));
+        $this->assertFalse(SocialKeys::isSet('google', 'client_id'));
     }
 }
