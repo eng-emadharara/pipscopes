@@ -148,30 +148,3 @@
 .star-picker:has(input[value="5"]:checked), .star-picker:has(label[for$="-5"]:hover) { --pick: var(--color-rate-excellent); }
 .star-picker input:focus-visible + label { outline: 2px solid var(--color-ink); outline-offset: 2px; }
 
-/* Maintenance page (resources/views/maintenance.blade.php) */
-@theme {
-    --animate-drift: drift 18s ease-in-out infinite;
-    --animate-shimmer: shimmer 1.8s ease-in-out infinite;
-
-    @keyframes drift {
-        0%, 100% { transform: translate(0, 0) scale(1); }
-        50% { transform: translate(6%, 8%) scale(1.12); }
-    }
-    @keyframes shimmer {
-        from { transform: translateX(-120%); }
-        to { transform: translateX(320%); }
-    }
-}
-/* Faint grid that fades out toward the edges */
-.maint-grid {
-    background-image:
-        linear-gradient(to right, rgb(255 255 255 / .045) 1px, transparent 1px),
-        linear-gradient(to bottom, rgb(255 255 255 / .045) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, #000 25%, transparent 100%);
-}
-/* A ring whose colour trails off, spun around the gear */
-.maint-arc {
-    background: conic-gradient(from 0deg, transparent 0 55%, rgb(0 182 122 / .95));
-    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
-}

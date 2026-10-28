@@ -96,6 +96,6 @@ class MaintenanceModeTest extends TestCase
         Setting::put(['maintenance_texts' => ['ar' => ['headline' => 'نرقّي الخوادم'], 'en' => ['headline' => 'Upgrading servers']]]);
 
         $this->get('/')->assertSee('نرقّي الخوادم');
-        $this->get('/?lang=en')->assertSee('Upgrading servers')->assertSee('Scheduled maintenance in progress');
+        $this->get('/?lang=en')->assertSee('Upgrading servers')->assertSee('Under maintenance');
     }
 }
