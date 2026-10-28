@@ -6,6 +6,7 @@ import './share';
 import './account-check';
 import './submission-form';
 import './analytics';
+import './provider-filters';
 import './ui';
 import './profile';
 

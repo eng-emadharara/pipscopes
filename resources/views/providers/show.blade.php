@@ -52,18 +52,18 @@
         ][\App\Models\Provider::ratingColor($avg)];
     @endphp
     <section class="border-b border-gray-200 bg-white">
-        <div class="mx-auto grid max-w-6xl gap-6 px-4 py-8 md:grid-cols-[1fr_auto] md:gap-x-10">
+        <div class="mx-auto grid max-w-6xl gap-4 px-4 py-5 md:grid-cols-[1fr_auto] md:gap-6 md:gap-x-10 md:py-8">
             {{-- Identity --}}
-            <div class="flex min-w-0 items-start gap-4 md:col-start-1 md:row-start-1">
-                <x-avatar :provider="$provider" size="h-16 w-16 text-2xl md:h-24 md:w-24 md:text-4xl" />
+            <div class="flex min-w-0 items-start gap-3 md:col-start-1 md:row-start-1 md:gap-4">
+                <x-avatar :provider="$provider" size="h-14 w-14 text-xl md:h-24 md:w-24 md:text-4xl" />
                 <div class="min-w-0">
-                    <nav class="mb-1 text-xs text-gray-500">
+                    <nav class="mb-0.5 text-xs text-gray-500 md:mb-1">
                         <a href="{{ route('providers.index') }}" class="hover:underline">{{ __('مقدمو الخدمة') }}</a>
                         @if ($mainCategory = $provider->categories->first())
                             / <a href="{{ route('categories.show', $mainCategory) }}" class="hover:underline">{{ $mainCategory->tr('name') }}</a>
                         @endif
                     </nav>
-                    <h1 class="break-words text-2xl font-bold leading-tight md:text-3xl">
+                    <h1 class="break-words text-xl font-bold leading-snug md:text-3xl md:leading-tight">
                         <bdi>{{ $provider->name }}</bdi>
                         @if ($provider->is_verified)
                             <span class="ms-1 inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-brand-50 px-2 py-0.5 align-middle text-xs font-semibold text-brand-700">
@@ -72,16 +72,39 @@
                         @endif
                     </h1>
                     @if ($handle = $provider->telegramHandle())
-                        <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="mt-1 inline-flex items-center gap-1 text-sm text-sky-700 hover:underline">
+                        <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="mt-0.5 inline-flex items-center gap-1 text-xs text-sky-700 hover:underline md:mt-1 md:text-sm">
                             <x-ui-icon name="telegram" class="h-4 w-4" /> <span dir="ltr">{{ $handle }}</span>
                         </a>
                     @endif
-                    <p class="mt-1 text-gray-600">{{ $serviceType }}</p>
+                    <p class="mt-0.5 text-sm text-gray-600 md:mt-1 md:text-base">{{ $serviceType }}</p>
                 </div>
             </div>
 
-            {{-- Rating card --}}
-            <a href="#reviews" class="block rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-gray-300 md:col-start-2 md:row-span-2 md:row-start-1 md:min-w-72 md:self-center">
+            {{-- Rating card: one compact row on phones, the large card on wider screens --}}
+            @php
+                $scoreBox = [
+                    'excellent' => 'bg-rate-excellent text-white', 'great' => 'bg-rate-great text-white', 'average' => 'bg-rate-average text-ink',
+                    'poor' => 'bg-rate-poor text-white', 'bad' => 'bg-rate-bad text-white', 'none' => 'bg-gray-200 text-gray-500',
+                ][$provider->reviews_count ? \App\Models\Provider::ratingColor($avg) : 'none'];
+            @endphp
+            <a href="#reviews" class="flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 transition hover:border-gray-300 md:hidden">
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-lg font-bold tabular-nums {{ $scoreBox }}">
+                    {{ $provider->reviews_count ? number_format($avg, 1) : '—' }}
+                </span>
+                <div class="min-w-0 flex-1">
+                    <x-stars :rating="$avg" size="sm" />
+                    <p class="mt-1 truncate text-xs text-gray-500">
+                        @if ($provider->reviews_count)
+                            <span class="font-bold {{ $ratingText }}">{{ \App\Models\Provider::ratingLabel($avg) }}</span>
+                            · {{ __('بناءً على :count', ['count' => trans_choice(':count تقييم', $provider->reviews_count)]) }}
+                        @else
+                            {{ __('لا توجد تقييمات بعد') }}
+                        @endif
+                    </p>
+                </div>
+                <span class="shrink-0 text-gray-300 rtl:rotate-180">›</span>
+            </a>
+            <a href="#reviews" class="hidden rounded-2xl border border-gray-200 bg-gray-50 p-5 transition hover:border-gray-300 md:col-start-2 md:row-span-2 md:row-start-1 md:block md:min-w-72 md:self-center">
                 @if ($provider->reviews_count)
                     <div class="flex items-baseline gap-2">
                         <span class="text-5xl font-bold leading-none tabular-nums">{{ number_format($avg, 1) }}</span>
@@ -98,18 +121,19 @@
             </a>
 
             {{-- Actions, side by side --}}
-            <div class="flex flex-wrap items-center gap-2 md:col-start-1 md:row-start-2 md:ps-28">
+            {{-- Phones: the two main buttons share the row equally, share stays an icon --}}
+            <div class="flex items-center gap-2 md:col-start-1 md:row-start-2 md:flex-wrap md:ps-28">
                 @if ($userReview)
-                    <a href="{{ route('reviews.create', $provider) }}" class="btn-outline">
+                    <a href="{{ route('reviews.create', $provider) }}" class="btn-outline max-md:flex-1 max-md:px-3 max-md:text-sm">
                         <x-ui-icon name="star" class="h-4 w-4" /> {{ __('تعديل تقييمك') }}
                     </a>
                 @else
-                    <a href="{{ route('reviews.create', $provider) }}" class="btn-primary">
+                    <a href="{{ route('reviews.create', $provider) }}" class="btn-primary max-md:flex-1 max-md:px-3 max-md:text-sm">
                         <x-ui-icon name="star" class="h-4 w-4" /> {{ __('اكتب تقييماً') }}
                     </a>
                 @endif
                 @if ($provider->telegram_url)
-                    <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="btn border border-sky-200 bg-sky-50 text-sky-800 hover:border-sky-400">
+                    <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="btn border border-sky-200 bg-sky-50 text-sky-800 hover:border-sky-400 max-md:flex-1 max-md:px-3 max-md:text-sm">
                         <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('قناة التيليجرام') }}
                     </a>
                 @endif
@@ -129,7 +153,7 @@
         </div>
     @endif
 
-    <div class="mx-auto grid max-w-6xl gap-6 px-4 py-8 lg:grid-cols-[1fr_320px]">
+    <div class="mx-auto grid max-w-6xl gap-5 px-4 py-5 md:gap-6 md:py-8 lg:grid-cols-[1fr_320px]">
         @php
             $hasTrend = \App\Support\TelegramTrend::enabled() && \App\Support\TelegramTrend::drawable($trend = \App\Support\TelegramTrend::lastDays($provider));
             $tabs = array_filter([
@@ -147,9 +171,14 @@
                     <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}#tabs" data-tab="{{ $key }}" role="tab"
                        data-track="tab_view" data-track-params='@json(['tab' => $key])'
                        aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" aria-controls="{{ $key === 'reviews' ? 'reviews' : 'panel-'.$key }}"
-                       class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white">
+                       class="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white md:gap-2 md:px-4 md:py-2.5 md:text-sm">
                         @if ($key === 'telegram') <x-ui-icon name="telegram" class="h-4 w-4" /> @endif
-                        {{ $label }}
+                        {{-- The Telegram tab's long name is just "Telegram" on phones --}}
+                        @if ($key === 'telegram')
+                            <span class="md:hidden">{{ __('تيليجرام') }}</span><span class="max-md:hidden">{{ $label }}</span>
+                        @else
+                            {{ $label }}
+                        @endif
                         @if ($key === 'reviews' && $provider->reviews_count)
                             <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{{ number_format($provider->reviews_count) }}</span>
                         @endif
@@ -158,7 +187,7 @@
             </nav>
 
             {{-- Rating analysis --}}
-            <section class="card p-6 {{ $activeTab === 'analysis' ? '' : 'hidden' }}" data-panel="analysis" id="panel-analysis" role="tabpanel">
+            <section class="card p-4 md:p-6 {{ $activeTab === 'analysis' ? '' : 'hidden' }}" data-panel="analysis" id="panel-analysis" role="tabpanel">
                 <h2 class="mb-4 text-lg font-bold">{{ __('تحليل التقييم: لماذا هذا التقييم؟') }}</h2>
 
                 <ul class="mb-6 space-y-2 rounded-xl bg-gray-50 p-4 text-sm leading-relaxed">
@@ -244,9 +273,10 @@
 
             {{-- Reviews --}}
             <section id="reviews" class="scroll-mt-6 {{ $activeTab === 'reviews' ? '' : 'hidden' }}" data-panel="reviews" role="tabpanel">
-                <div class="mb-4 flex items-center justify-between">
-                    <h2 class="text-lg font-bold">
-                        {{ __('التقييمات') }}
+                <div class="mb-3 flex items-center justify-between gap-3 md:mb-4">
+                    {{-- On phones the tab right above already says "Reviews": only the filter note shows --}}
+                    <h2 class="text-sm font-bold md:text-lg">
+                        <span class="max-md:sr-only">{{ __('التقييمات') }}</span>
                         @if (request('stars'))
                             <span class="text-sm font-normal text-gray-500">({{ __(':n نجوم فقط', ['n' => request('stars')]) }} · <a href="{{ route('providers.show', [$provider, 'sort' => request('sort')]) }}#reviews" class="underline">{{ __('إلغاء الفلتر') }}</a>)</span>
                         @endif
@@ -256,8 +286,8 @@
                             @if (request('stars'))
                                 <input type="hidden" name="stars" value="{{ request('stars') }}">
                             @endif
-                            <label for="review-sort" class="text-gray-500">{{ __('الترتيب') }}</label>
-                            <select id="review-sort" name="sort" class="input w-auto py-1.5" onchange="this.form.submit()">
+                            <label for="review-sort" class="text-gray-500 max-sm:sr-only">{{ __('الترتيب') }}</label>
+                            <select id="review-sort" name="sort" class="input h-9 w-auto py-0 text-sm font-semibold" onchange="this.form.submit()">
                                 @foreach (__('trust.review_sorts') as $key => $label)
                                     <option value="{{ $key }}" @selected($sort === $key)>{{ $label }}</option>
                                 @endforeach

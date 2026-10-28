@@ -472,5 +472,22 @@
     "لديك تغييرات غير محفوظة": "You have unsaved changes",
     "كل التغييرات محفوظة": "All changes saved",
     "تجاهل": "Discard",
-    "تم حفظ ملفك الشخصي.": "Your profile has been saved."
+    "تم حفظ ملفك الشخصي.": "Your profile has been saved.",
+    ":count نتيجة متوفرة": ":count result available|:count results available",
+    "أرسلنا رمز تأكيد مكوّناً من 6 أرقام إلى :email.": "We sent a 6-digit confirmation code to :email.",
+    "إزالة :f": "Remove :f",
+    "ابحث باسم القناة أو المعرّف أو الرابط…": "Search by channel name, handle or link…",
+    "الفلاتر": "Filters",
+    "عرض :count نتيجة": "Show :count result|Show :count results",
+    "مسح الكل": "Clear all",
+    "القائمة": "Menu",
+    "حسابي": "My account",
+    "السوق": "Market",
+    "التقييم": "Rating",
+    "ابحث عن قناة…": "Search for a channel…",
+    "مشترك": "subscribers",
+    "عدد التقييمات": "Number of reviews",
+    "التقييم المبني على تجارب أكثر أدق.": "A rating built on more experiences is more reliable.",
+    "فأعلى": "& up",
+    ":n+ تقييمات": ":n+ reviews"
 }

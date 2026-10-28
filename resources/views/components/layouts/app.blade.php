@@ -103,24 +103,25 @@
                 @endforeach
             </nav>
 
+            {{-- Phones keep the account button and the menu; the rest moves into the menu (#mobile-menu) --}}
             <div class="flex items-center gap-2 text-sm">
-                <x-locale-switcher />
+                <div class="hidden md:block"><x-locale-switcher /></div>
                 {{-- Signed-in channel owner: a way back to the page they manage --}}
                 @if ($managedChannel = \App\Support\OwnerPortal::owner()?->provider)
-                    <a href="{{ route('providers.show', $managedChannel) }}" class="inline-flex items-center gap-1 rounded-full bg-sky-600 px-3 py-1.5 font-semibold hover:bg-sky-700">
+                    <a href="{{ route('providers.show', $managedChannel) }}" class="hidden items-center gap-1 rounded-full bg-sky-600 px-3 py-1.5 font-semibold hover:bg-sky-700 md:inline-flex">
                         <x-ui-icon name="shield" class="h-4 w-4" /> {{ __('قناتي') }}
                     </a>
                 @endif
                 @auth
                     {{-- Until the email is confirmed the account isn't really theirs yet: no name, avatar or profile links, only a way out --}}
                     @unless (auth()->user()->isVerifiedMember())
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                             @csrf
                             <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
                         </form>
                     @else
                     @if (auth()->user()->is_admin)
-                        <a href="{{ url('/admin') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 sm:inline">{{ __('لوحة التحكم') }}</a>
+                        <a href="{{ url('/admin') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 md:inline">{{ __('لوحة التحكم') }}</a>
                     @endif
                     <a href="{{ route('profile.edit') }}" title="{{ __('ملفي الشخصي') }}" aria-label="{{ __('ملفي الشخصي') }}"
                        @class(['inline-flex items-center gap-2 rounded-full py-1 ps-1 pe-1 text-gray-300 transition hover:bg-white/10 hover:text-white lg:pe-3', 'bg-white/10 text-white' => request()->routeIs('profile.*')])>
@@ -132,28 +133,85 @@
                         <span class="hidden max-w-[10rem] truncate lg:inline">{{ auth()->user()->name }}</span>
                     </a>
                     <x-telegram-link />
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" class="hidden md:block">
                         @csrf
                         <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
                     </form>
                     @endunless
                 @elseif (! $prelaunch)
-                    <a href="{{ route('login') }}" class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('دخول') }}</a>
+                    <a href="{{ route('login') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 md:inline-block">{{ __('دخول') }}</a>
                     <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-brand-500 px-4 py-1.5 font-semibold hover:bg-brand-600">{{ __('حساب جديد') }}</a>
                 @endauth
+
+                <button type="button" class="grid h-10 w-10 place-items-center rounded-full hover:bg-white/10 md:hidden" data-open-dialog="mobile-menu" aria-label="{{ __('القائمة') }}" aria-controls="mobile-menu">
+                    <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
             </div>
         </div>
-        <nav class="flex gap-4 overflow-x-auto border-t border-white/10 px-4 py-2 text-sm md:hidden">
-            <a href="{{ route('home') }}" @class(['whitespace-nowrap', 'text-brand-500' => request()->routeIs('home')])>{{ __('الرئيسية') }}</a>
-            @unless ($prelaunch)
-                <a href="{{ route('providers.index') }}" class="whitespace-nowrap">{{ __('تصفح مقدمي الخدمة') }}</a>
-            @endunless
-            <a href="{{ route('submissions.create') }}" class="whitespace-nowrap">{{ __('أضف مقدم خدمة') }}</a>
-            @foreach ($navPages->where('show_in_header', true) as $navPage)
-                <a href="{{ $navPage->url() }}" class="whitespace-nowrap">{{ $navPage->tr('title') }}</a>
-            @endforeach
-        </nav>
     </header>
+
+    {{-- Phones: the site menu as a side drawer (opened by the ☰ button; resources/js/ui.js) --}}
+    @php
+        $menuLink = 'flex items-center justify-between rounded-xl px-4 py-3.5 text-base font-semibold hover:bg-gray-100';
+        $menuLinks = array_filter([
+            [route('home'), __('الرئيسية'), request()->routeIs('home')],
+            $prelaunch ? null : [route('providers.index'), __('تصفح مقدمي الخدمة'), request()->routeIs('providers.index', 'categories.show')],
+            [route('submissions.create'), __('أضف مقدم خدمة'), request()->routeIs('submissions.*')],
+            ...$navPages->where('show_in_header', true)->map(fn ($p) => [$p->url(), $p->tr('title'), url()->current() === $p->url()])->all(),
+        ]);
+    @endphp
+    <dialog id="mobile-menu" class="m-0 ms-auto h-dvh max-h-dvh w-[85vw] max-w-sm bg-white p-0 text-ink shadow-2xl backdrop:bg-black/50 md:hidden" aria-label="{{ __('القائمة') }}">
+        <div class="flex h-full flex-col">
+            <div class="flex items-center justify-between bg-ink px-4 py-3 text-white">
+                <x-site-logo />
+                <button type="button" class="grid h-10 w-10 place-items-center rounded-full text-2xl hover:bg-white/10" data-close-dialog aria-label="{{ __('إغلاق') }}">&times;</button>
+            </div>
+
+            <nav class="flex-1 space-y-1 overflow-y-auto p-3">
+                @foreach ($menuLinks as [$href, $label, $active])
+                    <a href="{{ $href }}" @class([$menuLink, 'bg-brand-50 text-brand-700' => $active])>
+                        {{ $label }} <span class="text-gray-300 rtl:rotate-180">›</span>
+                    </a>
+                @endforeach
+
+                <div class="my-3 border-t border-gray-100"></div>
+
+                @if ($managedChannel)
+                    <a href="{{ route('providers.show', $managedChannel) }}" class="{{ $menuLink }} text-sky-700">
+                        <span class="inline-flex items-center gap-2"><x-ui-icon name="shield" class="h-5 w-5" /> {{ __('قناتي') }}</span>
+                    </a>
+                @endif
+                @auth
+                    @if (auth()->user()->isVerifiedMember())
+                        <a href="{{ route('profile.edit') }}" class="{{ $menuLink }}">{{ __('ملفي الشخصي') }}</a>
+                        @if (auth()->user()->is_admin)
+                            <a href="{{ url('/admin') }}" class="{{ $menuLink }}">{{ __('لوحة التحكم') }}</a>
+                        @endif
+                    @endif
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="{{ $menuLink }} w-full text-red-600">{{ __('خروج') }}</button>
+                    </form>
+                @endauth
+            </nav>
+
+            <div class="space-y-3 border-t border-gray-100 p-4">
+                @guest
+                    @unless ($prelaunch)
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="{{ route('login') }}" class="btn-outline">{{ __('دخول') }}</a>
+                            <a href="{{ route('register') }}" class="btn-primary">{{ __('حساب جديد') }}</a>
+                        </div>
+                    @endunless
+                @endguest
+                <div class="flex justify-center gap-4 text-sm">
+                    @foreach ($locales as $code => $meta)
+                        <a href="{{ route('locale.switch', $code) }}" lang="{{ $code }}" class="{{ $code === $locale ? 'font-bold text-ink' : 'text-gray-500 hover:text-ink' }}">{{ $meta['name'] }}</a>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     {{-- Only admins, bypass-link holders and allowed IPs reach the site during maintenance --}}
     @if (\App\Support\Maintenance::isActive())
