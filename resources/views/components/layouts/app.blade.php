@@ -112,20 +112,31 @@
                     </a>
                 @endif
                 @auth
+                    {{-- Until the email is confirmed the account isn't really theirs yet: no name, avatar or profile links, only a way out --}}
+                    @unless (auth()->user()->isVerifiedMember())
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
+                        </form>
+                    @else
                     @if (auth()->user()->is_admin)
                         <a href="{{ url('/admin') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 sm:inline">{{ __('لوحة التحكم') }}</a>
                     @endif
-                    <span class="hidden items-center gap-2 text-gray-300 lg:inline-flex">
-                        @if (auth()->user()->avatar_url)
-                            <img src="{{ auth()->user()->avatar_url }}" alt="" referrerpolicy="no-referrer" class="h-7 w-7 rounded-full object-cover ring-2 ring-white/20">
+                    <a href="{{ route('profile.edit') }}" title="{{ __('ملفي الشخصي') }}" aria-label="{{ __('ملفي الشخصي') }}"
+                       @class(['inline-flex items-center gap-2 rounded-full py-1 ps-1 pe-1 text-gray-300 transition hover:bg-white/10 hover:text-white lg:pe-3', 'bg-white/10 text-white' => request()->routeIs('profile.*')])>
+                        @if ($headerAvatar = auth()->user()->avatarUrl())
+                            <img src="{{ $headerAvatar }}" alt="" referrerpolicy="no-referrer" class="h-7 w-7 rounded-full object-cover ring-2 ring-white/20">
+                        @else
+                            <span class="grid h-7 w-7 place-items-center rounded-full bg-brand-500 text-xs font-bold text-white ring-2 ring-white/20">{{ auth()->user()->initials() }}</span>
                         @endif
-                        {{ auth()->user()->name }}
-                    </span>
+                        <span class="hidden max-w-[10rem] truncate lg:inline">{{ auth()->user()->name }}</span>
+                    </a>
                     <x-telegram-link />
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
                     </form>
+                    @endunless
                 @elseif (! $prelaunch)
                     <a href="{{ route('login') }}" class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('دخول') }}</a>
                     <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-brand-500 px-4 py-1.5 font-semibold hover:bg-brand-600">{{ __('حساب جديد') }}</a>

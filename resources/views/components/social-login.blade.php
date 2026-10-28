@@ -1,7 +1,7 @@
 @props(['divider' => __('أو بالبريد الإلكتروني')])
 @php
     // Every method is always listed; one without credentials yet shows as "coming soon"
-    $providers = array_keys(\App\Support\SocialLogin::LABELS);
+    $providers = array_values(array_diff(array_keys(\App\Support\SocialLogin::LABELS), \App\Support\SocialLogin::HIDDEN));
     $enabled = \App\Support\SocialLogin::enabled();
 @endphp
 @if ($providers)

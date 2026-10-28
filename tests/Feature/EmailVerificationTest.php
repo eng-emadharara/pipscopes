@@ -62,6 +62,22 @@ class EmailVerificationTest extends TestCase
         $this->get(route('reviews.create', $provider))->assertRedirect(route('verification.notice'));
     }
 
+    public function test_header_hides_account_details_until_email_is_verified(): void
+    {
+        $user = User::factory()->unverified()->create(['name' => 'Pending Person']);
+
+        $this->actingAs($user)->get(route('verification.notice'))
+            ->assertOk()
+            ->assertDontSee('Pending Person')
+            ->assertDontSee(route('profile.edit'));
+
+        $user->markEmailAsVerified();
+
+        $this->actingAs($user->fresh())->get(route('home'))
+            ->assertSee('Pending Person')
+            ->assertSee(route('profile.edit'));
+    }
+
     public function test_correct_code_verifies_and_returns_to_the_review_form(): void
     {
         Mail::fake();

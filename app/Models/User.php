@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -27,6 +29,7 @@ class User extends Authenticatable implements FilamentUser
         'is_admin',
         'email_verified_at',
         'avatar_url',
+        'social_links',
     ];
 
     /**
@@ -53,6 +56,7 @@ class User extends Authenticatable implements FilamentUser
             'verification_code_sent_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'social_links' => 'array',
         ];
     }
 
@@ -69,6 +73,41 @@ class User extends Authenticatable implements FilamentUser
     public function isVerifiedMember(): bool
     {
         return $this->hasVerifiedEmail() || $this->socialAccounts->contains('provider', 'telegram');
+    }
+
+    /** A photo picked up from Google/Telegram is a full URL; one uploaded on the profile page is a path on the public disk. */
+    public function avatarUrl(): ?string
+    {
+        if (! $this->avatar_url) {
+            return null;
+        }
+
+        return Str::startsWith($this->avatar_url, ['http://', 'https://'])
+            ? $this->avatar_url
+            : Storage::disk('public')->url($this->avatar_url);
+    }
+
+    public function hasUploadedAvatar(): bool
+    {
+        return $this->avatar_url && ! Str::startsWith($this->avatar_url, ['http://', 'https://']);
+    }
+
+    public function initials(): string
+    {
+        return Str::upper(mb_substr(trim((string) $this->name), 0, 1)) ?: '?';
+    }
+
+    /** @return array<string, array{label:string, icon:string, url:string}> */
+    public function socialLinks(): array
+    {
+        $links = [];
+        foreach (config('trust.socials') as $field => $icon) {
+            if ($url = $this->social_links[$field] ?? null) {
+                $links[$field] = ['label' => __("trust.socials.$field"), 'icon' => $icon, 'url' => $url];
+            }
+        }
+
+        return $links;
     }
 
     public function reviews(): HasMany

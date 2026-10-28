@@ -19,6 +19,9 @@ class SocialLogin
     /** Providers that use the OAuth redirect flow (Telegram signs in through its own widget). */
     public const OAUTH = ['google', 'facebook'];
 
+    /** Providers kept off the sign-in buttons for now, whatever their keys. */
+    public const HIDDEN = ['facebook'];
+
     public static function isEnabled(string $provider): bool
     {
         return match ($provider) {
