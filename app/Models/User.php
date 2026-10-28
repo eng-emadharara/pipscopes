@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -25,6 +26,7 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'is_admin',
         'email_verified_at',
+        'avatar_url',
     ];
 
     /**
@@ -59,9 +61,24 @@ class User extends Authenticatable implements FilamentUser
         return $this->email_verified_at !== null;
     }
 
+    /**
+     * Whether the member has proved who they are: a confirmed email, or a Telegram sign-in
+     * (Telegram signs the identity itself, so those members don't need an email at all).
+     * Account linking still goes by hasVerifiedEmail(), since only that proves the address.
+     */
+    public function isVerifiedMember(): bool
+    {
+        return $this->hasVerifiedEmail() || $this->socialAccounts->contains('provider', 'telegram');
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     public function canAccessPanel(Panel $panel): bool

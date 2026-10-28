@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\SocialLogin;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -26,7 +27,8 @@ class UserResource extends Resource
     {
         return $form->schema([
             Forms\Components\TextInput::make('name')->label('الاسم')->required(),
-            Forms\Components\TextInput::make('email')->label('البريد')->email()->required()->unique(ignoreRecord: true),
+            // Optional: Telegram sign-ins have no email until the member adds one
+            Forms\Components\TextInput::make('email')->label('البريد')->email()->unique(ignoreRecord: true),
             Forms\Components\TextInput::make('password')->label('كلمة المرور')->password()->revealable()
                 ->required(fn (string $operation) => $operation === 'create')
                 ->dehydrated(fn ($state) => filled($state))
@@ -41,7 +43,16 @@ class UserResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label('الاسم')->searchable(),
-                Tables\Columns\TextColumn::make('email')->label('البريد')->searchable(),
+                Tables\Columns\TextColumn::make('email')->label('البريد')->searchable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('socialAccounts.provider')->label('الدخول عبر')->badge()
+                    ->formatStateUsing(fn (string $state) => SocialLogin::LABELS[$state] ?? $state)
+                    ->color(fn (string $state) => match ($state) {
+                        'google' => 'danger',
+                        'facebook' => 'info',
+                        'telegram' => 'primary',
+                        default => 'gray',
+                    })
+                    ->placeholder('البريد وكلمة المرور'),
                 Tables\Columns\IconColumn::make('email_verified_at')->label('البريد مؤكَّد')->boolean()
                     ->state(fn (User $record) => $record->hasVerifiedEmail()),
                 Tables\Columns\TextColumn::make('reviews_count')->counts('reviews')->label('التقييمات'),

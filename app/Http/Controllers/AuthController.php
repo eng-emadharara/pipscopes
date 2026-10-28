@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\EmailVerification;
+use App\Support\SocialLogin;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +26,13 @@ class AuthController extends Controller
         ]);
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->withErrors(['email' => __('البريد الإلكتروني أو كلمة المرور غير صحيحة.')])->onlyInput('email');
+            // Accounts created through Google/Facebook/Telegram have no password: point to the right button
+            $providers = User::where('email', Str::lower(trim($credentials['email'])))->whereNull('password')->first()
+                ?->socialAccounts()->pluck('provider')->map(fn ($p) => SocialLogin::LABELS[$p] ?? $p)->implode(' / ');
+
+            return back()->withErrors(['email' => $providers
+                ? __('هذا الحساب يسجّل الدخول عبر :provider. استخدم الزر بالأعلى.', ['provider' => $providers])
+                : __('البريد الإلكتروني أو كلمة المرور غير صحيحة.')])->onlyInput('email');
         }
 
         $request->session()->regenerate();

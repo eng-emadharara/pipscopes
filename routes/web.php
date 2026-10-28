@@ -15,11 +15,13 @@ use App\Http\Controllers\ReviewFeedbackController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShareImageController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SubmissionController;
 use App\Http\Middleware\AuthenticateOwner;
 use App\Http\Middleware\BlockChannelOwners;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureOwnerPortalEnabled;
+use App\Support\SocialLogin;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -79,6 +81,7 @@ Route::middleware([BlockChannelOwners::class, 'auth', EnsureEmailIsVerified::cla
 Route::middleware('auth')->group(function () {
     Route::get('/verify-email', [EmailVerificationController::class, 'show'])->name('verification.notice');
     Route::post('/verify-email', [EmailVerificationController::class, 'verify'])->middleware('throttle:10,1')->name('verification.verify');
+    Route::post('/verify-email/email', [EmailVerificationController::class, 'updateEmail'])->middleware('throttle:5,10')->name('verification.email');
     Route::post('/verify-email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:5,10')->name('verification.resend');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -103,4 +106,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+
+    // Google / Facebook (OAuth redirect) and Telegram (Login Widget posts its signed data)
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::post('/auth/telegram/callback', [SocialAuthController::class, 'telegram'])->name('social.telegram');
+        Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->whereIn('provider', SocialLogin::OAUTH)->name('social.redirect');
+        Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->whereIn('provider', SocialLogin::OAUTH)->name('social.callback');
+    });
 });
