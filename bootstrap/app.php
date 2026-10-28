@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Public site only; the Filament admin panel has its own middleware stack and stays in Arabic
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
+            \App\Http\Middleware\MaintenanceMode::class,
             \App\Http\Middleware\PrelaunchGate::class,
         ]);
 

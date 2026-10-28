@@ -143,6 +143,24 @@
         </nav>
     </header>
 
+    {{-- Only admins, bypass-link holders and allowed IPs reach the site during maintenance --}}
+    @if (\App\Support\Maintenance::isActive())
+        <div class="bg-red-600 text-white">
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm font-medium">
+                <span class="inline-flex items-center gap-2">
+                    <span class="h-2 w-2 animate-pulse rounded-full bg-white"></span>
+                    {{ __('وضع الصيانة مفعّل: الزوار يرون صفحة الصيانة، وأنت ترى الموقع لأن لديك صلاحية الوصول.') }}
+                </span>
+                @if (auth()->user()?->is_admin)
+                    <span class="flex gap-3">
+                        <a href="{{ route('home', ['preview' => 'maintenance']) }}" class="underline">{{ __('معاينة صفحة الصيانة') }}</a>
+                        <a href="{{ url('/admin/maintenance') }}" class="underline">{{ __('إدارة الصيانة') }}</a>
+                    </span>
+                @endif
+            </div>
+        </div>
+    @endif
+
     @if ($prelaunchAdminNotice)
         <div class="bg-amber-400 text-ink">
             <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm font-medium">

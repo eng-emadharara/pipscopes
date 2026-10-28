@@ -33,8 +33,8 @@ class LaunchSettings extends Page implements HasForms
     /** @var array<string, mixed> */
     public ?array $data = [];
 
-    /** Time zones offered for the launch time (value => label) */
-    protected const TIMEZONES = [
+    /** Time zones offered for the launch time (value => label); maintenance settings use them too */
+    public const TIMEZONES = [
         'Asia/Amman' => 'الأردن (عمّان)',
         'Asia/Hebron' => 'فلسطين (الخليل / غزة)',
         'Asia/Riyadh' => 'السعودية (الرياض)',

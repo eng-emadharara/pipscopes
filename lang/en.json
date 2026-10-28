@@ -422,5 +422,20 @@
     "تسجيل الخروج": "Log out",
     "هذا البريد مستخدم في حساب آخر.": "This email is used by another account.",
     "أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.": "Add your email so you can write reviews.",
-    "أضف البريد": "Add email"
+    "أضف البريد": "Add email",
+    "الموقع تحت الصيانة حالياً، نعود قريباً.": "The site is under maintenance right now. We'll be back soon.",
+    "وضع الصيانة مفعّل: الزوار يرون صفحة الصيانة، وأنت ترى الموقع لأن لديك صلاحية الوصول.": "Maintenance mode is on: visitors see the maintenance page. You can see the site because you have access.",
+    "معاينة صفحة الصيانة": "Preview maintenance page",
+    "إدارة الصيانة": "Manage maintenance",
+    "نعمل على تحسين المنصة من أجلك": "We're making the platform better for you",
+    "نجري حالياً أعمال صيانة وتحديثات مجدولة لنقدّم لك تجربة أسرع وأكثر أماناً. سنعود خلال وقت قصير، شكراً لصبرك.": "We're carrying out scheduled maintenance and upgrades to give you a faster, more secure experience. We'll be back shortly — thank you for your patience.",
+    "تحت الصيانة": "Under maintenance",
+    "معاينة: هذا ما يراه الزوار أثناء الصيانة.": "Preview: this is what visitors see during maintenance.",
+    "صيانة مجدولة قيد التنفيذ": "Scheduled maintenance in progress",
+    "نعود خلال": "Back in",
+    "الموعد المتوقع للعودة:": "Expected back:",
+    "انتهت الصيانة! جارٍ فتح الموقع…": "Maintenance is over! Opening the site…",
+    "نضع اللمسات الأخيرة، شكراً لصبرك…": "Putting on the finishing touches — thanks for your patience…",
+    "هذه الصفحة تتحقق تلقائياً وستعيدك إلى الموقع فور انتهاء الصيانة.": "This page checks automatically and will take you back to the site as soon as maintenance ends.",
+    "تحتاج مساعدة عاجلة؟ تواصل معنا": "Need urgent help? Get in touch"
 }

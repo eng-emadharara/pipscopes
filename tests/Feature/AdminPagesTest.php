@@ -53,6 +53,7 @@ class AdminPagesTest extends TestCase
         $urls = [
             '/admin',
             '/admin/launch-settings',
+            '/admin/maintenance',
             '/admin/owner-portal',
             '/admin/providers', '/admin/providers/create', "/admin/providers/{$provider->slug}/edit",
             '/admin/categories', '/admin/markets', '/admin/users',

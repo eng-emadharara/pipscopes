@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Support\Maintenance;
 use App\Support\Site;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -12,6 +13,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -43,6 +45,8 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-globe-alt')
                     ->sort(99),
             ])
+            // A reminder on every admin screen while visitors only see the maintenance page
+            ->renderHook(PanelsRenderHook::BODY_START, fn () => Maintenance::isActive() ? view('filament.maintenance-banner') : '')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
