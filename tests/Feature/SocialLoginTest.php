@@ -29,19 +29,25 @@ class SocialLoginTest extends TestCase
         ]);
     }
 
-    protected function fakeProvider(string $provider, array $data): void
+    /** Each extra payload is what the provider returns on the next sign-in. */
+    protected function fakeProvider(string $provider, array ...$signIns): void
     {
-        $user = (new SocialiteUser)->setRaw($data['raw'] ?? [])->map([
+        $driver = \Mockery::mock();
+        $driver->shouldReceive('fields')->andReturnSelf();
+        $driver->shouldReceive('user')->andReturn(...array_map($this->socialiteUser(...), $signIns));
+
+        Socialite::shouldReceive('driver')->with($provider)->andReturn($driver);
+    }
+
+    protected function socialiteUser(array $data): SocialiteUser
+    {
+        return (new SocialiteUser)->setRaw($data['raw'] ?? [])->map([
             'id' => $data['id'],
             'name' => $data['name'] ?? 'Sara Ali',
             'email' => $data['email'] ?? null,
             'avatar' => $data['avatar'] ?? 'https://example.com/a.png',
             'nickname' => null,
-        ]);
-
-        Socialite::shouldReceive('driver')->with($provider)->andReturn(
-            \Mockery::mock()->shouldReceive('user')->andReturn($user)->getMock()
-        );
+        ])->setToken($data['token'] ?? 'access-token')->setRefreshToken($data['refresh_token'] ?? null)->setExpiresIn($data['expires_in'] ?? 3599);
     }
 
     /** Signs a payload the way Telegram does. */
@@ -78,6 +84,28 @@ class SocialLoginTest extends TestCase
         $this->assertNull($user->password);
         $this->assertSame('https://example.com/a.png', $user->avatar_url);
         $this->assertDatabaseHas('social_accounts', ['user_id' => $user->id, 'provider' => 'google', 'provider_id' => 'g-1']);
+    }
+
+    public function test_full_provider_payload_and_tokens_are_stored(): void
+    {
+        $raw = ['sub' => 'g-1', 'email_verified' => true, 'given_name' => 'Sara', 'family_name' => 'Ali', 'locale' => 'ar'];
+        $this->fakeProvider('google',
+            ['id' => 'g-1', 'email' => 'sara@example.com', 'raw' => $raw, 'refresh_token' => 'refresh-1'],
+            ['id' => 'g-1', 'email' => 'sara@example.com', 'raw' => $raw, 'token' => 'access-2'],
+        );
+        $this->get('/auth/google/callback?code=x');
+        auth()->logout();
+
+        // A later sign-in without a refresh token keeps the one already stored
+        $this->get('/auth/google/callback?code=x');
+
+        $account = SocialAccount::firstOrFail();
+        $this->assertSame($raw, $account->raw_data);
+        $this->assertSame('Sara Ali', $account->name);
+        $this->assertSame('access-2', $account->token);
+        $this->assertSame('refresh-1', $account->refresh_token);
+        $this->assertNotNull($account->token_expires_at);
+        $this->assertNotSame('access-2', $account->getRawOriginal('token'), 'tokens are encrypted at rest');
     }
 
     public function test_returning_identity_signs_into_the_same_account(): void
@@ -147,6 +175,7 @@ class SocialLoginTest extends TestCase
         $this->assertNull($user->email);
         $this->assertTrue($user->isVerifiedMember());
         $this->assertDatabaseHas('social_accounts', ['provider' => 'telegram', 'provider_id' => '777', 'nickname' => 'omar_fx']);
+        $this->assertSame(['first_name' => 'Omar', 'id' => '777', 'username' => 'omar_fx'], array_diff_key(SocialAccount::firstOrFail()->raw_data, ['auth_date' => 1]));
 
         $this->get(route('home'))->assertDontSee(__('أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.'));
     }

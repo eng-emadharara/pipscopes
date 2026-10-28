@@ -39,7 +39,7 @@ class SocialLogin
      * Returns null when the email belongs to an existing account but the provider hasn't verified it,
      * so linking would let anyone claim that account.
      *
-     * @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string}  $profile
+     * @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}  $profile
      */
     public static function resolveUser(string $provider, array $profile): ?User
     {
@@ -47,10 +47,20 @@ class SocialLogin
             $email = filled($profile['email']) ? Str::lower(trim($profile['email'])) : null;
             $details = [
                 'email' => $email,
+                'name' => $profile['name'],
                 'nickname' => $profile['nickname'],
                 'avatar_url' => $profile['avatar'],
+                'raw_data' => $profile['raw'],
+                'token' => $profile['token'],
+                'token_expires_at' => $profile['expires_in'] ? now()->addSeconds($profile['expires_in']) : null,
+                'scopes' => $profile['scopes'] ?: null,
                 'last_login_at' => now(),
             ];
+
+            // Google only hands out a refresh token on the first consent, so a later sign-in mustn't wipe it
+            if ($profile['refresh_token']) {
+                $details['refresh_token'] = $profile['refresh_token'];
+            }
 
             $account = SocialAccount::where('provider', $provider)->where('provider_id', $profile['id'])->first();
             if ($account) {

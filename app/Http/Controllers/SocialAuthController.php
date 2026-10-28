@@ -36,7 +36,17 @@ class SocialAuthController extends Controller
         }
 
         try {
-            $social = Socialite::driver($provider)->user();
+            $driver = Socialite::driver($provider);
+
+            if ($provider === 'facebook') {
+                // Every field the basic public_profile + email permissions allow; gender and link need extra permissions and come back only if granted
+                $driver->fields([
+                    'id', 'name', 'first_name', 'middle_name', 'last_name', 'short_name', 'name_format',
+                    'email', 'gender', 'verified', 'link', 'picture.width(1920)',
+                ]);
+            }
+
+            $social = $driver->user();
         } catch (Throwable $e) {
             Log::warning('Social login failed', ['provider' => $provider, 'error' => $e->getMessage()]);
 
@@ -51,6 +61,11 @@ class SocialAuthController extends Controller
             'email_verified' => $provider === 'facebook' || filter_var($social->user['email_verified'] ?? false, FILTER_VALIDATE_BOOL),
             'avatar' => $social->getAvatar(),
             'nickname' => $social->getNickname(),
+            'raw' => $social->getRaw(),
+            'token' => $social->token,
+            'refresh_token' => $social->refreshToken,
+            'expires_in' => $social->expiresIn ? (int) $social->expiresIn : null,
+            'scopes' => array_values((array) $social->approvedScopes),
         ]);
     }
 
@@ -71,10 +86,16 @@ class SocialAuthController extends Controller
             'email_verified' => false,
             'avatar' => $data['photo_url'] ?? null,
             'nickname' => $data['username'] ?? null,
+            // Telegram has no tokens; its signed fields are the whole payload
+            'raw' => $data,
+            'token' => null,
+            'refresh_token' => null,
+            'expires_in' => null,
+            'scopes' => [],
         ]);
     }
 
-    /** @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string}  $profile */
+    /** @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}  $profile */
     protected function signIn(Request $request, string $provider, array $profile)
     {
         $user = SocialLogin::resolveUser($provider, $profile);
