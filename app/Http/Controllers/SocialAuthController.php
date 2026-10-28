@@ -86,7 +86,7 @@ class SocialAuthController extends Controller
         Auth::login($user, remember: true);
         $request->session()->regenerate();
 
-        if (! $user->hasVerifiedEmail() && ! $user->is_admin) {
+        if (! $user->isVerifiedMember() && ! $user->is_admin) {
             return redirect()->route('verification.notice')->with('success', $user->email
                 ? __('أهلاً :name! بقيت خطوة واحدة: أكّد بريدك الإلكتروني.', ['name' => $user->name])
                 : __('أهلاً :name! أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.', ['name' => $user->name]));

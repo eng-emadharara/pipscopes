@@ -138,13 +138,17 @@ class SocialLoginTest extends TestCase
     {
         $payload = $this->telegramPayload(['id' => '777', 'first_name' => 'Omar', 'username' => 'omar_fx']);
 
-        $this->post('/auth/telegram/callback', $payload)->assertRedirect(route('verification.notice'));
+        // Telegram vouches for the identity, so no email step
+        $this->post('/auth/telegram/callback', $payload)->assertRedirect(route('home'));
 
         $user = User::firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertSame('Omar', $user->name);
         $this->assertNull($user->email);
+        $this->assertTrue($user->isVerifiedMember());
         $this->assertDatabaseHas('social_accounts', ['provider' => 'telegram', 'provider_id' => '777', 'nickname' => 'omar_fx']);
+
+        $this->get(route('home'))->assertDontSee(__('أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.'));
     }
 
     public function test_telegram_rejects_tampered_and_expired_payloads(): void

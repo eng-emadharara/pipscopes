@@ -61,6 +61,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->email_verified_at !== null;
     }
 
+    /**
+     * Whether the member has proved who they are: a confirmed email, or a Telegram sign-in
+     * (Telegram signs the identity itself, so those members don't need an email at all).
+     * Account linking still goes by hasVerifiedEmail(), since only that proves the address.
+     */
+    public function isVerifiedMember(): bool
+    {
+        return $this->hasVerifiedEmail() || $this->socialAccounts->contains('provider', 'telegram');
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

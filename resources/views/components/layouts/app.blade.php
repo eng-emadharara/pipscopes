@@ -153,7 +153,7 @@
     @endif
 
     @auth
-        @if (! auth()->user()->hasVerifiedEmail() && ! request()->routeIs('verification.*'))
+        @if (! auth()->user()->isVerifiedMember() && ! request()->routeIs('verification.*'))
             <div class="border-b border-amber-200 bg-amber-50">
                 <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm text-amber-900">
                     @if (auth()->user()->email)
