@@ -9,6 +9,7 @@ use App\Http\Controllers\ImpersonatorController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\OwnerManageController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewFeedbackController;
@@ -83,6 +84,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-email', [EmailVerificationController::class, 'verify'])->middleware('throttle:10,1')->name('verification.verify');
     Route::post('/verify-email/email', [EmailVerificationController::class, 'updateEmail'])->middleware('throttle:5,10')->name('verification.email');
     Route::post('/verify-email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:5,10')->name('verification.resend');
+
+    Route::post('/auth/telegram/link', [SocialAuthController::class, 'linkTelegram'])->middleware('throttle:10,1')->name('social.telegram.link');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:20,1')->name('profile.update');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

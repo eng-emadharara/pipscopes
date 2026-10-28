@@ -87,6 +87,27 @@
     .social-btn[aria-busy] .social-spinner { @apply block; }
     [data-social-login][data-busy] .social-btn { @apply pointer-events-none; }
     [data-social-login][data-busy] .social-btn:not([aria-busy]) { @apply opacity-50; }
+    /* Header "Link Telegram" pill */
+    .tg-link {
+        @apply relative inline-flex items-center gap-1.5 rounded-full bg-[#229ED9] px-3 py-1.5 font-semibold whitespace-nowrap text-white transition select-none hover:bg-[#1a8bc2] hover:shadow-md hover:shadow-[#229ED9]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#229ED9] focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:scale-[.98];
+    }
+    .tg-link-spinner {
+        @apply absolute start-3 hidden h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent;
+    }
+    .tg-link[aria-busy] { @apply pointer-events-none opacity-80; }
+    .tg-link[aria-busy] .tg-link-icon { @apply invisible; }
+    .tg-link[aria-busy] .tg-link-spinner { @apply block; }
+    .tg-link-hint {
+        @apply absolute end-0 top-full z-40 mt-3 flex w-64 items-start gap-2 rounded-xl bg-white p-3 text-xs leading-relaxed font-medium text-gray-700 shadow-lg ring-1 ring-black/5;
+    }
+    .tg-link-hint[hidden] { @apply hidden; }
+    .tg-link-hint::before {
+        content: '';
+        @apply absolute -top-1.5 end-4 h-3 w-3 rotate-45 bg-white ring-1 ring-black/5 [clip-path:polygon(0_0,100%_0,0_100%)];
+    }
+    .tg-link-hint-close {
+        @apply -mt-0.5 shrink-0 rounded-full px-1 text-base leading-none text-gray-400 hover:text-gray-700;
+    }
     .chip {
         @apply inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-sm transition select-none hover:border-gray-500;
     }

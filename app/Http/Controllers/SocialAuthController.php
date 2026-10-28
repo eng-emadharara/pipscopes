@@ -79,7 +79,34 @@ class SocialAuthController extends Controller
             return $this->failed('telegram');
         }
 
-        return $this->signIn($request, 'telegram', [
+        return $this->signIn($request, 'telegram', $this->telegramProfile($data));
+    }
+
+    /** A signed-in member adds Telegram to their account (which also confirms who they are). */
+    public function linkTelegram(Request $request)
+    {
+        abort_unless(SocialLogin::isEnabled('telegram'), 404);
+
+        $data = TelegramLogin::verify($request->only(TelegramLogin::FIELDS));
+
+        if (! $data) {
+            return back()->with('error', __('تعذّر ربط حساب تيليجرام. حاول مرة أخرى.'));
+        }
+
+        if (! SocialLogin::link($request->user(), 'telegram', $this->telegramProfile($data))) {
+            return back()->with('error', __('حساب تيليجرام هذا مرتبط بعضو آخر.'));
+        }
+
+        return back()->with('success', __('تم ربط حساب تيليجرام بنجاح.'));
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     * @return array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}
+     */
+    protected function telegramProfile(array $data): array
+    {
+        return [
             'id' => $data['id'],
             'name' => trim(($data['first_name'] ?? '').' '.($data['last_name'] ?? '')),
             'email' => null,
@@ -92,7 +119,7 @@ class SocialAuthController extends Controller
             'refresh_token' => null,
             'expires_in' => null,
             'scopes' => [],
-        ]);
+        ];
     }
 
     /** @param  array{id: string, name: ?string, email: ?string, email_verified: bool, avatar: ?string, nickname: ?string, raw: array<string, mixed>, token: ?string, refresh_token: ?string, expires_in: ?int, scopes: list<string>}  $profile */

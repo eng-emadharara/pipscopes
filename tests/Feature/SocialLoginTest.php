@@ -62,14 +62,19 @@ class SocialLoginTest extends TestCase
 
     public function test_all_methods_show_and_unconfigured_ones_are_disabled(): void
     {
-        $this->get('/login')->assertSee('/auth/google/redirect')->assertSee('/auth/facebook/redirect')->assertSee('data-bot-id', false)
+        $this->get('/login')->assertSee('/auth/google/redirect')->assertSee('data-bot-id', false)
             ->assertDontSee(__('قريباً'));
 
-        config(['services.facebook.client_id' => null, 'services.telegram.bot_token' => null]);
+        config(['services.google.client_id' => null, 'services.telegram.bot_token' => null]);
 
-        $this->get('/login')->assertSee('/auth/google/redirect')->assertSee('Facebook')->assertSee('Telegram')
-            ->assertDontSee('/auth/facebook/redirect')->assertDontSee('data-bot-id', false)->assertSee(__('قريباً'));
-        $this->get('/auth/facebook/redirect')->assertNotFound();
+        $this->get('/login')->assertSee('Google')->assertSee('Telegram')
+            ->assertDontSee('/auth/google/redirect')->assertDontSee('data-bot-id', false)->assertSee(__('قريباً'));
+        $this->get('/auth/google/redirect')->assertNotFound();
+    }
+
+    public function test_hidden_methods_are_left_off_the_sign_in_page(): void
+    {
+        $this->get('/login')->assertDontSee('/auth/facebook/redirect')->assertDontSee('social-btn-facebook', false);
     }
 
     public function test_google_sign_in_creates_a_verified_account(): void
