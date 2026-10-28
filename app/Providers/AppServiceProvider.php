@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Category;
 use App\Models\Market;
 use App\Models\Page;
+use App\Support\SocialKeys;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
@@ -28,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // The .env name, used until a name is set in the admin panel (App\Support\Site)
         config(['trust.default_name' => config('app.name')]);
+
+        // Google / Facebook / Telegram keys set in the admin panel take over from .env
+        SocialKeys::apply();
 
         // Translated, RTL-aware pagination for the public site (Filament uses its own)
         Paginator::defaultView('pagination.site');

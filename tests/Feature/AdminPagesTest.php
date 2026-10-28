@@ -55,6 +55,7 @@ class AdminPagesTest extends TestCase
             '/admin/launch-settings',
             '/admin/maintenance',
             '/admin/owner-portal',
+            '/admin/social-login',
             '/admin/providers', '/admin/providers/create', "/admin/providers/{$provider->slug}/edit",
             '/admin/categories', '/admin/markets', '/admin/users',
             '/admin/pages', '/admin/pages/create', "/admin/pages/{$page->slug}/edit",
