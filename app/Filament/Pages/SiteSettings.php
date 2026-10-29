@@ -122,6 +122,11 @@ class SiteSettings extends Page implements HasForms
                     $this->perLanguage('disclaimer', 'نص التنبيه (إخلاء المسؤولية)', textarea: true, max: 500),
                     Forms\Components\TextInput::make('contact_email')->label('بريد التواصل العام')->email()->maxLength(150)
                         ->helperText('يظهر في التذييل. اتركه فارغاً لإخفائه.')->extraInputAttributes(['dir' => 'ltr']),
+                    Forms\Components\TextInput::make('telegram_contact')->label('رابط المراسلة المباشرة على تيليجرام')->url()->maxLength(255)
+                        ->placeholder('https://t.me/pipscopes?direct')->regex('#^https://t\.me/#')
+                        ->validationMessages(['regex' => 'يجب أن يبدأ الرابط بـ https://t.me/'])
+                        ->helperText('يظهر زر «راسلنا على تيليجرام» في التذييل وصفحة تواصل معنا وصفحة إضافة قناة وفي الإيميلات. اتركه فارغاً لإخفائه.')
+                        ->extraInputAttributes(['dir' => 'ltr']),
                     Forms\Components\Fieldset::make('حسابات المنصة على مواقع التواصل')->columns(2)->schema(
                         collect(self::SOCIALS)->map(fn (array $meta, string $key) => Forms\Components\TextInput::make("socials.$key")
                             ->label($meta[0])->url()->maxLength(255)->placeholder($meta[1])->extraInputAttributes(['dir' => 'ltr']))

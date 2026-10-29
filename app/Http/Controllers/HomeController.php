@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\HomePick;
 use App\Models\Impersonator;
 use App\Models\Provider;
 use App\Models\Review;
@@ -26,11 +27,25 @@ class HomeController extends Controller
             ]);
         }
 
-        $sections = HomeSections::all();
+        // Only the sections that are switched on, in the admin's order; each loads only its own data
+        $layout = array_values(array_filter(HomeSections::layout(), fn ($s) => $s['enabled']));
+        $on = array_column($layout, 'limit', 'key');
+        $limit = fn (string $key) => $on[$key] ?? HomeSections::SECTIONS[$key][2];
 
         return view('home', [
-            'sections' => $sections,
-            'alerts' => $sections['alerts'] ? [
+            'layout' => $layout,
+            'categories' => array_key_exists('categories', $on)
+                ? Category::where('is_active', true)->withCount(['providers' => fn ($q) => $q->active()])->orderBy('sort_order')->get()
+                : collect(),
+            'picks' => array_key_exists('picks', $on)
+                ? HomePick::showing()->with(['provider.categories', 'provider.markets'])->get()
+                : collect(),
+            'featured' => array_key_exists('top_rated', $on)
+                ? Provider::active()->with(['categories', 'markets'])
+                    ->orderByDesc('is_featured')->orderByDesc('rating_avg')->orderByDesc('reviews_count')
+                    ->take($limit('top_rated'))->get()
+                : collect(),
+            'alerts' => array_key_exists('alerts', $on) ? [
                 'impersonators' => Impersonator::confirmed()
                     ->whereHas('provider', fn ($q) => $q->active())
                     ->with('provider')
@@ -39,22 +54,14 @@ class HomeController extends Controller
                     ->get(),
                 'flagged' => RedFlags::providers(5),
             ] : null,
-            'categories' => Category::where('is_active', true)
-                ->withCount(['providers' => fn ($q) => $q->active()])
-                ->orderBy('sort_order')
-                ->get(),
-            'featured' => Provider::active()->with(['categories', 'markets'])
-                ->orderByDesc('is_featured')
-                ->orderByDesc('rating_avg')
-                ->orderByDesc('reviews_count')
-                ->take(8)
-                ->get(),
-            'latestReviews' => Review::where('status', Review::STATUS_APPROVED)
-                ->whereHas('provider', fn ($q) => $q->active())
-                ->with(['provider', 'user'])
-                ->latest()
-                ->take(6)
-                ->get(),
+            'latestReviews' => array_key_exists('latest_reviews', $on)
+                ? Review::where('status', Review::STATUS_APPROVED)
+                    ->whereHas('provider', fn ($q) => $q->active())
+                    ->with(['provider', 'user'])
+                    ->latest()
+                    ->take($limit('latest_reviews'))
+                    ->get()
+                : collect(),
             'stats' => [
                 'providers' => Provider::active()->count(),
                 'reviews' => Review::where('status', Review::STATUS_APPROVED)->count(),

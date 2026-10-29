@@ -1,4 +1,4 @@
-@props(['provider'])
+@props(['provider', 'note' => null])
 @php
     $rated = $provider->reviews_count > 0;
     $tone = \App\Models\Provider::ratingColor((float) $provider->rating_avg);
@@ -54,6 +54,14 @@
 
         @if ($provider->tr('service_type'))
             <p class="line-clamp-2 text-sm leading-relaxed text-gray-600">{{ $provider->tr('service_type') }}</p>
+        @endif
+
+        {{-- Team picks: why the team chose it --}}
+        @if ($note)
+            <p class="mt-auto flex gap-1.5 rounded-xl bg-brand-50 px-3 py-2 text-xs leading-relaxed text-brand-800">
+                <x-ui-icon name="sparkles" class="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span class="line-clamp-2" dir="auto">{{ $note }}</span>
+            </p>
         @endif
     </div>
 

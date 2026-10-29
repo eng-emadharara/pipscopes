@@ -3,7 +3,7 @@
     <div class="mb-5">
         <h2 class="flex items-center gap-2 text-2xl font-bold">
             <x-ui-icon name="alert" class="h-6 w-6 text-red-600" />
-            {{ __('تنبيهات') }}
+            {{ \App\Support\HomeSections::title($section) }}
         </h2>
         <p class="mt-1 text-sm text-gray-600">{{ __('حسابات تنتحل صفة قنوات معروفة، وقنوات أشار عدد ملحوظ من مقيّميها إلى مؤشرات خطيرة.') }}</p>
     </div>

@@ -8,7 +8,7 @@
 @endphp
 <section class="mx-auto mt-14 max-w-6xl px-4">
     <div class="mb-5 flex items-end justify-between gap-4">
-        <h2 class="text-2xl font-bold">{{ __('كيف نضمن المصداقية') }}</h2>
+        <h2 class="text-2xl font-bold">{{ \App\Support\HomeSections::title($section) }}</h2>
         <a href="{{ route('pages.show', 'about') }}" class="shrink-0 text-sm font-semibold text-brand-600 hover:underline">{{ __('من نحن') }} <span class="inline-block rtl:rotate-180">→</span></a>
     </div>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

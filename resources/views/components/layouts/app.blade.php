@@ -184,6 +184,7 @@
                 @auth
                     @if (auth()->user()->isVerifiedMember())
                         <a href="{{ route('profile.edit') }}" class="{{ $menuLink }}">{{ __('ملفي الشخصي') }}</a>
+                        <a href="{{ route('notifications.edit') }}" class="{{ $menuLink }}">{{ __('إعدادات الإشعارات') }}</a>
                         @if (auth()->user()->is_admin)
                             <a href="{{ url('/admin') }}" class="{{ $menuLink }}">{{ __('لوحة التحكم') }}</a>
                         @endif
@@ -284,6 +285,12 @@
                 <p>{{ \App\Support\Site::text('footer_about', __('منصة مستقلة لتقييم قنوات التوصيات ومقدمي خدمات نسخ الصفقات والتداول، تعتمد على تجارب المستخدمين الحقيقية.')) }}</p>
                 @if ($contactEmail = \App\Support\Site::get('contact_email'))
                     <a href="mailto:{{ $contactEmail }}" class="mt-3 inline-block hover:text-white" dir="ltr">{{ $contactEmail }}</a>
+                @endif
+                @if ($telegramContact = \App\Support\Site::telegramContact())
+                    <a href="{{ $telegramContact }}" target="_blank" rel="noopener" data-track="telegram_contact" data-track-params='{"location":"footer"}'
+                       class="mt-3 flex w-fit items-center gap-2 font-semibold text-white hover:text-brand-400">
+                        <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('راسلنا على تيليجرام') }}
+                    </a>
                 @endif
                 @if ($siteSocials = \App\Support\Site::socials())
                     <div class="mt-4 flex flex-wrap gap-2">

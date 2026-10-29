@@ -211,6 +211,15 @@
                         </ul>
                     </section>
 
+                    <a href="{{ route('notifications.edit') }}" class="card flex items-center gap-3 p-5 transition hover:border-gray-400">
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700"><x-ui-icon name="bell" class="h-5 w-5" /></span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block font-bold">{{ __('الإشعارات') }}</span>
+                            <span class="block text-xs text-gray-500">{{ __('اختر ما يصلك على البريد وتيليجرام') }}</span>
+                        </span>
+                        <span class="inline-block text-gray-400 rtl:rotate-180">→</span>
+                    </a>
+
                     <section class="rounded-2xl border border-brand-100 bg-brand-50 p-5 text-sm text-brand-700">
                         <div class="flex items-center gap-2 font-bold"><x-ui-icon name="shield" class="h-5 w-5" /> {{ __('خصوصيتك') }}</div>
                         <p class="mt-2 leading-relaxed">{{ __('لا نعرض بريدك الإلكتروني لأحد. يمكنك نشر أي تقييم باسم مخفي متى شئت.') }}</p>

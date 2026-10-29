@@ -45,8 +45,30 @@ class Review extends Model
             }
         });
 
+        static::updated(fn (Review $review) => $review->notifyMember());
         static::saved(fn (Review $review) => $review->refreshProviderStats());
         static::deleted(fn (Review $review) => $review->refreshProviderStats());
+    }
+
+    /** Tells the author when the review is published, rejected or taken down, and when the owner first replies. */
+    protected function notifyMember(): void
+    {
+        if (! $this->user) {
+            return;
+        }
+
+        if ($this->wasChanged('status')) {
+            match ($this->status) {
+                self::STATUS_APPROVED => $this->user->notify(new \App\Notifications\ReviewPublished($this)),
+                self::STATUS_REJECTED => $this->user->notify(new \App\Notifications\ReviewNotPublished($this, removed: $this->getOriginal('status') === self::STATUS_APPROVED)),
+                default => null,
+            };
+        }
+
+        // Only the first reply: editing it later doesn't notify again
+        if ($this->wasChanged('provider_reply') && filled($this->provider_reply) && blank($this->getOriginal('provider_reply'))) {
+            $this->user->notify(new \App\Notifications\OwnerReplied($this));
+        }
     }
 
     protected function refreshProviderStats(): void

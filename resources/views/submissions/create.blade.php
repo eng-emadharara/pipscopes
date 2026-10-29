@@ -6,5 +6,15 @@
         <div class="mt-8">
             @include('submissions._form')
         </div>
+
+        @if ($telegramContact = \App\Support\Site::telegramContact())
+            <p class="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600">
+                {{ __('صاحب القناة وعندك سؤال قبل الإضافة؟') }}
+                <a href="{{ $telegramContact }}" target="_blank" rel="noopener" data-track="telegram_contact" data-track-params='{"location":"submit"}'
+                   class="inline-flex items-center gap-1 font-semibold text-brand-700 hover:underline">
+                    <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('راسلنا على تيليجرام') }}
+                </a>
+            </p>
+        @endif
     </div>
 </x-layouts.app>

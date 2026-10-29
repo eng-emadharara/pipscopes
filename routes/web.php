@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\AccountCheckController;
+use App\Http\Controllers\AnnouncementClickController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationSettingsController;
 use App\Http\Controllers\ImpersonatorController;
 use App\Http\Controllers\OwnerAuthController;
 use App\Http\Controllers\OwnerManageController;
@@ -65,6 +67,14 @@ Route::redirect('/page/contact', '/contact');
 Route::get('/page/{page}', [PageController::class, 'show'])->name('pages.show');
 
 Route::get('/contact', [ContactController::class, 'create'])->name('contact');
+
+// "Stop these notifications" links in emails and Telegram messages: signed, so they work without signing in
+Route::middleware('signed')->group(function () {
+    Route::get('/notifications/unsubscribe/{user}/{type}/{channel}', [NotificationSettingsController::class, 'unsubscribe'])->name('notifications.unsubscribe');
+    Route::post('/notifications/unsubscribe/{user}/{type}/{channel}', [NotificationSettingsController::class, 'confirmUnsubscribe'])
+        ->middleware('throttle:20,1')->name('notifications.unsubscribe.confirm');
+});
+Route::get('/go/announcement/{announcement}/{channel}', AnnouncementClickController::class)->middleware('throttle:30,1')->name('announcements.click');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,10')->name('contact.store');
 
 Route::get('/submit', [SubmissionController::class, 'create'])->name('submissions.create');
@@ -89,6 +99,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:20,1')->name('profile.update');
+    Route::get('/profile/notifications', [NotificationSettingsController::class, 'edit'])->name('notifications.edit');
+    Route::put('/profile/notifications', [NotificationSettingsController::class, 'update'])->middleware('throttle:20,1')->name('notifications.update');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

@@ -9,6 +9,7 @@ use App\Support\SocialKeys;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Google / Facebook / Telegram keys come only from the admin panel
         SocialKeys::apply();
+
+        // Queued emails and Telegram messages use the site name from the admin panel, as web pages do
+        Queue::before(fn () => \App\Support\Site::applyToConfig());
 
         // Translated, RTL-aware pagination for the public site (Filament uses its own)
         Paginator::defaultView('pagination.site');

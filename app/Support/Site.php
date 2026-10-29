@@ -78,6 +78,14 @@ class Site
         return array_filter((array) self::get('socials', []), 'filled');
     }
 
+    /** Link that opens a direct chat with the platform on Telegram, or null. */
+    public static function telegramContact(): ?string
+    {
+        $url = self::get('telegram_contact');
+
+        return filled($url) ? $url : null;
+    }
+
     /** Applies the configured name to the places that read config('app.name'): pages, emails, share images. */
     public static function applyToConfig(): void
     {

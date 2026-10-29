@@ -97,7 +97,17 @@ class SocialAuthController extends Controller
             return back()->with('error', __('حساب تيليجرام هذا مرتبط بعضو آخر.'));
         }
 
+        $this->telegramReachable($request->user(), 'telegram');
+
         return back()->with('success', __('تم ربط حساب تيليجرام بنجاح.'));
+    }
+
+    /** Signing in with Telegram grants the bot permission to write again, after a block (App\Notifications\Channels\TelegramChannel) */
+    protected function telegramReachable($user, string $provider): void
+    {
+        if ($provider === 'telegram' && $user->telegram_blocked_at) {
+            $user->forceFill(['telegram_blocked_at' => null])->saveQuietly();
+        }
     }
 
     /**
@@ -133,6 +143,7 @@ class SocialAuthController extends Controller
 
         Auth::login($user, remember: true);
         $request->session()->regenerate();
+        $this->telegramReachable($user, $provider);
 
         if (! $user->isVerifiedMember() && ! $user->is_admin) {
             return redirect()->route('verification.notice')->with('success', $user->email

@@ -13,7 +13,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
-/** Switches the optional homepage sections on/off. */
+/** The homepage sections: their order, on/off, titles and counts (App\Support\HomeSections). */
 class HomeSettings extends Page implements HasForms
 {
     use InteractsWithForms;
@@ -34,6 +34,11 @@ class HomeSettings extends Page implements HasForms
 
     /** Shown under each toggle */
     protected const HELP = [
+        'categories' => 'بطاقات التصنيفات تحت مربع البحث.',
+        'picks' => 'القنوات التي يختارها الفريق، بترتيبك وملاحظتك على كل قناة. تُضاف من: المحتوى ← اختيارات الفريق. يختفي القسم إن لم تكن فيه قنوات.',
+        'top_rated' => 'القنوات الأعلى تقييماً، والمميزة منها أولاً.',
+        'latest_reviews' => 'آخر التقييمات المنشورة.',
+        'cta' => 'بطاقة «تقدّم خدمة توصيات أو نسخ صفقات؟» مع زر إرسال البيانات.',
         'account_check' => 'مربع يلصق فيه الزائر رابط أو معرّف حساب تواصل معه، فيعرف إن كان حساباً رسمياً لقناة مسجلة، أو حساباً منتحلاً مؤكداً، أو غير معروف لدينا.',
         'alerts' => 'أحدث الحسابات المنتحلة المؤكدة، والقنوات التي أشار 20% أو أكثر من مقيّميها (3 تقييمات على الأقل) إلى حذف صفقات أو نتائج مضللة أو شبهة احتيال. يختفي القسم تلقائياً إن لم يكن فيه ما يُعرض.',
         'trust' => 'أربع بطاقات تشرح للزائر قواعد المنصة: تقييم واحد لكل حساب مؤكد، لا حذف للتقييمات مقابل المال، إمكانية إخفاء الاسم، وصاحب القناة يرد ولا يحذف.',
@@ -46,7 +51,7 @@ class HomeSettings extends Page implements HasForms
     public function mount(): void
     {
         $this->form->fill([
-            'home_sections' => HomeSections::all(),
+            'layout' => HomeSections::layout(),
             'telegram_join' => Setting::get('telegram_join', []),
         ]);
     }
@@ -54,13 +59,33 @@ class HomeSettings extends Page implements HasForms
     public function form(Form $form): Form
     {
         $telegram = Site::socials()['telegram'] ?? null;
+        $meta = fn (?string $key, int $i) => HomeSections::SECTIONS[$key][$i] ?? null;
 
         return $form->statePath('data')->schema([
-            Forms\Components\Section::make()->schema(
-                collect(HomeSections::SECTIONS)->map(fn (string $label, string $key) => Forms\Components\Toggle::make("home_sections.$key")
-                    ->label($label)
-                    ->helperText(self::HELP[$key]))->values()->all()
-            ),
+            Forms\Components\Section::make('ترتيب الأقسام')
+                ->description('اسحب الأقسام من المقبض لترتيبها كما تظهر تحت مربع البحث في الصفحة الرئيسية، وشغّل أو أطفئ ما تريد.')
+                ->schema([
+                    Forms\Components\Repeater::make('layout')->hiddenLabel()
+                        ->reorderable()->reorderableWithButtons()->addable(false)->deletable(false)
+                        ->collapsible()->collapsed()
+                        ->itemLabel(fn (array $state) => ($state['enabled'] ?? false ? '✅ ' : '⏸️ ').($meta($state['key'] ?? null, 0) ?? ''))
+                        ->schema([
+                            Forms\Components\Hidden::make('key'),
+                            Forms\Components\Toggle::make('enabled')->label('ظاهر في الصفحة الرئيسية')->live()
+                                ->helperText(fn (Forms\Get $get) => self::HELP[$get('key')] ?? null),
+                            Forms\Components\Select::make('limit')->label('العدد المعروض')
+                                ->options(array_combine(HomeSections::LIMITS, HomeSections::LIMITS))->selectablePlaceholder(false)
+                                ->visible(fn (Forms\Get $get) => $meta($get('key'), 2) !== null),
+                            Forms\Components\Tabs::make('titles')
+                                ->visible(fn (Forms\Get $get) => $meta($get('key'), 1) !== null)
+                                ->tabs(collect(config('trust.locales'))->map(fn (array $m, string $code) => Forms\Components\Tabs\Tab::make($code)->label('العنوان · '.$m['name'])->schema([
+                                    Forms\Components\TextInput::make("title.$code")->hiddenLabel()->maxLength(80)
+                                        ->placeholder(fn (Forms\Get $get) => $code === 'ar' ? $meta($get('key'), 1) : __($meta($get('key'), 1) ?? '', [], 'en'))
+                                        ->helperText('فارغ = العنوان الافتراضي.')
+                                        ->extraInputAttributes(['dir' => $m['dir']]),
+                                ]))->values()->all()),
+                        ]),
+                ]),
 
             Forms\Components\Section::make('قسم قناة تيليجرام')
                 ->description('اتركها فارغة لاستخدام النص الافتراضي.')
@@ -90,12 +115,18 @@ class HomeSettings extends Page implements HasForms
         $state = $this->form->getState();
         Setting::put(['telegram_join' => $state['telegram_join'] ?? []]);
 
-        $sections = collect($state['home_sections'] ?? [])
-            ->only(array_keys(HomeSections::SECTIONS))
-            ->map(fn ($on) => (bool) $on)
-            ->all();
+        // In the order the admin arranged them; only known sections, tidy values
+        $layout = collect($state['layout'] ?? [])
+            ->filter(fn ($row) => isset(HomeSections::SECTIONS[$row['key'] ?? '']))
+            ->map(fn ($row) => [
+                'key' => $row['key'],
+                'enabled' => (bool) ($row['enabled'] ?? false),
+                'title' => array_filter(array_map('trim', (array) ($row['title'] ?? [])), 'strlen'),
+                'limit' => isset($row['limit']) ? (int) $row['limit'] : null,
+            ])
+            ->values()->all();
 
-        Setting::put(['home_sections' => $sections]);
+        Setting::put(['home_layout' => $layout]);
 
         Notification::make()->title('تم حفظ أقسام الصفحة الرئيسية')->success()->send();
     }

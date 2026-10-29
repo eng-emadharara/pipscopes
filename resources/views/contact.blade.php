@@ -56,6 +56,29 @@
         </form>
 
         <aside class="space-y-4">
+            @php($telegramContact = \App\Support\Site::telegramContact())
+            @php($contactEmail = \App\Support\Site::get('contact_email'))
+            @if ($telegramContact || $contactEmail)
+                <div class="card p-5 text-sm">
+                    <div class="mb-1 font-semibold text-ink">{{ __('تفضّل الرد الأسرع؟') }}</div>
+                    <p class="mb-4 leading-relaxed text-gray-600">
+                        {{ match (true) {
+                            $telegramContact && $contactEmail => __('راسلنا مباشرة على تيليجرام، أو على بريدنا الإلكتروني.'),
+                            (bool) $telegramContact => __('راسلنا مباشرة على تيليجرام.'),
+                            default => __('راسلنا مباشرة على بريدنا الإلكتروني.'),
+                        } }}
+                    </p>
+                    @if ($telegramContact)
+                        <a href="{{ $telegramContact }}" target="_blank" rel="noopener" data-track="telegram_contact" data-track-params='{"location":"contact"}'
+                           class="btn-primary w-full justify-center gap-2">
+                            <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('راسلنا على تيليجرام') }}
+                        </a>
+                    @endif
+                    @if ($contactEmail)
+                        <a href="mailto:{{ $contactEmail }}" dir="ltr" class="mt-3 block text-center font-semibold text-brand-700 hover:underline">{{ $contactEmail }}</a>
+                    @endif
+                </div>
+            @endif
             @if ($content && ($content['intro'] || $content['sections']))
                 <div class="card rich-content p-5 text-sm">
                     {!! $content['intro'] !!}

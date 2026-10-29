@@ -31,6 +31,7 @@ class SiteSettingsSeeder extends Seeder
             'disclaimer' => ['ar' => $disclaimer, 'en' => __($disclaimer, [], 'en')],
             'show_name_with_logo' => true,
             'theme_color' => '#191919',
+            'telegram_contact' => 'https://t.me/pipscopes?direct',
             'noindex' => false,
         ];
 

@@ -23,6 +23,11 @@ class SetLocale
 
         app()->setLocale(in_array($locale, $supported, true) ? $locale : $supported[0]);
 
+        // Remembered on the account, so emails and Telegram messages come in the same language
+        if (($user = $request->user()) && $user->locale !== app()->getLocale()) {
+            $user->forceFill(['locale' => app()->getLocale()])->saveQuietly();
+        }
+
         // The site name can differ per language
         Site::applyToConfig();
 
