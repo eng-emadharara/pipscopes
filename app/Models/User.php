@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use App\Support\SignupGuard;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
@@ -61,6 +62,16 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
             'notification_prefs' => 'array',
             'telegram_blocked_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Kept in step with the email so one inbox can't sign up again as a.b@gmail.com or ab+2@gmail.com
+        static::saving(function (User $user) {
+            if ($user->isDirty('email')) {
+                $user->email_canonical = SignupGuard::canonical($user->email);
+            }
+        });
     }
 
     /** Notifications go out in the language the member last used on the site (App\Http\Middleware\SetLocale) */

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Provider;
 use App\Models\Review;
 use App\Support\Analytics;
+use App\Support\SignupGuard;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -53,6 +54,14 @@ class ReviewController extends Controller
         $data['pros'] = $data['pros'] ?? [];
         $data['cons'] = $data['cons'] ?? [];
         $data['status'] = config('trust.reviews_require_approval') ? Review::STATUS_PENDING : Review::STATUS_APPROVED;
+        $data['ip'] = $request->ip();
+        $data['hold_reason'] = null;
+
+        // New accounts and a second account on the same device wait for an admin before they count
+        if ($data['status'] === Review::STATUS_APPROVED && ($reason = SignupGuard::holdReason($request->user(), $provider, $request->ip()))) {
+            $data['status'] = Review::STATUS_PENDING;
+            $data['hold_reason'] = $reason;
+        }
 
         $review = $provider->reviews()->updateOrCreate(
             ['user_id' => $request->user()->id],

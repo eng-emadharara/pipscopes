@@ -23,7 +23,7 @@ class Review extends Model
         'provider_id', 'user_id', 'rating', 'title', 'body', 'show_name',
         'rating_accuracy', 'rating_transparency', 'rating_support', 'rating_value',
         'pros', 'cons', 'experience_duration', 'status', 'admin_note', 'provider_reply',
-        'provider_replied_at', 'provider_reply_owner_id',
+        'provider_replied_at', 'provider_reply_owner_id', 'ip', 'hold_reason',
     ];
 
     protected $casts = [

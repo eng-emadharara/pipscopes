@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProviderResource\RelationManagers\ReviewsRelationManager;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
+use App\Support\SignupGuard;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -83,6 +84,11 @@ class ReviewResource extends Resource
                 Tables\Filters\TernaryFilter::make('show_name')->label('الاسم ظاهر'),
                 Tables\Filters\Filter::make('reported')->label('عليه بلاغات مفتوحة')
                     ->query(fn ($query) => $query->where('open_reports_count', '>', 0)),
+                Tables\Filters\Filter::make('same_ip')->label('حسابات متعددة من نفس IP')
+                    ->query(fn ($query) => $query->whereNotNull('ip')->whereExists(fn ($q) => $q->from('reviews as other')
+                        ->whereColumn('other.provider_id', 'reviews.provider_id')->whereColumn('other.ip', 'reviews.ip')
+                        ->whereColumn('other.user_id', '!=', 'reviews.user_id'))),
+                Tables\Filters\SelectFilter::make('hold_reason')->label('سبب الانتظار')->options(SignupGuard::HOLD_REASONS),
             ])
             ->actions(static::tableActions())
             ->bulkActions(static::tableBulkActions());
@@ -102,6 +108,8 @@ class ReviewResource extends Resource
                 ->tooltip(fn (Review $r) => $r->body),
             Tables\Columns\TextColumn::make('status')->label('الحالة')->badge()
                 ->formatStateUsing(fn ($state) => Review::STATUSES[$state] ?? $state)
+                ->description(fn (Review $r) => $r->status === Review::STATUS_PENDING && $r->hold_reason
+                    ? 'السبب: '.(SignupGuard::HOLD_REASONS[$r->hold_reason] ?? $r->hold_reason) : null)
                 ->color(fn ($state) => match ($state) {
                     Review::STATUS_APPROVED => 'success',
                     Review::STATUS_PENDING => 'warning',
@@ -111,8 +119,20 @@ class ReviewResource extends Resource
             Tables\Columns\TextColumn::make('open_reports_count')->label('بلاغات')->sortable()->alignCenter()
                 ->badge()->color(fn ($state) => $state >= 3 ? 'danger' : ($state > 0 ? 'warning' : 'gray'))
                 ->formatStateUsing(fn ($state) => $state ?: '—'),
+            Tables\Columns\TextColumn::make('ip')->label('نفس IP')->alignCenter()->badge()
+                ->state(fn (Review $r) => $r->ip ? static::sameIpQuery($r)->count() : 0)
+                ->formatStateUsing(fn ($state) => $state ? '⚠️ '.$state : '—')
+                ->color(fn ($state) => $state ? 'danger' : 'gray')
+                ->tooltip(fn (Review $r) => $r->ip ? static::sameIpQuery($r)->with('user:id,name')->get()
+                    ->map(fn (Review $o) => $o->user?->name ?? '—')->prepend("IP: {$r->ip} — تقييمات أخرى لنفس القناة:")->implode("\n") : null),
             Tables\Columns\TextColumn::make('created_at')->label('التاريخ')->since()->sortable(),
         ]));
+    }
+
+    /** Reviews of the same channel by other accounts from the same IP */
+    public static function sameIpQuery(Review $review)
+    {
+        return Review::where('provider_id', $review->provider_id)->where('ip', $review->ip)->where('user_id', '!=', $review->user_id);
     }
 
     public static function tableActions(): array

@@ -546,5 +546,9 @@
     "فتح الموقع": "Open the site",
     "أخبار وإعلانات المنصة": "Platform news and announcements",
     "ميزات جديدة ومسابقات ونصائح من فريقنا، برسائل قليلة في الأسبوع.": "New features, contests and tips from our team, a few messages a week at most.",
-    "اقرأ المزيد": "Read more"
+    "اقرأ المزيد": "Read more",
+    "لا نقبل عناوين البريد المؤقتة. استخدم بريدك الدائم (مثل Gmail أو Outlook).": "We don’t accept temporary email addresses. Please use your permanent email (like Gmail or Outlook).",
+    "نطاق هذا البريد لا يستقبل رسائل. تأكد من كتابته بشكل صحيح.": "This email domain can’t receive mail. Please check it’s spelled correctly.",
+    "هذا البريد (أو نسخة منه بنقاط أو +) مسجّل في حساب آخر. سجّل الدخول بذلك الحساب.": "This email (or a version of it with dots or +) is already registered to another account. Please sign in with that account.",
+    "تم إنشاء عدة حسابات من هذا الجهاز اليوم. حاول غداً أو سجّل الدخول بحسابك الحالي.": "Several accounts were created from this device today. Try again tomorrow or sign in to your existing account."
 }

@@ -85,6 +85,7 @@ class SocialLogin
                     'email' => $email,
                 ]);
                 $user->email_verified_at = $email && $profile['email_verified'] ? now() : null;
+                $user->signup_ip = request()->ip();
                 $user->save();
             }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\AllowedSignupEmail;
 use App\Support\EmailVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -50,7 +51,7 @@ class EmailVerificationController extends Controller
 
         $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
         $request->validate([
-            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id), new AllowedSignupEmail($user->id)],
         ], [
             'email.unique' => __('هذا البريد مستخدم في حساب آخر.'),
         ], ['email' => __('البريد الإلكتروني')]);

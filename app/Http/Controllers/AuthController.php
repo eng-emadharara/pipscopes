@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\AllowedSignupEmail;
 use App\Support\EmailVerification;
+use App\Support\SignupGuard;
 use App\Support\SocialLogin;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -51,7 +53,7 @@ class AuthController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email', new AllowedSignupEmail],
             'password' => ['required', 'confirmed', Password::min(8)],
         ], [], [
             'name' => __('الاسم'),
@@ -59,8 +61,13 @@ class AuthController extends Controller
             'password' => __('كلمة المرور'),
         ]);
 
+        if (SignupGuard::ipLimitReached($request->ip())) {
+            return back()->withErrors(['email' => __('تم إنشاء عدة حسابات من هذا الجهاز اليوم. حاول غداً أو سجّل الدخول بحسابك الحالي.')])->onlyInput('name', 'email');
+        }
+
         try {
-            $user = User::create($data);
+            $user = (new User($data))->forceFill(['signup_ip' => $request->ip()]);
+            $user->save();
         } catch (UniqueConstraintViolationException) {
             // A concurrent request (e.g. double submit) created the same email after validation passed
             return back()->withErrors(['email' => __('هذا البريد مسجّل مسبقاً، يمكنك تسجيل الدخول.')])->onlyInput('name', 'email');

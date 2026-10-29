@@ -20,3 +20,9 @@ Schedule::call(fn () => \App\Support\AnnouncementSender::sendDue())->everyMinute
 // Member notifications (email and Telegram) wait in the database queue; this sends them each minute
 // without a separate worker process. On a VPS a supervised "queue:work" can replace it.
 Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=3')->everyMinute()->withoutOverlapping()->runInBackground();
+
+// Throwaway email domains refused at sign-up (Admin → حماية التسجيل)
+Artisan::command('signup:update-disposable', function () {
+    $this->info(number_format(\App\Support\SignupGuard::updateDisposableList()).' disposable domains saved.');
+})->purpose('Download the latest list of throwaway email domains');
+Schedule::command('signup:update-disposable')->weeklyOn(1, '04:10');
