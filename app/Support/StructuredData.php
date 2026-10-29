@@ -74,7 +74,7 @@ class StructuredData
                     '@type' => 'Review',
                     'author' => ['@type' => 'Person', 'name' => $review->displayName()],
                     'datePublished' => $review->created_at->toDateString(),
-                    'name' => $review->title,
+                    'name' => $review->headline(),
                     'reviewBody' => Str::limit($review->body, 500),
                     'reviewRating' => ['@type' => 'Rating', 'ratingValue' => $review->rating, 'bestRating' => 5, 'worstRating' => 1],
                 ])->all();

@@ -31,7 +31,6 @@ class ReviewController extends Controller
         $criteria = array_keys(__('trust.criteria'));
         $rules = [
             'rating' => ['required', 'integer', 'between:1,5'],
-            'title' => ['required', 'string', 'min:3', 'max:120'],
             'body' => ['required', 'string', 'min:20', 'max:3000'],
             'show_name' => ['nullable', 'boolean'],
             'pros' => ['nullable', 'array'],
@@ -46,7 +45,6 @@ class ReviewController extends Controller
 
         $data = $request->validate($rules, [], [
             'rating' => __('التقييم العام'),
-            'title' => __('عنوان التقييم'),
             'body' => __('تفاصيل التجربة'),
         ]);
 

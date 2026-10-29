@@ -55,7 +55,8 @@ class ReviewResource extends Resource
                     ->helperText('الاسم الحقيقي يظهر للإدارة فقط عند إخفاء الاسم'),
                 Forms\Components\Select::make('rating')->label('التقييم العام')->options($stars)->required(),
                 Forms\Components\Toggle::make('show_name')->label('إظهار اسم المقيّم')->default(true)->inline(false),
-                Forms\Components\TextInput::make('title')->label('العنوان')->required()->columnSpanFull(),
+                Forms\Components\TextInput::make('title')->label('العنوان (للتقييمات القديمة)')->maxLength(120)->columnSpanFull()
+                    ->visible(fn (?Review $record) => filled($record?->title)),
                 Forms\Components\Textarea::make('body')->label('التفاصيل')->rows(5)->required()->columnSpanFull(),
             ]),
             Forms\Components\Section::make('تحليل سبب التقييم')->columns(2)->collapsible()->schema([
@@ -104,8 +105,8 @@ class ReviewResource extends Resource
             Tables\Columns\TextColumn::make('rating')->label('التقييم')->sortable()
                 ->formatStateUsing(fn ($state) => str_repeat('★', $state).' '.$state)
                 ->color(fn ($state) => $state >= 4 ? 'success' : ($state >= 3 ? 'warning' : 'danger')),
-            Tables\Columns\TextColumn::make('title')->label('العنوان')->limit(40)->searchable()
-                ->tooltip(fn (Review $r) => $r->body),
+            Tables\Columns\TextColumn::make('body')->label('التجربة')->limit(60)->searchable()->wrap()
+                ->state(fn (Review $r) => $r->headline(60))->tooltip(fn (Review $r) => $r->body),
             Tables\Columns\TextColumn::make('status')->label('الحالة')->badge()
                 ->formatStateUsing(fn ($state) => Review::STATUSES[$state] ?? $state)
                 ->description(fn (Review $r) => $r->status === Review::STATUS_PENDING && $r->hold_reason

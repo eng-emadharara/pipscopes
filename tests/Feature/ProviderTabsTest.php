@@ -64,7 +64,7 @@ class ProviderTabsTest extends TestCase
     public function test_reviews_tab_shows_the_count_and_each_review_has_a_show_more_toggle(): void
     {
         $this->get(route('providers.show', [$this->provider, 'tab' => 'reviews']))
-            ->assertSee('Solid signals')
+            ->assertSee('A long enough review body for testing.')
             ->assertSee('data-clamp-toggle', false);
     }
 }

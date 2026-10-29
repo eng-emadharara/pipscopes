@@ -52,7 +52,7 @@ class ReviewReportResource extends Resource
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['review.provider', 'review.user', 'user']))
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('review.title')->label('التقييم')->wrap()->limit(60)
+                Tables\Columns\TextColumn::make('review.body')->label('التقييم')->wrap()->limit(60)
                     ->description(fn (ReviewReport $r) => $r->review?->provider?->name.' · '.str_repeat('★', (int) $r->review?->rating))
                     ->tooltip(fn (ReviewReport $r) => $r->review?->body)
                     ->url(fn (ReviewReport $r) => $r->review?->provider ? route('providers.show', $r->review->provider).'#reviews' : null, shouldOpenInNewTab: true),

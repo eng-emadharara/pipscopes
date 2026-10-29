@@ -98,9 +98,9 @@ class ReviewFeedbackTest extends TestCase
     public function test_reviews_are_sorted_by_most_helpful_by_default(): void
     {
         // The useful review is older, so the two sorts must order them differently
-        $useful = $this->review(['title' => 'Most useful review']);
+        $useful = $this->review(['body' => 'Most useful review, long enough body.']);
         $useful->forceFill(['helpful_count' => 7, 'created_at' => now()->subDays(3)])->saveQuietly();
-        $this->review(['title' => 'Newer plain review']);
+        $this->review(['body' => 'Newer plain review, long enough body.']);
 
         $this->get(route('providers.show', $this->provider))
             ->assertOk()

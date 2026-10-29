@@ -233,8 +233,8 @@ class OwnerPortalTest extends TestCase
 
     public function test_unanswered_filter_shows_only_reviews_without_a_reply(): void
     {
-        $this->review($this->provider, ['title' => 'Answered one', 'provider_reply' => 'Thanks for the feedback']);
-        $this->review($this->provider, ['title' => 'Waiting one']);
+        $this->review($this->provider, ['body' => 'Answered one, a long enough body.', 'provider_reply' => 'Thanks for the feedback']);
+        $this->review($this->provider, ['body' => 'Waiting one, a long enough body.']);
 
         $this->asOwner()
             ->get(route('providers.show', [$this->provider, 'replied' => '0']))

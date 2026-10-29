@@ -130,7 +130,7 @@ class ShareImage
 
         $width = self::WIDTH - 2 * self::PADDING;
         $y = 290;
-        foreach ($this->wrap($review->title, 'bold', 48, $width, 2) as $line) {
+        foreach ($this->wrap($review->headline(), 'bold', 48, $width, 2) as $line) {
             $this->text($line, 'bold', 48, $y, 'white');
             $y += 64;
         }

@@ -83,7 +83,7 @@ class SharingTest extends TestCase
             ->assertOk()
             ->assertSee('property="og:image" content="'.route('share-images.review', ['ar', $this->review]).'"', false)
             ->assertSee('property="og:type" content="article"', false)
-            ->assertSee('أفضل قناة جربتها');
+            ->assertSee('الدقة عالية والدعم يرد بسرعة');
 
         $this->get(route('home'))->assertSee(route('share-images.site', 'ar'), false);
     }

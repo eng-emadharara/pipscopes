@@ -18,7 +18,6 @@
         </div>
         <x-stars :rating="$review->rating" size="sm" />
     </div>
-    <h3 dir="auto" class="text-start text-[15px] font-bold">{{ $review->title }}</h3>
     {{-- Long reviews show 4 lines first; the button (resources/js/ui.js) appears only when text is cut --}}
     <div>
         <p dir="auto" class="mt-1 line-clamp-4 whitespace-pre-line text-start text-sm leading-relaxed text-gray-700" data-clamp="line-clamp-4">{{ $review->body }}</p>

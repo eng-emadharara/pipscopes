@@ -83,12 +83,6 @@
             </div>
 
             <div>
-                <label class="label" for="title">{{ __('عنوان التقييم') }} <span class="text-red-500">*</span></label>
-                <input id="title" name="title" dir="auto" value="{{ old('title', $review->title) }}" class="input" maxlength="120" placeholder="{{ __('لخّص تجربتك في جملة') }}" required>
-                @error('title') <p class="error">{{ $message }}</p> @enderror
-            </div>
-
-            <div>
                 <label class="label" for="body">{{ __('تفاصيل تجربتك') }} <span class="text-red-500">*</span></label>
                 <textarea id="body" name="body" dir="auto" rows="6" class="input" minlength="20" maxlength="3000" placeholder="{{ __('كيف كانت النتائج؟ هل التزموا بما وعدوا؟ كيف كان التعامل؟') }}" required>{{ old('body', $review->body) }}</textarea>
                 @error('body') <p class="error">{{ $message }}</p> @enderror

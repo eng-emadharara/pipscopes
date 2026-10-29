@@ -5,7 +5,6 @@
             @foreach ($latestReviews as $review)
                 <article class="card flex flex-col gap-2 p-5">
                     <x-stars :rating="$review->rating" size="sm" />
-                    <h3 dir="auto" class="text-start font-bold">{{ $review->title }}</h3>
                     <p dir="auto" class="line-clamp-3 text-start text-sm text-gray-600">{{ $review->body }}</p>
                     <div class="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 pt-3 text-xs text-gray-500">
                         <span class="shrink-0">{{ $review->displayName() }}</span>

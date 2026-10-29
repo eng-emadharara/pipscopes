@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class Review extends Model
 {
@@ -130,12 +131,18 @@ class Review extends Model
         return route('reviews.show', [$this, 'lang' => app()->getLocale()]);
     }
 
+    /** A short line for page titles, share cards and search results: the start of the experience (old titles stay hidden) */
+    public function headline(int $limit = 70): string
+    {
+        return Str::limit(Str::squish((string) $this->body), $limit);
+    }
+
     public function shareText(): string
     {
         return __('تقييم :stars لـ :name: «:title»', [
             'stars' => str_repeat('★', (int) $this->rating),
             'name' => $this->provider?->name,
-            'title' => $this->title,
+            'title' => $this->headline(),
         ]);
     }
 

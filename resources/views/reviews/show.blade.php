@@ -1,5 +1,5 @@
 <x-layouts.app
-    :title="__('تقييم :name: :title', ['name' => $provider->name, 'title' => $review->title])"
+    :title="__('تقييم :name: :title', ['name' => $provider->name, 'title' => $review->headline(50)])"
     :description="\Illuminate\Support\Str::limit(\Illuminate\Support\Str::squish($review->body), 180)"
     :og-image="route('share-images.review', [app()->getLocale(), $review])"
     og-type="article">
