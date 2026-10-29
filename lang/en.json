@@ -600,5 +600,18 @@
     "تعذّر الربط مع :provider. حاول مرة أخرى.": "Couldn't link :provider. Please try again.",
     "تم إلغاء الربط مع :provider.": "Linking :provider was cancelled.",
     "تم ربط :provider بحسابك.": ":provider is now linked to your account.",
-    "حساب :provider هذا مرتبط بعضو آخر.": "This :provider account is linked to another member."
+    "حساب :provider هذا مرتبط بعضو آخر.": "This :provider account is linked to another member.",
+    ":count قناة جاهزة للتقييم يوم الإطلاق": ":count channel ready to be reviewed on launch day|:count channels ready to be reviewed on launch day",
+    "افحص الحساب قبل الدفع": "Check the account before you pay",
+    "اقرأ تقييمات متداولين جرّبوا القناة قبل أن تدفع اشتراكك.": "Read reviews from traders who tried the channel before you pay for a subscription.",
+    "بلا حذف مقابل المال": "No paid removals",
+    "تأكد أن الحساب الذي يراسلك هو القناة الرسمية وليس نسخة مزيفة.": "Make sure the account messaging you is the official channel, not a fake copy.",
+    "تابعنا لتصلك لحظة الافتتاح، وشارك الصفحة مع متداول تعرفه.": "Follow us to hear the moment we open, and share this page with a trader you know.",
+    "تابعنا لتعرف لحظة الإطلاق": "Follow us to know when we launch",
+    "تجارب حقيقية": "Real experiences",
+    "تدير قناة أو تعرف قناة؟ هكذا تضيفها": "Run a channel or know one? Here's how to add it",
+    "قائمة بالحسابات التي تنتحل أسماء القنوات المعروفة لسرقة المشتركين.": "A list of accounts posing as well-known channels to steal their subscribers.",
+    "كشف المنتحلين": "Spot impersonators",
+    "لا تستطيع أي قناة شراء تقييم أو إخفاء تجربة سلبية.": "No channel can buy a review or hide a negative experience.",
+    "لا تفوّت الإطلاق": "Don't miss the launch"
 }
