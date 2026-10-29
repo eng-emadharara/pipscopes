@@ -91,6 +91,9 @@
     .tg-link {
         @apply relative inline-flex items-center gap-1.5 rounded-full bg-[#229ED9] px-3 py-1.5 font-semibold whitespace-nowrap text-white transition select-none hover:bg-[#1a8bc2] hover:shadow-md hover:shadow-[#229ED9]/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#229ED9] focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:scale-[.98];
     }
+    /* The same button inside a page (profile, notification settings) */
+    .tg-link-inline { @apply px-3 py-1 text-xs focus-visible:ring-offset-white; }
+    .tg-link-inline .tg-link-spinner { @apply h-3.5 w-3.5; }
     .tg-link-spinner {
         @apply absolute start-3 hidden h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent;
     }

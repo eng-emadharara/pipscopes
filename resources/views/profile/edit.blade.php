@@ -203,6 +203,8 @@
                                     </span>
                                     @if ($linked->has($provider))
                                         <span class="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">{{ __('مرتبط') }}</span>
+                                    @elseif ($provider === 'telegram')
+                                        <x-telegram-link variant="inline" />
                                     @else
                                         <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">{{ __('غير مرتبط') }}</span>
                                     @endif

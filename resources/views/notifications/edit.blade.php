@@ -37,9 +37,13 @@
                                 {{ $user->email ? __('أكّد بريدك لتصلك الإشعارات') : __('أضف بريدك الإلكتروني (اختياري)') }}
                             </a>
                         @elseif ($telegramLinked && $user->telegram_blocked_at)
-                            <div class="text-xs text-amber-700">{{ __('لا نستطيع مراسلتك. سجّل دخولك بتيليجرام مرة أخرى لتفعيل الرسائل.') }}</div>
+                            <div class="text-xs text-amber-700">{{ __('لا نستطيع مراسلتك. اضغط الزر واسمح للبوت بمراسلتك.') }}</div>
+                            <x-telegram-link variant="inline" relink :label="__('تفعيل الرسائل')" class="mt-2" />
+                        @elseif (\App\Support\SocialLogin::isEnabled('telegram'))
+                            <div class="text-xs text-gray-500">{{ __('اربط حسابك لتصلك الإشعارات على تيليجرام.') }}</div>
+                            <x-telegram-link variant="inline" :label="__('ربط تيليجرام')" class="mt-2" />
                         @else
-                            <div class="text-xs text-gray-500">{{ __('غير مرتبط. اربط حسابك من زر «ربط تيليجرام» أعلى الصفحة.') }}</div>
+                            <div class="text-xs text-gray-500">{{ __('غير متاح حالياً.') }}</div>
                         @endif
                     </div>
                 </div>

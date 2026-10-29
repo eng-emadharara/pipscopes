@@ -591,5 +591,10 @@
     "تسجيل الخروج من كل الأجهزة الأخرى؟ ستبقى مسجّلاً على هذا الجهاز فقط.": "Sign out of all other devices? You will stay signed in on this device only.",
     "تم تسجيل خروجك من كل الأجهزة الأخرى.": "You were signed out of all other devices.",
     "حسابك مفتوح أيضاً على :count جهاز أو متصفح آخر.": "Your account is also open on :count other device or browser.|Your account is also open on :count other devices or browsers.",
-    "لحماية لوحة التحكم، سجّل دخولك من جديد.": "To protect the admin panel, please sign in again."
+    "لحماية لوحة التحكم، سجّل دخولك من جديد.": "To protect the admin panel, please sign in again.",
+    "اربط حسابك لتصلك الإشعارات على تيليجرام.": "Link your account to get notifications on Telegram.",
+    "تفعيل الرسائل": "Turn on messages",
+    "ربط": "Link",
+    "غير متاح حالياً.": "Not available right now.",
+    "لا نستطيع مراسلتك. اضغط الزر واسمح للبوت بمراسلتك.": "We can't message you. Press the button and allow the bot to message you."
 }
