@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\Setting;
 use App\Support\SocialKeys;
 use App\Support\SocialLogin;
 use Filament\Forms;
@@ -53,6 +54,7 @@ class SocialLoginSettings extends Page implements HasForms
             'google_callback' => url('/auth/google/callback'),
             'facebook_callback' => url('/auth/facebook/callback'),
             'telegram_callback' => parse_url(url('/'), PHP_URL_HOST),
+            'shown' => collect(SocialLogin::LABELS)->map(fn ($label, $provider) => SocialLogin::isShown($provider))->all(),
         ]);
     }
 
@@ -73,6 +75,9 @@ class SocialLoginSettings extends Page implements HasForms
             ->schema([
                 Forms\Components\Placeholder::make("{$provider}_status")->hiddenLabel()
                     ->content(fn () => new HtmlString($this->statusText($provider))),
+
+                Forms\Components\Toggle::make("shown.$provider")->label('إظهار للأعضاء')
+                    ->helperText('عند الإطفاء يختفي من صفحة الدخول والتسجيل ومن «طرق تسجيل الدخول» في الملف الشخصي، حتى لو كانت مفاتيحه محفوظة.'),
 
                 Forms\Components\TextInput::make("{$provider}_callback")->label($provider === 'telegram' ? 'نطاق الموقع (لأمر /setdomain)' : 'رابط العودة (Redirect URI)')
                     ->readOnly()
@@ -125,6 +130,7 @@ class SocialLoginSettings extends Page implements HasForms
             ->all())->all();
 
         SocialKeys::save($keys);
+        Setting::put([SocialLogin::SHOWN_SETTING => array_map('boolval', $data['shown'] ?? [])]);
 
         Notification::make()->title('تم حفظ مفاتيح تسجيل الدخول')->success()->send();
 

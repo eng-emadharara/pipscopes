@@ -596,5 +596,9 @@
     "تفعيل الرسائل": "Turn on messages",
     "ربط": "Link",
     "غير متاح حالياً.": "Not available right now.",
-    "لا نستطيع مراسلتك. اضغط الزر واسمح للبوت بمراسلتك.": "We can't message you. Press the button and allow the bot to message you."
+    "لا نستطيع مراسلتك. اضغط الزر واسمح للبوت بمراسلتك.": "We can't message you. Press the button and allow the bot to message you.",
+    "تعذّر الربط مع :provider. حاول مرة أخرى.": "Couldn't link :provider. Please try again.",
+    "تم إلغاء الربط مع :provider.": "Linking :provider was cancelled.",
+    "تم ربط :provider بحسابك.": ":provider is now linked to your account.",
+    "حساب :provider هذا مرتبط بعضو آخر.": "This :provider account is linked to another member."
 }

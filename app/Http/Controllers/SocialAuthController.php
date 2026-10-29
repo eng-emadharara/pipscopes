@@ -26,13 +26,31 @@ class SocialAuthController extends Controller
         return $driver->redirect();
     }
 
+    /** A signed-in member adds Google / Facebook from the profile page; the provider sends them back to callback() */
+    public function linkRedirect(Request $request, string $provider)
+    {
+        abort_unless(SocialLogin::isEnabled($provider) && SocialLogin::isShown($provider), 404);
+
+        $request->session()->put('social_link', $provider);
+
+        return $this->redirect($provider);
+    }
+
     public function callback(Request $request, string $provider)
     {
         abort_unless(SocialLogin::isEnabled($provider), 404);
 
+        // Signed in already: only a link started from the profile page is expected here
+        $linking = $request->user() && $request->session()->pull('social_link') === $provider;
+        if ($request->user() && ! $linking) {
+            return redirect()->route('profile.edit');
+        }
+
         // The person pressed "Cancel" on the provider's screen
         if ($request->filled('error') || $request->filled('error_code')) {
-            return redirect()->route('login')->with('error', __('تم إلغاء تسجيل الدخول عبر :provider.', ['provider' => SocialLogin::LABELS[$provider]]));
+            return $linking
+                ? redirect()->route('profile.edit')->with('error', __('تم إلغاء الربط مع :provider.', ['provider' => SocialLogin::LABELS[$provider]]))
+                : redirect()->route('login')->with('error', __('تم إلغاء تسجيل الدخول عبر :provider.', ['provider' => SocialLogin::LABELS[$provider]]));
         }
 
         try {
@@ -50,10 +68,12 @@ class SocialAuthController extends Controller
         } catch (Throwable $e) {
             Log::warning('Social login failed', ['provider' => $provider, 'error' => $e->getMessage()]);
 
-            return $this->failed($provider);
+            return $linking
+                ? redirect()->route('profile.edit')->with('error', __('تعذّر الربط مع :provider. حاول مرة أخرى.', ['provider' => SocialLogin::LABELS[$provider]]))
+                : $this->failed($provider);
         }
 
-        return $this->signIn($request, $provider, [
+        $profile = [
             'id' => (string) $social->getId(),
             'name' => $social->getName(),
             'email' => $social->getEmail(),
@@ -66,7 +86,15 @@ class SocialAuthController extends Controller
             'refresh_token' => $social->refreshToken,
             'expires_in' => $social->expiresIn ? (int) $social->expiresIn : null,
             'scopes' => array_values((array) $social->approvedScopes),
-        ]);
+        ];
+
+        if ($linking) {
+            return SocialLogin::link($request->user(), $provider, $profile)
+                ? redirect()->route('profile.edit')->with('success', __('تم ربط :provider بحسابك.', ['provider' => SocialLogin::LABELS[$provider]]))
+                : redirect()->route('profile.edit')->with('error', __('حساب :provider هذا مرتبط بعضو آخر.', ['provider' => SocialLogin::LABELS[$provider]]));
+        }
+
+        return $this->signIn($request, $provider, $profile);
     }
 
     public function telegram(Request $request)

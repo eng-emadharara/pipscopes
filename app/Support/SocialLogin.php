@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Setting;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +20,17 @@ class SocialLogin
     /** Providers that use the OAuth redirect flow (Telegram signs in through its own widget). */
     public const OAUTH = ['google', 'facebook'];
 
-    /** Providers kept off the sign-in buttons for now, whatever their keys. */
-    public const HIDDEN = ['facebook'];
+    /** Admin switches (Settings → مفاتيح تسجيل الدخول) for showing each method to members at all */
+    public const SHOWN_SETTING = 'social_shown';
+
+    /** Until the admin decides: Facebook stays off the sign-in buttons and the profile page */
+    public const SHOWN_BY_DEFAULT = ['google' => true, 'facebook' => false, 'telegram' => true];
+
+    /** Whether members see this method (sign-in buttons, profile, link buttons); its keys decide whether it works */
+    public static function isShown(string $provider): bool
+    {
+        return (bool) data_get(Setting::get(self::SHOWN_SETTING, []), $provider, self::SHOWN_BY_DEFAULT[$provider] ?? false);
+    }
 
     public static function isEnabled(string $provider): bool
     {

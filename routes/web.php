@@ -98,6 +98,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/verify-email/resend', [EmailVerificationController::class, 'resend'])->middleware('throttle:5,10')->name('verification.resend');
 
     Route::post('/auth/telegram/link', [SocialAuthController::class, 'linkTelegram'])->middleware('throttle:10,1')->name('social.telegram.link');
+    Route::get('/auth/{provider}/link', [SocialAuthController::class, 'linkRedirect'])->middleware('throttle:10,1')
+        ->whereIn('provider', SocialLogin::OAUTH)->name('social.link');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:20,1')->name('profile.update');
@@ -132,6 +134,9 @@ Route::middleware('guest')->group(function () {
     Route::middleware('throttle:20,1')->group(function () {
         Route::post('/auth/telegram/callback', [SocialAuthController::class, 'telegram'])->name('social.telegram');
         Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->whereIn('provider', SocialLogin::OAUTH)->name('social.redirect');
-        Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->whereIn('provider', SocialLogin::OAUTH)->name('social.callback');
     });
 });
+
+// Google / Facebook come back here both to sign in and to link the method to a signed-in member (social.link)
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->middleware('throttle:20,1')
+    ->whereIn('provider', SocialLogin::OAUTH)->name('social.callback');

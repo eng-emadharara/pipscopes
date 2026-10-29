@@ -186,7 +186,8 @@
                                 </li>
                             @endif
                             @foreach (\App\Support\SocialLogin::LABELS as $provider => $label)
-                                @continue(! $linked->has($provider) && ! \App\Support\SocialLogin::isEnabled($provider))
+                                {{-- Methods switched off in the admin panel are left out; unlinked ones show only once they work --}}
+                                @continue(! \App\Support\SocialLogin::isShown($provider) || (! $linked->has($provider) && ! \App\Support\SocialLogin::isEnabled($provider)))
                                 <li class="flex items-center gap-3">
                                     <span class="grid h-9 w-9 place-items-center rounded-full bg-gray-100 text-gray-700">
                                         @if ($provider === 'google')
@@ -206,7 +207,7 @@
                                     @elseif ($provider === 'telegram')
                                         <x-telegram-link variant="inline" />
                                     @else
-                                        <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">{{ __('غير مرتبط') }}</span>
+                                        <a href="{{ route('social.link', $provider) }}" class="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-ink transition hover:border-gray-500">{{ __('ربط') }}</a>
                                     @endif
                                 </li>
                             @endforeach

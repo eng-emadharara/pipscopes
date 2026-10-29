@@ -6,7 +6,7 @@
 @props(['variant' => 'header', 'label' => null, 'relink' => false])
 @php
     $user = auth()->user();
-    $show = $user && \App\Support\SocialLogin::isEnabled('telegram')
+    $show = $user && \App\Support\SocialLogin::isEnabled('telegram') && \App\Support\SocialLogin::isShown('telegram')
         && ($relink || ! $user->socialAccounts->contains('provider', 'telegram'));
 @endphp
 @if ($show)

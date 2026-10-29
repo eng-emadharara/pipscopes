@@ -226,4 +226,59 @@ class SocialLoginTest extends TestCase
         $this->post('/login', ['email' => 'sara@example.com', 'password' => 'whatever'])
             ->assertSessionHasErrors(['email' => __('هذا الحساب يسجّل الدخول عبر :provider. استخدم الزر بالأعلى.', ['provider' => 'Google'])]);
     }
+
+    public function test_a_signed_in_member_links_google_from_the_profile_page(): void
+    {
+        $member = User::factory()->create(['email' => 'sara@gmail.com']);
+
+        $this->actingAs($member)->get(route('profile.edit'))->assertSee(route('social.link', 'google'), false);
+
+        $this->fakeProvider('google', ['id' => 'g-77', 'email' => 'sara.work@gmail.com']);
+        $this->actingAs($member)->withSession(['social_link' => 'google'])->get('/auth/google/callback?code=x')
+            ->assertRedirect(route('profile.edit'))->assertSessionHas('success');
+
+        $this->assertSame('g-77', $member->socialAccounts()->where('provider', 'google')->value('provider_id'));
+        $this->assertAuthenticatedAs($member);
+
+        $this->actingAs($member)->get(route('profile.edit'))->assertDontSee(route('social.link', 'google'), false);
+    }
+
+    public function test_linking_a_google_account_that_belongs_to_someone_else_is_refused(): void
+    {
+        $other = User::factory()->create();
+        $other->socialAccounts()->create(['provider' => 'google', 'provider_id' => 'g-1']);
+        $member = User::factory()->create();
+
+        $this->fakeProvider('google', ['id' => 'g-1', 'email' => 'x@gmail.com']);
+        $this->actingAs($member)->withSession(['social_link' => 'google'])->get('/auth/google/callback?code=x')
+            ->assertRedirect(route('profile.edit'))->assertSessionHas('error');
+
+        $this->assertFalse($member->socialAccounts()->exists());
+    }
+
+    public function test_a_stray_callback_while_signed_in_changes_nothing(): void
+    {
+        $member = User::factory()->create();
+
+        $this->actingAs($member)->get('/auth/google/callback?code=x')->assertRedirect(route('profile.edit'));
+        $this->assertFalse($member->socialAccounts()->exists());
+    }
+
+    public function test_facebook_stays_hidden_until_switched_on(): void
+    {
+        $member = User::factory()->create();
+        $member->socialAccounts()->create(['provider' => 'facebook', 'provider_id' => 'fb-9']);
+
+        $this->actingAs($member)->get(route('profile.edit'))->assertDontSee('Facebook');
+        $this->actingAs($member)->get(route('social.link', 'facebook'))->assertNotFound();
+
+        \App\Models\Setting::put([\App\Support\SocialLogin::SHOWN_SETTING => ['facebook' => true]]);
+        $this->actingAs($member)->get(route('profile.edit'))->assertSee('Facebook');
+        auth()->logout();
+        $this->get('/login')->assertSee('social-btn-facebook', false);
+
+        // And Google can be hidden the same way
+        \App\Models\Setting::put([\App\Support\SocialLogin::SHOWN_SETTING => ['google' => false]]);
+        $this->get('/login')->assertDontSee('social-btn-google', false);
+    }
 }
