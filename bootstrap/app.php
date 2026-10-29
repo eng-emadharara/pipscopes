@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\MaintenanceMode::class,
             \App\Http\Middleware\PrelaunchGate::class,
+            \App\Http\Middleware\RenewRememberCookie::class,
         ]);
 
         // Mail apps' one-click unsubscribe posts without our form token; the link itself is signed

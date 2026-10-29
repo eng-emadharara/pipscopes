@@ -22,9 +22,6 @@
                     <label class="label" for="password">{{ __('كلمة المرور') }}</label>
                     <input id="password" type="password" name="password" class="input" dir="ltr" autocomplete="current-password" required>
                 </div>
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="remember" value="1" class="accent-brand-500"> {{ __('تذكرني') }}
-                </label>
                 <button class="btn-primary w-full">{{ __('دخول') }}</button>
                 <p class="text-center text-sm text-gray-600">{{ __('ليس لديك حساب؟') }} <a href="{{ route('register') }}" class="font-semibold text-brand-600 hover:underline">{{ __('أنشئ حساباً') }}</a></p>
             </form>

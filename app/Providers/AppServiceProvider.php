@@ -7,6 +7,7 @@ use App\Models\Market;
 use App\Models\Page;
 use App\Support\SocialKeys;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
@@ -44,6 +45,22 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             if ($event->guard === 'owner') {
                 $event->user->forceFill(['last_login_at' => now()])->saveQuietly();
+            }
+
+            // When the password / Google / Telegram was actually used, not the remember cookie;
+            // the admin panel asks for that again after a few days (App\Http\Middleware\LimitAdminSession)
+            if ($event->guard === 'web' && ! auth()->guard('web')->viaRemember()) {
+                session(['signed_in_at' => now()->timestamp]);
+            }
+        });
+
+        // Re-sends the remember cookie with a fresh expiry, so a member who keeps visiting never has to sign in again
+        // (App\Http\Middleware\RenewRememberCookie). A macro, so it can use the guard's own cookie format.
+        SessionGuard::macro('renewRecaller', function () {
+            /** @var SessionGuard $this */
+            if ($user = $this->user()) {
+                $this->ensureRememberTokenIsSet($user);
+                $this->queueRecallerCookie($user);
             }
         });
 

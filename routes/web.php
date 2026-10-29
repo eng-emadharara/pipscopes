@@ -86,6 +86,8 @@ Route::post('/submit', [SubmissionController::class, 'store'])->middleware('thro
 Route::middleware([BlockChannelOwners::class, 'auth', EnsureEmailIsVerified::class])->group(function () {
     Route::get('/p/{provider}/review', [ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/p/{provider}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
+    Route::get('/p/{provider}/review/thanks', [ReviewController::class, 'thanks'])->name('reviews.thanks');
+    Route::patch('/p/{provider}/review/details', [ReviewController::class, 'details'])->middleware('throttle:10,1')->name('reviews.details');
     Route::delete('/p/{provider}/review', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 });
 
@@ -99,6 +101,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->middleware('throttle:20,1')->name('profile.update');
+    Route::post('/profile/sign-out-others', [ProfileController::class, 'signOutOtherDevices'])->middleware('throttle:5,1')->name('profile.sign-out-others');
     Route::get('/profile/notifications', [NotificationSettingsController::class, 'edit'])->name('notifications.edit');
     Route::put('/profile/notifications', [NotificationSettingsController::class, 'update'])->middleware('throttle:20,1')->name('notifications.update');
 

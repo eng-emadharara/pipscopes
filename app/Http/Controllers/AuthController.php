@@ -27,7 +27,8 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        // Members stay signed in on this device until they sign out (the remember cookie outlives the session)
+        if (! Auth::attempt($credentials, remember: true)) {
             // Accounts created through Google/Facebook/Telegram have no password: point to the right button
             $providers = User::where('email', Str::lower(trim($credentials['email'])))->whereNull('password')->first()
                 ?->socialAccounts()->pluck('provider')->map(fn ($p) => SocialLogin::LABELS[$p] ?? $p)->implode(' / ');
@@ -73,7 +74,7 @@ class AuthController extends Controller
             return back()->withErrors(['email' => __('هذا البريد مسجّل مسبقاً، يمكنك تسجيل الدخول.')])->onlyInput('name', 'email');
         }
 
-        Auth::login($user);
+        Auth::login($user, remember: true);
         $request->session()->regenerate();
 
         // Where they were heading stays in url.intended and is used after the code is confirmed

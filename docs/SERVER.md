@@ -140,6 +140,8 @@ APP_DEBUG=false
 APP_URL=https://pipscopes.com
 QUEUE_CONNECTION=database
 SESSION_DRIVER=database
+SESSION_LIFETIME=43200          # الجلسة 30 يوماً، والعضو يبقى مسجّلاً بعدها بكوكي «تذكرني»
+ADMIN_SESSION_DAYS=7            # لوحة التحكم تطلب تسجيل دخول جديد كل 7 أيام
 CACHE_STORE=database
 MAIL_MAILER=...            # مع بيانات مزود البريد
 REVIEWS_REQUIRE_APPROVAL=false   # true = كل تقييم ينتظر موافقة الأدمن

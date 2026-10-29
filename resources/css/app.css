@@ -169,3 +169,36 @@
 .star-picker:has(input[value="5"]:checked), .star-picker:has(label[for$="-5"]:hover) { --pick: var(--color-rate-excellent); }
 .star-picker input:focus-visible + label { outline: 2px solid var(--color-ink); outline-offset: 2px; }
 
+/* The word beside the review stars ("ممتازة"…): only the one for the checked star shows */
+.rating-field .rating-word { display: none; }
+.rating-field:not(:has(input:checked)) .rating-word[data-word="0"] { display: inline; }
+.rating-field:has(#rating-1:checked) .rating-word[data-word="1"] { display: inline; color: var(--color-rate-bad); }
+.rating-field:has(#rating-2:checked) .rating-word[data-word="2"] { display: inline; color: var(--color-rate-poor); }
+.rating-field:has(#rating-3:checked) .rating-word[data-word="3"] { display: inline; color: var(--color-ink); }
+.rating-field:has(#rating-4:checked) .rating-word[data-word="4"] { display: inline; color: var(--color-rate-great); }
+.rating-field:has(#rating-5:checked) .rating-word[data-word="5"] { display: inline; color: var(--color-rate-excellent); }
+
+/* Review form: the pros and cons appear once stars are picked (1-3 → cons, 3-5 → pros); ticked ones always stay */
+.review-form .reason-group { display: none; }
+.review-form:has(#rating-1:checked, #rating-2:checked, #rating-3:checked) .reason-group[data-for="cons"],
+.review-form:has(#rating-3:checked, #rating-4:checked, #rating-5:checked) .reason-group[data-for="pros"],
+.review-form .reason-group:has(input:checked) { display: block; }
+/* Nothing to show yet: drop the empty block so it leaves no gap */
+.review-form:not(:has(#rating-1:checked, #rating-2:checked, #rating-3:checked, #rating-4:checked, #rating-5:checked)) .reasons:not(:has(input:checked)) { display: none; }
+
+/* A radio shown as a selectable card (review form: "باسمي" / "مجهول") */
+.choice-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--color-gray-200);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+}
+.choice-card:hover { border-color: var(--color-gray-400); }
+.choice-card:has(input:checked) { border-color: var(--color-brand-500); background: var(--color-brand-50); box-shadow: 0 0 0 1px var(--color-brand-500); }
+.choice-card:has(input:focus-visible) { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+

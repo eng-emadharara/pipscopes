@@ -220,6 +220,21 @@
                         <span class="inline-block text-gray-400 rtl:rotate-180">→</span>
                     </a>
 
+                    <section class="card p-5">
+                        <div class="font-bold">{{ __('الأجهزة') }}</div>
+                        <p class="mt-1 text-xs leading-relaxed text-gray-500">
+                            {{ __('تبقى مسجّلاً على هذا الجهاز حتى تسجّل الخروج.') }}
+                            @if ($otherSessions)
+                                {{ trans_choice('حسابك مفتوح أيضاً على :count جهاز أو متصفح آخر.', $otherSessions) }}
+                            @endif
+                        </p>
+                        <form method="POST" action="{{ route('profile.sign-out-others') }}" class="mt-3"
+                              onsubmit="return confirm(@js(__('تسجيل الخروج من كل الأجهزة الأخرى؟ ستبقى مسجّلاً على هذا الجهاز فقط.')))">
+                            @csrf
+                            <button class="text-sm font-semibold text-red-600 hover:underline">{{ __('تسجيل الخروج من كل الأجهزة الأخرى') }}</button>
+                        </form>
+                    </section>
+
                     <section class="rounded-2xl border border-brand-100 bg-brand-50 p-5 text-sm text-brand-700">
                         <div class="flex items-center gap-2 font-bold"><x-ui-icon name="shield" class="h-5 w-5" /> {{ __('خصوصيتك') }}</div>
                         <p class="mt-2 leading-relaxed">{{ __('لا نعرض بريدك الإلكتروني لأحد. يمكنك نشر أي تقييم باسم مخفي متى شئت.') }}</p>

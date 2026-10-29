@@ -72,3 +72,19 @@ document.querySelectorAll('[data-show-next]').forEach((button) => {
         if (!document.querySelector(button.dataset.showNext)) button.remove();
     });
 });
+
+// <textarea data-count="20"> shows its length in [data-count-for="its id"]: how many characters are
+// still needed (data-short) until the minimum, then the count out of the maximum (data-ok). ":n" is the number.
+document.querySelectorAll('textarea[data-count]').forEach((field) => {
+    const output = document.querySelector(`[data-count-for="${field.id}"]`);
+    if (!output) return;
+    const min = Number(field.dataset.count);
+    const update = () => {
+        const length = field.value.trim().length;
+        const short = length < min;
+        output.textContent = (short ? output.dataset.short : output.dataset.ok).replace(':n', short ? min - length : length);
+        output.classList.toggle('text-amber-600', short && length > 0);
+    };
+    field.addEventListener('input', update);
+    update();
+});

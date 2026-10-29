@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,33 @@ class ProfileController extends Controller
         return view('profile.edit', [
             'user' => $user,
             'reviewsCount' => $user->reviews()->count(),
+            'otherSessions' => self::otherSessions($request)->count(),
         ]);
+    }
+
+    /** The member's sessions on other browsers and devices (sessions are kept in the database) */
+    protected static function otherSessions(Request $request)
+    {
+        return DB::table(config('session.table', 'sessions'))
+            ->where('user_id', $request->user()->id)
+            ->where('id', '!=', $request->session()->getId());
+    }
+
+    /**
+     * Signs the member out everywhere else: other devices lose their session, and a new remember token
+     * makes their remember cookie useless. This device gets a cookie with the new token.
+     */
+    public function signOutOtherDevices(Request $request)
+    {
+        if (config('session.driver') === 'database') {
+            self::otherSessions($request)->delete();
+        }
+
+        $request->user()->setRememberToken(Str::random(60));
+        $request->user()->save();
+        auth()->guard('web')->renewRecaller();
+
+        return back()->with('success', __('تم تسجيل خروجك من كل الأجهزة الأخرى.'));
     }
 
     public function update(Request $request)

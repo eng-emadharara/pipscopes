@@ -73,11 +73,53 @@ class ReviewController extends Controller
             'review_type' => $review->wasRecentlyCreated ? 'new' : 'edit',
         ]);
 
-        $message = $review->status === Review::STATUS_PENDING
-            ? __('شكراً لك! تم استلام تقييمك وسيظهر بعد المراجعة.')
-            : __('شكراً لك! تم نشر تقييمك.');
+        return redirect()->route('reviews.thanks', $provider)->with('review_edited', ! $review->wasRecentlyCreated);
+    }
 
-        return redirect()->route('providers.show', $provider)->with('success', $message);
+    /** After publishing: what happens next with the review, sharing it, and other channels to review */
+    public function thanks(Request $request, Provider $provider)
+    {
+        $review = $provider->reviews()->where('user_id', $request->user()->id)->first();
+        if (! $review) {
+            return redirect()->route('providers.show', $provider);
+        }
+
+        $reviewed = $request->user()->reviews()->pluck('provider_id');
+
+        return view('reviews.thanks', [
+            'provider' => $provider,
+            'review' => $review,
+            // The quick details the member skipped, offered once more now the review is safely saved
+            'missing' => array_keys(array_filter([
+                'reasons' => ! $review->pros && ! $review->cons,
+                'duration' => ! $review->experience_duration,
+            ])),
+            'edited' => (bool) session('review_edited'),
+            'suggestions' => Provider::active()->whereNotIn('id', $reviewed)
+                ->orderByDesc('reviews_count')->orderByDesc('telegram_members')->take(4)->get(),
+        ]);
+    }
+
+    /** Adds the quick details from the thank-you page; the text, stars and moderation status stay as they are */
+    public function details(Request $request, Provider $provider)
+    {
+        $review = $provider->reviews()->where('user_id', $request->user()->id)->firstOrFail();
+
+        $data = $request->validate([
+            'pros' => ['nullable', 'array'],
+            'pros.*' => [Rule::in(array_keys(__('trust.pros')))],
+            'cons' => ['nullable', 'array'],
+            'cons.*' => [Rule::in(array_keys(__('trust.cons')))],
+            'experience_duration' => ['nullable', Rule::in(array_keys(__('trust.experience_durations')))],
+        ]);
+
+        $review->update(array_filter([
+            'pros' => $data['pros'] ?? null,
+            'cons' => $data['cons'] ?? null,
+            'experience_duration' => $data['experience_duration'] ?? null,
+        ]));
+
+        return redirect()->route('reviews.thanks', $provider)->with('success', __('شكراً، أضفنا التفاصيل إلى تقييمك.'));
     }
 
     public function destroy(Request $request, Provider $provider)
