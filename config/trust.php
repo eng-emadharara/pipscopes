@@ -8,6 +8,9 @@ return [
     // Days an admin sign-in lasts in the admin panel before it asks again (members stay signed in). 0 = no limit.
     'admin_session_days' => (int) env('ADMIN_SESSION_DAYS', 7),
 
+    // Ask for a code sent by email after every admin sign-in (App\Filament\Auth\EmailTwoFactor).
+    'admin_email_2fa' => (bool) env('ADMIN_EMAIL_2FA', true),
+
     /*
      | Site languages. The first one is the base language: content typed in the
      | main admin fields is in this language, the others are stored as translations.

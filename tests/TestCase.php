@@ -16,6 +16,6 @@ abstract class TestCase extends BaseTestCase
         SignupGuard::flush();
 
         // actingAs() skips a real sign-in; tests of the admin sign-in limit turn it on themselves
-        config(['trust.admin_session_days' => 0]);
+        config(['trust.admin_session_days' => 0, 'trust.admin_email_2fa' => false]);
     }
 }

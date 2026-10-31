@@ -21,6 +21,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Solutionforest\FilamentEmail2fa\FilamentEmail2faPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -38,6 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Emerald,
             ])
+            // A code by email after every sign-in (App\Filament\Auth\EmailTwoFactor)
+            ->plugin(FilamentEmail2faPlugin::make())
             ->navigationGroups(['المحتوى', 'الطلبات والتقييمات', 'الإعدادات'])
             ->navigationItems([
                 NavigationItem::make('عرض الموقع')

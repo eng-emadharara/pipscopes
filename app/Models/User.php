@@ -11,13 +11,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Solutionforest\FilamentEmail2fa\Exceptions\InvalidTwoFACodeException;
+use Solutionforest\FilamentEmail2fa\Interfaces\RequireTwoFALogin;
+use Solutionforest\FilamentEmail2fa\Mail\TwoFAEmail;
+use Solutionforest\FilamentEmail2fa\Trait\HasTwoFALogin;
 
-class User extends Authenticatable implements FilamentUser, HasLocalePreference
+class User extends Authenticatable implements FilamentUser, HasLocalePreference, RequireTwoFALogin
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, HasTwoFALogin, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -144,5 +149,57 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference
     {
         // Cast: a user created in memory has no is_admin value until it is reloaded from the database
         return (bool) $this->is_admin;
+    }
+
+    /**
+     * The admin panel's email code (HasTwoFALogin). Replaces the package's version, which used mt_rand
+     * and stored the code as typed: here it comes from random_int and only its HMAC is kept.
+     */
+    public function generate2FACode(): string
+    {
+        $this->twoFaCodes()->delete();
+        $code = sprintf('%06d', random_int(0, 999999));
+        $this->twoFaCodes()->create([
+            'code' => self::hash2FACode($code),
+            'expiry_at' => now()->addMinutes((int) config('filament-email-2fa.expiry_time_by_mins', 10)),
+        ]);
+
+        return $code;
+    }
+
+    /** Filament's login response sends this on every sign-in, so it's skipped when config trust.admin_email_2fa is off. */
+    public function send2FAEmail()
+    {
+        if (config('trust.admin_email_2fa') && $this->email) {
+            Mail::to(trim($this->email))->send(new TwoFAEmail($this->name, $this->generate2FACode()));
+        }
+    }
+
+    /** Whether this session entered a correct code (HasTwoFALogin); always yes when config trust.admin_email_2fa is off. */
+    public function isTwoFaVerfied(?string $session_id = null): bool
+    {
+        if (! config('trust.admin_email_2fa')) {
+            return true;
+        }
+
+        return $this->twoFaVerifis()->where('session_id', $session_id ?? session()->getId())->exists();
+    }
+
+    /** A correct code works once; App\Filament\Auth\EmailTwoFactor limits the wrong ones. */
+    public function verify2FACode(string $code)
+    {
+        // Queried, not the loaded relation: it may have been read before the latest code was sent
+        $stored = $this->latest_2fa_code()->first()?->code;
+
+        if ($stored === null || ! hash_equals($stored, self::hash2FACode(trim($code)))) {
+            throw new InvalidTwoFACodeException;
+        }
+
+        $this->twoFaCodes()->delete();
+    }
+
+    protected static function hash2FACode(string $code): string
+    {
+        return hash_hmac('sha256', $code, config('app.key'));
     }
 }
