@@ -7,7 +7,7 @@
         $showImpersonators = $stats['impersonators'] > 0;
     @endphp
     <section class="hero-bg relative isolate overflow-hidden bg-ink text-white">
-        <div class="mx-auto max-w-3xl px-4 pb-12 pt-12 text-center md:pb-14 md:pt-16">
+        <div class="mx-auto max-w-3xl px-4 pb-16 pt-12 text-center md:pb-20 md:pt-16">
             <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ __('اقرأ التقييمات. اختر بثقة.') }}</h1>
             <p class="mx-auto mt-4 max-w-xl text-gray-300">{{ __('تجارب حقيقية من متداولين حول قنوات التوصيات، خدمات نسخ الصفقات، ومقدمي خدمات التداول قبل أن تشترك.') }}</p>
 
@@ -28,29 +28,29 @@
                 </div>
             @endif
 
-            {{-- divide-x is logical in Tailwind 4, so it needs no RTL reverse --}}
+            {{-- divide-x is logical in Tailwind 4, so it needs no RTL reverse. Each number comes first (order-first) so they line up even when a label wraps --}}
             <dl @class(['mx-auto mt-8 grid divide-x divide-white/10', $showImpersonators ? 'max-w-xl grid-cols-3' : 'max-w-sm grid-cols-2'])>
-                <div class="flex flex-col-reverse items-center gap-0.5 px-2">
+                <div class="flex flex-col items-center gap-1 px-2">
                     <dt class="text-xs text-gray-400 md:text-sm">{{ __('مقدم خدمة') }}</dt>
-                    <dd class="text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['providers']) }}</dd>
+                    <dd class="order-first text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['providers']) }}</dd>
                 </div>
-                <div class="flex flex-col-reverse items-center gap-0.5 px-2">
+                <div class="flex flex-col items-center gap-1 px-2">
                     <dt class="text-xs text-gray-400 md:text-sm">{{ __('تقييم') }}</dt>
-                    <dd class="text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['reviews']) }}</dd>
+                    <dd class="order-first text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['reviews']) }}</dd>
                 </div>
                 {{-- What sets us apart: impersonators caught; links to the account checker when it's on --}}
                 @php($checker = collect($layout)->contains('key', 'account_check'))
                 @if ($showImpersonators)
-                <div class="flex flex-col-reverse items-center gap-0.5 px-2">
-                    <dt class="inline-flex items-center gap-1 text-xs text-gray-400 md:text-sm">
-                        <x-ui-icon name="shield" class="h-3.5 w-3.5 text-amber-400" />
+                <div class="flex flex-col items-center gap-1 px-2">
+                    <dt class="text-xs leading-snug text-balance text-gray-400 md:text-sm">
+                        <x-ui-icon name="shield" class="-mt-0.5 me-0.5 inline h-3.5 w-3.5 text-amber-400" />
                         @if ($checker)
                             <a href="#account-check" class="underline decoration-white/20 underline-offset-4 hover:text-white hover:decoration-white">{{ __('حساب منتحل تم كشفه') }}</a>
                         @else
                             {{ __('حساب منتحل تم كشفه') }}
                         @endif
                     </dt>
-                    <dd class="text-xl font-bold tabular-nums text-amber-400 md:text-2xl">{{ number_format($stats['impersonators']) }}</dd>
+                    <dd class="order-first text-xl font-bold tabular-nums text-amber-400 md:text-2xl">{{ number_format($stats['impersonators']) }}</dd>
                 </div>
                 @endif
             </dl>
