@@ -51,6 +51,7 @@ class AnnouncementResource extends Resource
                     ->placeholder('https://…')->extraInputAttributes(['dir' => 'ltr'])
                     ->helperText('اختياري. نعدّ النقرات ونضيف وسوم UTM ليظهر مصدر الزيارات في Google Analytics.'),
                 Forms\Components\FileUpload::make('image')->label('صورة (اختياري)')->image()->disk('public')->directory('announcements')
+                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
                     ->maxSize(2048)->helperText('تظهر أعلى الإيميل ومع رسالة تيليجرام. يُفضّل 1200×630.'),
             ]),
 

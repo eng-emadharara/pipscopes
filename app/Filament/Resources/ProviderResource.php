@@ -98,6 +98,8 @@ class ProviderResource extends Resource
                 Forms\Components\Section::make('الصورة')->schema([
                     Forms\Components\FileUpload::make('avatar')->label('الشعار / الصورة')
                         ->image()->avatar()->imageEditor()
+                        // No SVG: it can carry scripts and is served from our own domain
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
                         ->disk('public')->directory('providers'),
                 ]),
                 Forms\Components\Section::make('الحالة')->schema([

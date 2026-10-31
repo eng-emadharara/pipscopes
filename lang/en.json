@@ -41,6 +41,7 @@
     "الاسم / اسم القناة": "Name / channel name",
     "البريد الإلكتروني": "Email",
     "البريد الإلكتروني أو كلمة المرور غير صحيحة.": "Incorrect email or password.",
+    "محاولات دخول كثيرة لهذا الحساب. حاول بعد :minutes دقيقة.": "Too many sign-in attempts for this account. Try again in :minutes minutes.",
     "الترتيب": "Sort by",
     "التسعير": "Pricing",
     "التصنيف": "Category",

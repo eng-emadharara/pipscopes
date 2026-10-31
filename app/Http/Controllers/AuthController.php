@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Rules\AllowedSignupEmail;
 use App\Support\EmailVerification;
+use App\Support\LoginThrottle;
 use App\Support\SignupGuard;
 use App\Support\SocialLogin;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -27,8 +28,14 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        if ($wait = LoginThrottle::wait('web', $credentials['email'])) {
+            return back()->withErrors(['email' => __('محاولات دخول كثيرة لهذا الحساب. حاول بعد :minutes دقيقة.', ['minutes' => (int) ceil($wait / 60)])])->onlyInput('email');
+        }
+
         // Members stay signed in on this device until they sign out (the remember cookie outlives the session)
         if (! Auth::attempt($credentials, remember: true)) {
+            LoginThrottle::failed('web', $credentials['email']);
+
             // Accounts created through Google/Facebook/Telegram have no password: point to the right button
             $providers = User::where('email', Str::lower(trim($credentials['email'])))->whereNull('password')->first()
                 ?->socialAccounts()->pluck('provider')->map(fn ($p) => SocialLogin::LABELS[$p] ?? $p)->implode(' / ');
@@ -38,6 +45,7 @@ class AuthController extends Controller
                 : __('البريد الإلكتروني أو كلمة المرور غير صحيحة.')])->onlyInput('email');
         }
 
+        LoginThrottle::clear('web', $credentials['email']);
         $request->session()->regenerate();
 
         return redirect()->intended(route('home'));
@@ -55,7 +63,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email', new AllowedSignupEmail],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ], [], [
             'name' => __('الاسم'),
             'email' => __('البريد الإلكتروني'),

@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Every response, admin panel included
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+
         // Public site only; the Filament admin panel has its own middleware stack and stays in Arabic
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,

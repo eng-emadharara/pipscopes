@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\LoginThrottle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,7 +27,13 @@ class OwnerAuthController extends Controller
 
         $guard = Auth::guard('owner');
 
+        if ($wait = LoginThrottle::wait('owner', $credentials['email'])) {
+            return back()->withErrors(['email' => __('محاولات دخول كثيرة لهذا الحساب. حاول بعد :minutes دقيقة.', ['minutes' => (int) ceil($wait / 60)])])->onlyInput('email');
+        }
+
         if (! $guard->attempt($credentials, $request->boolean('remember'))) {
+            LoginThrottle::failed('owner', $credentials['email']);
+
             return back()->withErrors(['email' => __('البريد الإلكتروني أو كلمة المرور غير صحيحة.')])->onlyInput('email');
         }
 
@@ -36,6 +43,7 @@ class OwnerAuthController extends Controller
             return back()->withErrors(['email' => __('هذا الحساب موقوف حالياً. تواصل مع إدارة المنصة.')])->onlyInput('email');
         }
 
+        LoginThrottle::clear('owner', $credentials['email']);
         $request->session()->regenerate();
 
         return redirect()->route('providers.show', $guard->user()->provider)

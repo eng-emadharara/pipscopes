@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Queued emails and Telegram messages use the site name from the admin panel, as web pages do
         Queue::before(fn () => \App\Support\Site::applyToConfig());
+
+        // New passwords: in production also refused when they appear in known data leaks (haveibeenpwned, k-anonymity)
+        Password::defaults(fn () => app()->isProduction() ? Password::min(8)->uncompromised() : Password::min(8));
 
         // Translated, RTL-aware pagination for the public site (Filament uses its own)
         Paginator::defaultView('pagination.site');
