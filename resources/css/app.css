@@ -205,3 +205,23 @@
 .choice-card:has(input:checked) { border-color: var(--color-brand-500); background: var(--color-brand-50); box-shadow: 0 0 0 1px var(--color-brand-500); }
 .choice-card:has(input:focus-visible) { outline: 2px solid var(--color-ink); outline-offset: 2px; }
 
+/* Homepage hero: a faint grid fading out from the top, with a soft brand glow behind the search */
+.hero-bg::before,
+.hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+.hero-bg::before {
+    background-image:
+        linear-gradient(to right, rgb(255 255 255 / .05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgb(255 255 255 / .05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 70% 65% at 50% 0%, #000 30%, transparent 100%);
+}
+.hero-bg::after {
+    background: radial-gradient(ellipse 50% 45% at 50% 30%, rgb(0 182 122 / .14), transparent 70%);
+}

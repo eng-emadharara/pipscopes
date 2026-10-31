@@ -65,7 +65,13 @@ class HomeController extends Controller
             'stats' => [
                 'providers' => Provider::active()->count(),
                 'reviews' => Review::where('status', Review::STATUS_APPROVED)->count(),
+                'impersonators' => Impersonator::confirmed()->whereHas('provider', fn ($q) => $q->active())->count(),
             ],
+            // Hero: the most reviewed channels as quick searches
+            'popular' => Provider::active()->where('reviews_count', '>', 0)
+                ->orderByDesc('reviews_count')->orderByDesc('rating_avg')
+                ->take(4)
+                ->get(['id', 'name', 'slug']),
         ]);
     }
 }

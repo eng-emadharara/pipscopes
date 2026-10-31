@@ -8,7 +8,8 @@
         <p class="mt-1 text-sm text-gray-600">{{ __('حسابات تنتحل صفة قنوات معروفة، وقنوات أشار عدد ملحوظ من مقيّميها إلى مؤشرات خطيرة.') }}</p>
     </div>
 
-    <div class="grid gap-4 {{ $alerts['impersonators']->isNotEmpty() && $alerts['flagged']->isNotEmpty() ? 'lg:grid-cols-2' : '' }}">
+    {{-- grid-cols-1 (minmax(0, 1fr)): without it the column grows to the longest untruncated line and widens the page on phones --}}
+    <div class="grid grid-cols-1 gap-4 {{ $alerts['impersonators']->isNotEmpty() && $alerts['flagged']->isNotEmpty() ? 'lg:grid-cols-2' : '' }}">
         @if ($alerts['impersonators']->isNotEmpty())
             <div class="card p-5">
                 <h3 class="mb-3 font-bold">{{ __('أحدث الحسابات المنتحلة') }}</h3>
