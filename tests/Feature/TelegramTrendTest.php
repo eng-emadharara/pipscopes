@@ -42,6 +42,32 @@ class TelegramTrendTest extends TestCase
         $this->assertSame([10.0, 25.0], [$days[0]['ratio'], $days[6]['ratio']]);
     }
 
+    public function test_days_after_the_last_check_have_no_numbers(): void
+    {
+        // Checked on the 26th with no change since the 25th; not checked yet today (the 27th)
+        $this->snapshot('2026-10-25', 12975, 429);
+        $this->provider->forceFill(['telegram_checked_at' => '2026-10-26 09:00'])->save();
+
+        $days = TelegramTrend::lastDays($this->provider->fresh());
+
+        $this->assertSame([null, null, null, null, 12975, 12975, null], array_column($days, 'subscribers'));
+        $this->assertSame([false, false, false, false, false, true, false], array_column($days, 'unchanged'));
+
+        $this->provider->forceFill(['telegram_checked_at' => '2026-10-27 09:00'])->save();
+        $this->assertSame(12975, TelegramTrend::lastDays($this->provider->fresh())[6]['subscribers']);
+    }
+
+    public function test_the_table_marks_days_that_repeat_the_one_before(): void
+    {
+        $this->snapshot('2026-10-25', 1000, 100);
+        $this->snapshot('2026-10-27', 1100, 120);
+        $this->provider->forceFill(['telegram_checked_at' => '2026-10-27 09:00'])->save();
+
+        $this->get(route('providers.show', $this->provider))
+            ->assertSee(__('بدون تغيير'))
+            ->assertSeeInOrder(['1,100', '1,000', __('بدون تغيير'), '1,000'], false);
+    }
+
     public function test_chart_shows_with_two_known_days_and_can_be_switched_off(): void
     {
         $page = fn () => $this->get(route('providers.show', $this->provider));
