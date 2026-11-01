@@ -58,7 +58,7 @@ class PrelaunchPageTest extends TestCase
     public function test_the_rest_of_the_site_waits_but_admins_see_everything(): void
     {
         $this->get('/providers')->assertRedirect(route('home'));
-        $this->get('/register')->assertRedirect(route('home'));
+        $this->get('/register')->assertOk(); // Signing up stays open before launch
         $this->get(route('submissions.create'))->assertOk();
 
         $this->actingAs(User::factory()->create(['is_admin' => true]))->get('/providers')->assertOk();

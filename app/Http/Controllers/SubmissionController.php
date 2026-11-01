@@ -130,8 +130,8 @@ class SubmissionController extends Controller
                 'status' => 'exists',
                 'name' => $provider->name,
                 'message' => __('هذه القناة موجودة على المنصة باسم «:name».', ['name' => $provider->name]),
-                // Channel pages are closed before launch
-                'url' => $provider->is_active && ! Launch::appliesToVisitor() ? route('providers.show', $provider) : null,
+                // Channel pages are closed before launch, unless opened early
+                'url' => $provider->is_active && (! Launch::appliesToVisitor() || Launch::earlyOpen($provider)) ? route('providers.show', $provider) : null,
             ];
         }
 

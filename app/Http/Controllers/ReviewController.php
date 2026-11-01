@@ -6,6 +6,8 @@ use App\Models\Provider;
 use App\Models\Review;
 use App\Support\AdminAlerts;
 use App\Support\Analytics;
+use App\Support\EarlyReviewAlerts;
+use App\Support\Launch;
 use App\Support\SignupGuard;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -56,10 +58,23 @@ class ReviewController extends Controller
         $data['ip'] = $request->ip();
         $data['hold_reason'] = null;
 
+        // Channels opened early before launch publish straight away; EarlyReviewAlerts watches them instead
+        $early = Launch::earlyOpen($provider);
+        $existing = $provider->reviews()->where('user_id', $request->user()->id)->first();
+
         // New accounts and a second account on the same device wait for an admin before they count
-        if ($data['status'] === Review::STATUS_APPROVED && ($reason = SignupGuard::holdReason($request->user(), $provider, $request->ip()))) {
+        if (! $early && $data['status'] === Review::STATUS_APPROVED && ($reason = SignupGuard::holdReason($request->user(), $provider, $request->ip()))) {
             $data['status'] = Review::STATUS_PENDING;
             $data['hold_reason'] = $reason;
+        }
+
+        // Editing can't bring back a review an admin rejected
+        if ($existing?->status === Review::STATUS_REJECTED) {
+            $data['status'] = Review::STATUS_REJECTED;
+        }
+
+        if ($early && ! $existing) {
+            $data['is_early'] = true;
         }
 
         $review = $provider->reviews()->updateOrCreate(
@@ -69,6 +84,10 @@ class ReviewController extends Controller
 
         if ($review->wasRecentlyCreated) {
             AdminAlerts::review($review);
+        }
+
+        if ($review->is_early && $early) {
+            EarlyReviewAlerts::check($review);
         }
 
         Analytics::flash('review_submit', [
@@ -100,7 +119,8 @@ class ReviewController extends Controller
                 'duration' => ! $review->experience_duration,
             ])),
             'edited' => (bool) session('review_edited'),
-            'suggestions' => Provider::active()->whereNotIn('id', $reviewed)
+            // Other channels are closed to visitors before launch
+            'suggestions' => Launch::appliesToVisitor() ? collect() : Provider::active()->whereNotIn('id', $reviewed)
                 ->orderByDesc('reviews_count')->orderByDesc('telegram_members')->take(4)->get(),
         ]);
     }

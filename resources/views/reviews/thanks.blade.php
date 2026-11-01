@@ -11,6 +11,9 @@
             @if ($published)
                 <h1 class="mt-4 text-2xl font-bold">{{ $edited ? __('تم حفظ تعديلات تقييمك') : __('شكراً لك! تم نشر تقييمك') }}</h1>
                 <p class="mt-2 text-gray-600">{{ __('تقييمك لـ :name ظاهر الآن للجميع، ويساعد متداولين آخرين قبل أن يشتركوا.', ['name' => $provider->name]) }}</p>
+            @elseif ($review->status === \App\Models\Review::STATUS_REJECTED)
+                <h1 class="mt-4 text-2xl font-bold">{{ __('تم حفظ تعديلات تقييمك') }}</h1>
+                <p class="mt-2 text-gray-600">{{ __('تقييمك غير منشور حالياً لأنه رُفض عند المراجعة. للاستفسار تواصل معنا.') }}</p>
             @else
                 <h1 class="mt-4 text-2xl font-bold">{{ __('وصلنا تقييمك، شكراً لك') }}</h1>
                 <p class="mt-2 text-gray-600">{{ __('سيظهر تقييمك خلال 24 ساعة بعد مراجعته. نراجع تقييمات الحسابات الجديدة لحماية الموقع من التقييمات الوهمية، ولا يعني ذلك أن في تقييمك مشكلة.') }}</p>
@@ -51,6 +54,24 @@
 
                 <button class="btn-primary">{{ __('حفظ التفاصيل') }}</button>
             </form>
+        @endif
+
+        {{-- Right after contributing is a good moment to invite them to follow; links from Site settings --}}
+        @if ($socials = \App\Support\Site::socials())
+            <section class="card mt-6 p-6 text-center" data-follow-us>
+                <h2 class="text-lg font-bold">{{ __('تابعنا على منصات التواصل') }}</h2>
+                <p class="mt-1 text-sm text-gray-500">{{ __('ليصلك جديد القنوات وتحذيرات الحسابات المنتحلة أولاً بأول.') }}</p>
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    @foreach ($socials as $platform => $url)
+                        <a href="{{ $url }}" target="_blank" rel="noopener"
+                           @if ($platform === 'telegram') data-track="telegram_join" data-track-params='{"location":"review_thanks"}' @else data-track="social_follow" data-track-params='@json(['platform' => $platform, 'location' => 'review_thanks'])' @endif
+                           class="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-ink transition hover:border-gray-500">
+                            <x-ui-icon :name="$platform" class="h-4 w-4" />
+                            {{ __(\App\Filament\Pages\SiteSettings::SOCIALS[$platform][0] ?? $platform) }}
+                        </a>
+                    @endforeach
+                </div>
+            </section>
         @endif
 
         @if ($suggestions->isNotEmpty())

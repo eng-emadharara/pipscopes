@@ -106,6 +106,8 @@ class ProviderResource extends Resource
                     Forms\Components\Toggle::make('is_active')->label('ظاهر على الموقع')->default(true),
                     Forms\Components\Toggle::make('is_verified')->label('موثّق'),
                     Forms\Components\Toggle::make('is_featured')->label('مميز في الرئيسية'),
+                    Forms\Components\Toggle::make('is_early_open')->label('فتح مبكر قبل الإطلاق')
+                        ->helperText('بموافقة صاحب القناة: تفتح صفحتها للزوار أثناء وضع ما قبل الإطلاق، وتُنشر تقييماتها فوراً بدون مراجعة.'),
                 ]),
                 Forms\Components\Section::make('الإحصائيات')->hiddenOn('create')->schema([
                     Forms\Components\Placeholder::make('rating_avg')->label('التقييم الحالي')
@@ -150,6 +152,7 @@ class ProviderResource extends Resource
                     ->url(fn (Provider $record) => static::ownersTabUrl($record)),
                 Tables\Columns\ToggleColumn::make('is_verified')->label('موثّق'),
                 Tables\Columns\ToggleColumn::make('is_active')->label('ظاهر'),
+                Tables\Columns\ToggleColumn::make('is_early_open')->label('فتح مبكر'),
                 Tables\Columns\TextColumn::make('created_at')->label('أضيف')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -158,6 +161,7 @@ class ProviderResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_verified')->label('موثّق'),
                 Tables\Filters\TernaryFilter::make('is_active')->label('ظاهر'),
                 Tables\Filters\TernaryFilter::make('is_featured')->label('مميز'),
+                Tables\Filters\TernaryFilter::make('is_early_open')->label('فتح مبكر'),
             ])
             ->actions([
                 Tables\Actions\Action::make('view')->label('عرض')->icon('heroicon-o-eye')

@@ -138,7 +138,7 @@
                         <button class="rounded-full px-3 py-1.5 hover:bg-white/10">{{ __('خروج') }}</button>
                     </form>
                     @endunless
-                @elseif (! $prelaunch)
+                @else
                     <a href="{{ route('login') }}" class="hidden rounded-full px-3 py-1.5 hover:bg-white/10 md:inline-block">{{ __('دخول') }}</a>
                     <a href="{{ route('register') }}" class="whitespace-nowrap rounded-full bg-brand-500 px-4 py-1.5 font-semibold hover:bg-brand-600">{{ __('حساب جديد') }}</a>
                 @endauth
@@ -198,12 +198,10 @@
 
             <div class="space-y-3 border-t border-gray-100 p-4">
                 @guest
-                    @unless ($prelaunch)
-                        <div class="grid grid-cols-2 gap-2">
-                            <a href="{{ route('login') }}" class="btn-outline">{{ __('دخول') }}</a>
-                            <a href="{{ route('register') }}" class="btn-primary">{{ __('حساب جديد') }}</a>
-                        </div>
-                    @endunless
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('login') }}" class="btn-outline">{{ __('دخول') }}</a>
+                        <a href="{{ route('register') }}" class="btn-primary">{{ __('حساب جديد') }}</a>
+                    </div>
                 @endguest
                 <div class="flex justify-center gap-4 text-sm">
                     @foreach ($locales as $code => $meta)

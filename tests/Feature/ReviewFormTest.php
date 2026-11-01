@@ -135,6 +135,24 @@ class ReviewFormTest extends TestCase
             ->assertDontSee('data-share', false);
     }
 
+    public function test_the_thank_you_page_invites_the_member_to_follow_us(): void
+    {
+        $user = User::factory()->create(['created_at' => now()->subMonth()]);
+        $this->post_review($user);
+        $thanks = fn () => $this->actingAs($user)->get(route('reviews.thanks', $this->provider));
+
+        \App\Models\Setting::put([\App\Support\Site::KEY => [...\App\Support\Site::all(), 'socials' => []]]);
+        $thanks()->assertOk()->assertDontSee('data-follow-us', false);
+
+        \App\Models\Setting::put([\App\Support\Site::KEY => [...\App\Support\Site::all(), 'socials' => [
+            'telegram' => 'https://t.me/pipscopes', 'instagram' => 'https://instagram.com/pipscopes',
+        ]]]);
+        $thanks()->assertSee('تابعنا على منصات التواصل')
+            ->assertSee('href="https://t.me/pipscopes"', false)
+            ->assertSee('href="https://instagram.com/pipscopes"', false)
+            ->assertSee('review_thanks', false);
+    }
+
     public function test_the_thank_you_page_needs_a_review(): void
     {
         $this->actingAs(User::factory()->create())->get(route('reviews.thanks', $this->provider))

@@ -35,7 +35,12 @@
                 <tbody>
                     @foreach (array_reverse($trend) as $day)
                         <tr class="border-b border-gray-50">
-                            <td class="py-1.5 text-start">{{ $day['date']->translatedFormat('l j/n') }}</td>
+                            <td class="py-1.5 text-start">
+                                {{ $day['date']->translatedFormat('l j/n') }}
+                                @if ($day['unchanged'])
+                                    <span class="text-gray-400" title="{{ __('لم تتغير الأرقام عن اليوم السابق') }}">({{ __('بدون تغيير') }})</span>
+                                @endif
+                            </td>
                             <td class="py-1.5">{{ $day['subscribers'] !== null ? number_format($day['subscribers']) : '—' }}</td>
                             <td class="py-1.5">{{ $day['avg_views'] !== null ? number_format($day['avg_views']) : '—' }}</td>
                             <td class="py-1.5">{{ $day['ratio'] !== null ? $day['ratio'].'%' : '—' }}</td>

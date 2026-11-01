@@ -11,6 +11,7 @@ use App\Models\ReviewReport;
 use App\Models\ReviewVote;
 use App\Services\RatingAnalysis;
 use App\Support\Analytics;
+use App\Support\Launch;
 use App\Support\OwnerPortal;
 use Illuminate\Http\Request;
 
@@ -148,6 +149,11 @@ class ProviderController extends Controller
     public function show(Request $request, Provider $provider)
     {
         abort_unless($provider->is_active, 404);
+
+        // Before launch this is the only page they can reach: signing up or in brings them back here
+        if (! $request->user() && Launch::appliesToVisitor()) {
+            $request->session()->put('url.intended', route('providers.show', $provider));
+        }
 
         // Every event on this page carries the channel's properties (category, market, rating band…)
         Analytics::context(Analytics::channel($provider));

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProviderResource\RelationManagers\ReviewsRelationManager;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
+use App\Support\EarlyReviewAlerts;
 use App\Support\SignupGuard;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -90,6 +91,9 @@ class ReviewResource extends Resource
                         ->whereColumn('other.provider_id', 'reviews.provider_id')->whereColumn('other.ip', 'reviews.ip')
                         ->whereColumn('other.user_id', '!=', 'reviews.user_id'))),
                 Tables\Filters\SelectFilter::make('hold_reason')->label('سبب الانتظار')->options(SignupGuard::HOLD_REASONS),
+                Tables\Filters\TernaryFilter::make('is_early')->label('تقييم مبكر'),
+                Tables\Filters\Filter::make('alerted')->label('عليه إنذار')
+                    ->query(fn ($query) => $query->whereNotNull('alerts')),
             ])
             ->actions(static::tableActions())
             ->bulkActions(static::tableBulkActions());
@@ -116,6 +120,10 @@ class ReviewResource extends Resource
                     Review::STATUS_PENDING => 'warning',
                     default => 'danger',
                 }),
+            // Admins only: written before launch on a channel opened early, and what looks suspicious about it
+            Tables\Columns\TextColumn::make('early_flags')->label('مبكر')->badge()
+                ->state(fn (Review $r) => $r->is_early ? [...($r->alerts ? array_map(fn ($reason) => '⚠️ '.(EarlyReviewAlerts::REASONS[$reason] ?? $reason), $r->alerts) : []), 'تقييم مبكر'] : [])
+                ->color(fn ($state) => str_starts_with((string) $state, '⚠️') ? 'danger' : 'info'),
             Tables\Columns\TextColumn::make('helpful_count')->label('مفيد')->sortable()->alignCenter(),
             Tables\Columns\TextColumn::make('open_reports_count')->label('بلاغات')->sortable()->alignCenter()
                 ->badge()->color(fn ($state) => $state >= 3 ? 'danger' : ($state > 0 ? 'warning' : 'gray'))

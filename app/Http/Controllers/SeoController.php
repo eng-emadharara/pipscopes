@@ -41,6 +41,13 @@ class SeoController extends Controller
                     });
             }
 
+            // ...which includes the channels opened early
+            if (Launch::isPrelaunch()) {
+                foreach (Provider::active()->where('is_early_open', true)->orderBy('id')->get(['id', 'slug', 'updated_at']) as $provider) {
+                    $urls[] = ['loc' => route('providers.show', $provider), 'lastmod' => $provider->updated_at, 'priority' => '0.8', 'changefreq' => 'daily'];
+                }
+            }
+
             $urls[] = ['loc' => route('submissions.create'), 'priority' => '0.5', 'changefreq' => 'monthly'];
             foreach (Page::published()->get() as $page) {
                 $urls[] = ['loc' => $page->url(), 'lastmod' => $page->updated_at, 'priority' => '0.4', 'changefreq' => 'monthly'];
