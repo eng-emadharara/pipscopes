@@ -7,6 +7,7 @@ use App\Support\AccountHandle;
 use App\Support\SearchText;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +24,7 @@ class Provider extends Model
         'name', 'slug', 'service_type', 'pricing', 'bio', 'avatar',
         'telegram_url', 'telegram_members', 'telegram_data', 'telegram_checked_at', 'telegram_status', 'telegram_failures', 'website_url', 'twitter_url', 'instagram_url',
         'youtube_url', 'tiktok_url', 'facebook_url', 'whatsapp', 'extra_links',
-        'is_verified', 'is_featured', 'is_active',
+        'is_verified', 'is_featured', 'is_active', 'is_early_open',
     ];
 
     protected $casts = [
@@ -33,6 +34,7 @@ class Provider extends Model
         'is_verified' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'is_early_open' => 'boolean',
         'rating_avg' => 'float',
     ];
 
@@ -45,6 +47,13 @@ class Provider extends Model
 
             // Categories are synced after the save, so callers that change them run refreshSearchIndex()
             $provider->search_index = $provider->buildSearchIndex();
+        });
+
+        // A channel opened early belongs in the pre-launch sitemap right away
+        static::saved(function (Provider $provider) {
+            if ($provider->wasChanged('is_early_open')) {
+                Cache::forget('seo.sitemap.pre');
+            }
         });
     }
 

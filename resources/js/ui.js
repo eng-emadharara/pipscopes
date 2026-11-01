@@ -88,3 +88,14 @@ document.querySelectorAll('textarea[data-count]').forEach((field) => {
     field.addEventListener('input', update);
     update();
 });
+
+// <time data-local-date datetime="ISO-8601"> shows that moment in the visitor's own time zone and the page language
+document.querySelectorAll('time[data-local-date]').forEach((el) => {
+    const moment = new Date(el.dateTime);
+    if (Number.isNaN(moment.getTime())) return;
+    el.textContent = new Intl.DateTimeFormat(document.documentElement.lang || undefined, {
+        dateStyle: 'full',
+        timeStyle: 'short',
+        numberingSystem: 'latn',
+    }).format(moment);
+});

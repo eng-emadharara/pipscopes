@@ -7,7 +7,7 @@
     $readyChannels = \App\Models\Provider::active()->count();
 @endphp
 <x-layouts.app :title="__('قريباً')" :description="$subheadline" :hide-flash="true">
-    <section class="bg-ink pb-16 pt-14 text-white">
+    <section class="bg-ink pb-16 pt-14 text-white" data-prelaunch-page>
         <div class="mx-auto max-w-3xl px-4 text-center">
             <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand-500">
                 <span class="h-2 w-2 animate-pulse rounded-full bg-brand-500"></span>
@@ -32,7 +32,7 @@
                 </div>
             @endif
 
-            {{-- Sign-up is closed until launch: following the channel is how visitors hear the moment it opens --}}
+            {{-- Browsing is closed until launch: following the channel is how visitors hear the moment it opens --}}
             <div class="mt-10 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
                 @if ($telegram)
                     <a href="{{ $telegram }}" target="_blank" rel="noopener" data-track="telegram_join" data-track-params='{"location":"prelaunch_hero"}'

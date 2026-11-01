@@ -29,6 +29,7 @@ class SignupGuard
         'hold_new_reviews' => true,
         'new_account_days' => 3,
         'hold_same_ip' => true,
+        'early_alert_burst' => 10,
         'blocked_domains' => '',
         'allowed_domains' => '',
     ];

@@ -44,8 +44,12 @@
         @include('owners._edit-dialog')
     @endif
 
+    @include('providers._early-banner')
+
     {{-- Header: identity on the start side, rating card on the end side, actions under the identity --}}
     @php
+        // Browsing is closed to visitors before launch, so nothing here leads to it
+        $browsable = ! \App\Support\Launch::appliesToVisitor();
         $ratingText = [
             'excellent' => 'text-rate-excellent', 'great' => 'text-[#4d8c0b]', 'average' => 'text-[#a37f00]',
             'poor' => 'text-rate-poor', 'bad' => 'text-rate-bad', 'none' => 'text-gray-500',
@@ -57,12 +61,14 @@
             <div class="flex min-w-0 items-start gap-3 md:col-start-1 md:row-start-1 md:gap-4">
                 <x-avatar :provider="$provider" size="h-14 w-14 text-xl md:h-24 md:w-24 md:text-4xl" />
                 <div class="min-w-0">
-                    <nav class="mb-0.5 text-xs text-gray-500 md:mb-1">
-                        <a href="{{ route('providers.index') }}" class="hover:underline">{{ __('مقدمو الخدمة') }}</a>
-                        @if ($mainCategory = $provider->categories->first())
-                            / <a href="{{ route('categories.show', $mainCategory) }}" class="hover:underline">{{ $mainCategory->tr('name') }}</a>
-                        @endif
-                    </nav>
+                    @if ($browsable)
+                        <nav class="mb-0.5 text-xs text-gray-500 md:mb-1">
+                            <a href="{{ route('providers.index') }}" class="hover:underline">{{ __('مقدمو الخدمة') }}</a>
+                            @if ($mainCategory = $provider->categories->first())
+                                / <a href="{{ route('categories.show', $mainCategory) }}" class="hover:underline">{{ $mainCategory->tr('name') }}</a>
+                            @endif
+                        </nav>
+                    @endif
                     <h1 class="break-words text-xl font-bold leading-snug md:text-3xl md:leading-tight">
                         <bdi>{{ $provider->name }}</bdi>
                         @if ($provider->is_verified)
@@ -331,7 +337,7 @@
                             <dt class="shrink-0 text-gray-500">{{ trans_choice('التصنيفات', $provider->categories->count()) }}</dt>
                             <dd class="flex flex-wrap justify-end gap-1">
                                 @foreach ($provider->categories as $category)
-                                    <a href="{{ route('categories.show', $category) }}" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium hover:bg-gray-200">{{ $category->icon }} {{ $category->tr('name') }}</a>
+                                    <a @if ($browsable) href="{{ route('categories.show', $category) }}" @endif @class(['rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium', 'hover:bg-gray-200' => $browsable])>{{ $category->icon }} {{ $category->tr('name') }}</a>
                                 @endforeach
                             </dd>
                         </div>
@@ -341,7 +347,7 @@
                             <dt class="shrink-0 text-gray-500">{{ __('الأسواق') }}</dt>
                             <dd class="flex flex-wrap justify-end gap-1">
                                 @foreach ($provider->markets as $market)
-                                    <a href="{{ route('providers.index', ['markets' => [$market->slug]]) }}" class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium hover:bg-gray-200">{{ $market->icon }} {{ $market->tr('name') }}</a>
+                                    <a @if ($browsable) href="{{ route('providers.index', ['markets' => [$market->slug]]) }}" @endif @class(['rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium', 'hover:bg-gray-200' => $browsable])>{{ $market->icon }} {{ $market->tr('name') }}</a>
                                 @endforeach
                             </dd>
                         </div>

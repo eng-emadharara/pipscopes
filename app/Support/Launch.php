@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Provider;
 use App\Models\Setting;
 use Illuminate\Support\Carbon;
 
@@ -28,6 +29,12 @@ class Launch
     {
         // Owners may prepare their channel page (replies, details) before launch
         return static::isPrelaunch() && ! auth()->user()?->is_admin && ! OwnerPortal::owner();
+    }
+
+    /** Pre-launch, and this channel is open to visitors anyway so it can collect reviews at its owner's request. */
+    public static function earlyOpen(?Provider $provider): bool
+    {
+        return $provider && $provider->is_active && $provider->is_early_open && static::isPrelaunch();
     }
 
     /** Launch moment in UTC; entered in the admin panel as a local time in the chosen time zone. */
