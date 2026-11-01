@@ -6,6 +6,7 @@ use App\Models\Impersonator;
 use App\Models\Provider;
 use App\Models\Review;
 use App\Support\AccountHandle;
+use App\Support\AdminAlerts;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -49,7 +50,7 @@ class ImpersonatorController extends Controller
         }
 
         try {
-            $impersonator->reports()->create([
+            $report = $impersonator->reports()->create([
                 'user_id' => $request->user()?->id,
                 'voter_key' => Review::voterKey($request),
                 'details' => $data['details'] ?? null,
@@ -59,6 +60,8 @@ class ImpersonatorController extends Controller
         } catch (UniqueConstraintViolationException) {
             return $back->with('impersonator_success', __('سبق أن أبلغت عن هذا الحساب، شكراً لك. فريقنا يراجعه.'));
         }
+
+        AdminAlerts::impersonatorReport($report->setRelation('impersonator', $impersonator->refresh()));
 
         return $back->with('impersonator_success', $impersonator->status === 'confirmed'
             ? __('شكراً لك! هذا الحساب مسجّل لدينا كمنتحل، وتمت إضافة بلاغك إليه.')

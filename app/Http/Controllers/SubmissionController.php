@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\ProviderSubmission;
 use App\Services\TelegramChannel;
+use App\Support\AdminAlerts;
 use App\Support\Analytics;
 use App\Support\Launch;
 use App\Support\SubmissionLinks;
@@ -85,7 +86,7 @@ class SubmissionController extends Controller
 
         $categoryIds = array_values(array_unique(array_map('intval', $data['category_ids'])));
 
-        ProviderSubmission::create([
+        $submission = ProviderSubmission::create([
             'telegram_url' => $channel['url'],
             'category_ids' => $categoryIds,
             'market_ids' => array_values(array_unique(array_map('intval', $data['market_ids']))),
@@ -103,6 +104,8 @@ class SubmissionController extends Controller
             ],
             'status' => 'new',
         ]);
+
+        AdminAlerts::submission($submission);
 
         Analytics::flash('channel_submit', [
             'channel_name' => $channel['title'],

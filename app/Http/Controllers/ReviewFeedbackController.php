@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Models\ReviewReport;
-use App\Models\ReviewVote;
+use App\Support\AdminAlerts;
 use App\Support\OwnerPortal;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
@@ -59,10 +59,14 @@ class ReviewFeedbackController extends Controller
         ]);
 
         // A second report from the same visitor updates the first instead of piling up
-        ReviewReport::updateOrCreate(
+        $report = ReviewReport::updateOrCreate(
             ['review_id' => $review->id, 'voter_key' => Review::voterKey($request)],
             $data + ['user_id' => $request->user()?->id, 'status' => 'open'],
         );
+
+        if ($report->wasRecentlyCreated) {
+            AdminAlerts::reviewReport($report);
+        }
 
         $message = __('شكراً لك، تم استلام البلاغ وسيراجعه فريقنا.');
 

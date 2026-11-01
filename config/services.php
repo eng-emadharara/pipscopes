@@ -54,6 +54,9 @@ return [
     // Telegram Login Widget: create a bot with @BotFather, then link the site's domain to it with /setdomain
     'telegram' => [
         'bot_token' => null,
+        // Team alerts (App\Support\AdminAlerts): chat IDs, comma separated. Message the bot or add it to a group, then
+        // read the ID from https://api.telegram.org/bot<TOKEN>/getUpdates
+        'admin_chat_ids' => env('TELEGRAM_ADMIN_CHAT_IDS'),
     ],
 
     'slack' => [

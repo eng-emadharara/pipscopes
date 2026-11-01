@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Provider;
 use App\Models\Review;
+use App\Support\AdminAlerts;
 use App\Support\Analytics;
 use App\Support\SignupGuard;
 use Illuminate\Http\Request;
@@ -65,6 +66,10 @@ class ReviewController extends Controller
             ['user_id' => $request->user()->id],
             $data
         );
+
+        if ($review->wasRecentlyCreated) {
+            AdminAlerts::review($review);
+        }
 
         Analytics::flash('review_submit', [
             ...Analytics::channel($provider),

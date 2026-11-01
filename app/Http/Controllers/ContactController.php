@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ContactMessage;
 use App\Models\Page;
+use App\Support\AdminAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -43,10 +44,12 @@ class ContactController extends Controller
             'message' => __('الرسالة'),
         ]);
 
-        ContactMessage::create($data + [
+        $message = ContactMessage::create($data + [
             'user_id' => $request->user()?->id,
             'ip_address' => $request->ip(),
         ]);
+
+        AdminAlerts::contact($message);
 
         $success = $data['subject'] === 'account_deletion'
             ? __('تم استلام طلب حذف الحساب. سنتحقق من الطلب وننفذه خلال 30 يوماً كحد أقصى، ونبلغك عبر بريدك الإلكتروني.')

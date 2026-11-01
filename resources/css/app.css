@@ -150,6 +150,10 @@
     justify-content: flex-end;
     gap: 4px;
 }
+/* Phones: smaller stars so the rating word fits on the same row; the criteria pickers set their own --s inline */
+@media (max-width: 639px) {
+    .star-picker { --s: 36px; gap: 3px; }
+}
 .star-picker input { position: absolute; opacity: 0; pointer-events: none; }
 .star-picker label {
     cursor: pointer;

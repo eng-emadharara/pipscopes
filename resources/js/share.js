@@ -31,9 +31,14 @@ document.querySelectorAll('[data-copy-url]').forEach((btn) => {
     });
 });
 
-// Close an open menu when clicking elsewhere
+// Close an open menu when clicking elsewhere (or on the phone backdrop, which sits inside the menu)
 document.addEventListener('click', (event) => {
     document.querySelectorAll('details[data-share][open]').forEach((menu) => {
-        if (!menu.contains(event.target)) menu.removeAttribute('open');
+        if (!menu.contains(event.target) || event.target.closest('[data-share-close]')) menu.removeAttribute('open');
     });
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    document.querySelectorAll('details[data-share][open]').forEach((menu) => menu.removeAttribute('open'));
 });
