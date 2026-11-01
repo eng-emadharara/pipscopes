@@ -3,6 +3,8 @@
     // Every method is always listed; one without credentials yet shows as "coming soon"
     $providers = array_values(array_filter(array_keys(\App\Support\SocialLogin::LABELS), \App\Support\SocialLogin::isShown(...)));
     $enabled = \App\Support\SocialLogin::enabled();
+    // Through the Telegram app, or the browser popup that asks for a phone number (Admin → مفاتيح تسجيل الدخول)
+    $telegramApp = \App\Support\TelegramAppLogin::isOn();
 @endphp
 @if ($providers)
     <div class="space-y-3" data-social-login>
@@ -10,6 +12,8 @@
             @php $label = __('المتابعة باستخدام :provider', ['provider' => \App\Support\SocialLogin::LABELS[$provider]]); @endphp
             @if (! in_array($provider, $enabled, true))
                 <button type="button" class="social-btn social-btn-{{ $provider }}" disabled aria-disabled="true" title="{{ __('قريباً') }}">
+            @elseif ($provider === 'telegram' && $telegramApp)
+                <a class="social-btn social-btn-telegram" data-social="telegram" {{ \App\Support\TelegramAppLogin::linkAttributes(route('social.telegram')) }}>
             @elseif ($provider === 'telegram')
                 <button type="button" class="social-btn social-btn-telegram" data-social="telegram"
                         data-bot-id="{{ \App\Support\TelegramLogin::botId() }}" data-action="{{ route('social.telegram') }}">
@@ -35,7 +39,7 @@
                 @else
                     <span class="social-last social-soon">{{ __('قريباً') }}</span>
                 @endif
-            @if ($provider === 'telegram' || ! in_array($provider, $enabled, true))
+            @if (($provider === 'telegram' && ! $telegramApp) || ! in_array($provider, $enabled, true))
                 </button>
             @else
                 </a>
@@ -83,6 +87,7 @@
                 btn.addEventListener('click', (e) => {
                     if (root.hasAttribute('data-busy')) { e.preventDefault(); return; }
                     store.set(btn.dataset.social);
+                    if ('telegramApp' in btn.dataset) return; // resources/js/telegram-app.js
                     error.classList.add('hidden');
                     busy(btn, true);
                     if (btn.dataset.social !== 'telegram') return; // the link navigates to the provider

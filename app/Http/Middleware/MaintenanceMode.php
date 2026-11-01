@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 class MaintenanceMode
 {
     /** Always reachable: the admin panel (and the Livewire requests it makes), robots.txt and the language switch */
-    protected const OPEN_PATHS = ['admin', 'admin/*', 'livewire/*', 'filament/*', 'robots.txt', 'lang/*'];
+    protected const OPEN_PATHS = ['admin', 'admin/*', 'livewire/*', 'filament/*', 'robots.txt', 'lang/*', 'telegram/webhook'];
 
     public function handle(Request $request, Closure $next): Response
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\SocialLogin;
+use App\Support\TelegramAppLogin;
 use App\Support\TelegramLogin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,6 +129,34 @@ class SocialAuthController extends Controller
         $this->telegramReachable($request->user(), 'telegram');
 
         return back()->with('success', __('تم ربط حساب تيليجرام بنجاح.'));
+    }
+
+    /** Asked by the page while the member confirms in the Telegram app (App\Support\TelegramAppLogin). */
+    public function telegramAppStatus(Request $request)
+    {
+        abort_unless(TelegramAppLogin::isOn(), 404);
+
+        $data = TelegramAppLogin::pull($request);
+        if (! $data) {
+            return response()->json(['status' => 'pending']);
+        }
+
+        $profile = $this->telegramProfile($data);
+
+        if ($user = $request->user()) {
+            $linked = SocialLogin::link($user, 'telegram', $profile);
+            if ($linked) {
+                $this->telegramReachable($user, 'telegram');
+            }
+
+            $request->session()->flash($linked ? 'success' : 'error', $linked
+                ? __('تم ربط حساب تيليجرام بنجاح.')
+                : __('حساب تيليجرام هذا مرتبط بعضو آخر.'));
+
+            return response()->json(['status' => 'done', 'redirect' => url()->previous()]);
+        }
+
+        return response()->json(['status' => 'done', 'redirect' => $this->signIn($request, 'telegram', $profile)->getTargetUrl()]);
     }
 
     /** Signing in with Telegram grants the bot permission to write again, after a block (App\Notifications\Channels\TelegramChannel) */

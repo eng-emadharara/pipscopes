@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Setting;
 use App\Support\SocialKeys;
 use App\Support\SocialLogin;
+use App\Support\TelegramAppLogin;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -55,6 +56,7 @@ class SocialLoginSettings extends Page implements HasForms
             'facebook_callback' => url('/auth/facebook/callback'),
             'telegram_callback' => parse_url(url('/'), PHP_URL_HOST),
             'shown' => collect(SocialLogin::LABELS)->map(fn ($label, $provider) => SocialLogin::isShown($provider))->all(),
+            'telegram_app' => TelegramAppLogin::isOn(),
         ]);
     }
 
@@ -78,6 +80,9 @@ class SocialLoginSettings extends Page implements HasForms
 
                 Forms\Components\Toggle::make("shown.$provider")->label('إظهار للأعضاء')
                     ->helperText('عند الإطفاء يختفي من صفحة الدخول والتسجيل ومن «طرق تسجيل الدخول» في الملف الشخصي، حتى لو كانت مفاتيحه محفوظة.'),
+
+                ...($provider === 'telegram' ? [Forms\Components\Toggle::make('telegram_app')->label('الدخول عبر تطبيق تيليجرام (بدون رقم الجوال)')
+                    ->helperText('يفتح الزر تطبيق تيليجرام، ويضغط العضو Start ثم «تأكيد الدخول». عند الإطفاء يعود الدخول كما كان: نافذة المتصفح برقم الجوال. يتطلب موقعاً على HTTPS وبوتاً غير مربوط بخدمة أخرى.')] : []),
 
                 Forms\Components\TextInput::make("{$provider}_callback")->label($provider === 'telegram' ? 'نطاق الموقع (لأمر /setdomain)' : 'رابط العودة (Redirect URI)')
                     ->readOnly()
@@ -131,11 +136,29 @@ class SocialLoginSettings extends Page implements HasForms
 
         SocialKeys::save($keys);
         Setting::put([SocialLogin::SHOWN_SETTING => array_map('boolval', $data['shown'] ?? [])]);
+        $this->saveTelegramApp((bool) ($data['telegram_app'] ?? false));
 
         Notification::make()->title('تم حفظ مفاتيح تسجيل الدخول')->success()->send();
 
         // Reload so the status of each provider reflects the new keys
         $this->redirect(static::getUrl());
+    }
+
+    /** Connects or disconnects the bot only when the switch changed; a failure leaves the popup in place and says why */
+    protected function saveTelegramApp(bool $wanted): void
+    {
+        if ($wanted === TelegramAppLogin::isOn()) {
+            return;
+        }
+
+        SocialKeys::apply();
+
+        try {
+            $wanted ? TelegramAppLogin::enable() : TelegramAppLogin::disable();
+        } catch (\Throwable $e) {
+            Notification::make()->title($wanted ? 'تعذّر تفعيل الدخول عبر التطبيق' : 'تم الإطفاء، لكن تعذّر فصل البوت')
+                ->body(\Illuminate\Support\Str::limit($e->getMessage(), 300))->danger()->persistent()->send();
+        }
     }
 
     public function clear(string $provider): void

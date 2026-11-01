@@ -1,6 +1,7 @@
 import './bootstrap';
 import './autocomplete';
 import './countdown';
+import './telegram-app';
 import './review-feedback';
 import './share';
 import './account-check';

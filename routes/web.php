@@ -137,6 +137,10 @@ Route::middleware('guest')->group(function () {
     });
 });
 
+// The Telegram bot: confirmations from the app, and the page waiting for them (App\Support\TelegramAppLogin)
+Route::post('/telegram/webhook', \App\Http\Controllers\TelegramWebhookController::class)->name('telegram.webhook');
+Route::get('/auth/telegram/app-status', [SocialAuthController::class, 'telegramAppStatus'])->middleware('throttle:120,1')->name('social.telegram.app-status');
+
 // Google / Facebook come back here both to sign in and to link the method to a signed-in member (social.link)
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->middleware('throttle:20,1')
     ->whereIn('provider', SocialLogin::OAUTH)->name('social.callback');

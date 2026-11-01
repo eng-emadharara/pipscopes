@@ -8,17 +8,22 @@
     $user = auth()->user();
     $show = $user && \App\Support\SocialLogin::isEnabled('telegram') && \App\Support\SocialLogin::isShown('telegram')
         && ($relink || ! $user->socialAccounts->contains('provider', 'telegram'));
+    // Through the Telegram app, or the browser popup that asks for a phone number (Admin → مفاتيح تسجيل الدخول)
+    $app = $show && \App\Support\TelegramAppLogin::isOn();
+    $tag = $app ? 'a' : 'button';
+    $opens = $app
+        ? \App\Support\TelegramAppLogin::linkAttributes(route('social.telegram.link'))
+        : new \Illuminate\Support\HtmlString('type="button" data-telegram-link data-bot-id="'.e(\App\Support\TelegramLogin::botId()).'" data-action="'.e(route('social.telegram.link')).'"');
 @endphp
 @if ($show)
     @if ($variant === 'header')
         <span class="relative inline-flex">
-            <button type="button" class="tg-link" data-telegram-link
-                    data-bot-id="{{ \App\Support\TelegramLogin::botId() }}" data-action="{{ route('social.telegram.link') }}"
+            <{{ $tag }} class="tg-link" {{ $opens }}
                     title="{{ __('اربط حسابك بتيليجرام لتسجيل الدخول بنقرة واحدة') }}" aria-label="{{ __('ربط تيليجرام') }}">
                 <x-ui-icon name="telegram" class="tg-link-icon h-4 w-4" />
                 <span class="tg-link-spinner" aria-hidden="true"></span>
                 <span class="hidden sm:inline">{{ __('ربط تيليجرام') }}</span>
-            </button>
+            </{{ $tag }}>
 
             {{-- Encouraging hint under the button; hidden for good once dismissed --}}
             <span class="tg-link-hint" data-telegram-hint hidden role="status">
@@ -27,12 +32,11 @@
             </span>
         </span>
     @else
-        <button type="button" {{ $attributes->merge(['class' => 'tg-link tg-link-inline']) }} data-telegram-link
-                data-bot-id="{{ \App\Support\TelegramLogin::botId() }}" data-action="{{ route('social.telegram.link') }}">
+        <{{ $tag }} {{ $attributes->merge(['class' => 'tg-link tg-link-inline']) }} {{ $opens }}>
             <x-ui-icon name="telegram" class="tg-link-icon h-4 w-4" />
             <span class="tg-link-spinner" aria-hidden="true"></span>
             <span>{{ $label ?? __('ربط') }}</span>
-        </button>
+        </{{ $tag }}>
     @endif
 
     @once

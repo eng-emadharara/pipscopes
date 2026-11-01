@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Mail apps' one-click unsubscribe posts without our form token; the link itself is signed
-        $middleware->validateCsrfTokens(except: ['notifications/unsubscribe/*']);
+        $middleware->validateCsrfTokens(except: ['notifications/unsubscribe/*', 'telegram/webhook']);
 
         // Laravel moves "auth" to the front of the stack; channel owners must get their message
         // ("owners can't write reviews") before being sent to the members' login page

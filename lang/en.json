@@ -627,5 +627,14 @@
     "X / تويتر": "X / Twitter",
     "إنستغرام": "Instagram",
     "يوتيوب": "YouTube",
-    "تيك توك": "TikTok"
+    "تيك توك": "TikTok",
+    "اضغط Start ثم «تأكيد الدخول» في تيليجرام، ثم ارجع إلى هنا.": "Press Start, then \"Confirm sign-in\" in Telegram, then come back here.",
+    "ما انفتح التطبيق؟ استخدم رقم الجوال": "App didn't open? Use your phone number",
+    "🔐 طلب دخول إلى موقع :site": "🔐 Sign-in request for :site",
+    "اضغط «تأكيد الدخول» فقط إذا طلبته أنت الآن من جهازك. إذا أرسل لك أحد هذا الرابط فاضغط «إلغاء».": "Press \"Confirm sign-in\" only if you just asked for it on your device. If someone sent you this link, press \"Cancel\".",
+    "تأكيد الدخول": "Confirm sign-in",
+    "أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.": "Welcome to :site. Your notifications from the site will arrive here.",
+    "تم الإلغاء، ولم يتم تسجيل أي دخول.": "Cancelled. No one was signed in.",
+    "انتهت صلاحية هذا الطلب. ارجع إلى الموقع وحاول مرة أخرى.": "This request has expired. Go back to the site and try again.",
+    "تم التأكيد. ارجع إلى الموقع وستجد نفسك مسجّلاً.": "Confirmed. Go back to the site and you'll be signed in."
 }
