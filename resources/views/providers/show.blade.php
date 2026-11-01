@@ -127,23 +127,26 @@
             </a>
 
             {{-- Actions, side by side --}}
-            {{-- Phones: the two main buttons share the row equally, share stays an icon --}}
+            {{-- Phones: one fixed height for the whole row, the main action gets the most room,
+                 Telegram uses a short label so it never wraps, share is a square icon --}}
             <div class="flex items-center gap-2 md:col-start-1 md:row-start-2 md:flex-wrap md:ps-28">
                 @if ($userReview)
-                    <a href="{{ route('reviews.create', $provider) }}" class="btn-outline max-md:flex-1 max-md:px-3 max-md:text-sm">
-                        <x-ui-icon name="star" class="h-4 w-4" /> {{ __('تعديل تقييمك') }}
+                    <a href="{{ route('reviews.create', $provider) }}" class="btn-outline whitespace-nowrap max-md:h-11 max-md:min-w-0 max-md:flex-[1.4] max-md:px-3">
+                        <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('تعديل تقييمك') }}
                     </a>
                 @else
-                    <a href="{{ route('reviews.create', $provider) }}" class="btn-primary max-md:flex-1 max-md:px-3 max-md:text-sm">
-                        <x-ui-icon name="star" class="h-4 w-4" /> {{ __('اكتب تقييماً') }}
+                    <a href="{{ route('reviews.create', $provider) }}" class="btn-primary whitespace-nowrap shadow-sm shadow-brand-500/30 max-md:h-11 max-md:min-w-0 max-md:flex-[1.4] max-md:px-3">
+                        <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('اكتب تقييماً') }}
                     </a>
                 @endif
                 @if ($provider->telegram_url)
-                    <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="btn border border-sky-200 bg-sky-50 text-sky-800 hover:border-sky-400 max-md:flex-1 max-md:px-3 max-md:text-sm">
-                        <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('قناة التيليجرام') }}
+                    <a href="{{ $provider->telegram_url }}" target="_blank" rel="nofollow noopener" class="btn whitespace-nowrap border border-sky-200 bg-sky-50 text-sky-800 hover:border-sky-400 max-md:h-11 max-md:min-w-0 max-md:flex-1 max-md:px-3">
+                        <x-ui-icon name="telegram" class="h-4 w-4 shrink-0" />
+                        <span class="md:hidden">{{ __('تيليجرام') }}</span>
+                        <span class="max-md:hidden">{{ __('قناة التيليجرام') }}</span>
                     </a>
                 @endif
-                <x-share-buttons :url="$provider->shareUrl()" :text="$provider->shareText()" />
+                <x-share-buttons :url="$provider->shareUrl()" :text="$provider->shareText()" class="shrink-0" />
             </div>
         </div>
     </section>

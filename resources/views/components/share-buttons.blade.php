@@ -13,7 +13,7 @@
 <details {{ $attributes->merge(['class' => 'relative']) }} data-share>
     @if ($variant === 'button')
         {{-- Icon only on phones so it fits on the same row as the other buttons --}}
-        <summary class="btn-outline cursor-pointer list-none px-3.5 sm:px-5" aria-label="{{ __('مشاركة') }}">
+        <summary class="btn-outline cursor-pointer list-none px-3.5 max-md:h-11 max-sm:w-11 max-sm:px-0 sm:px-5" aria-label="{{ __('مشاركة') }}">
             <x-ui-icon name="share" class="h-4 w-4" /> <span class="hidden sm:inline">{{ __('مشاركة') }}</span>
         </summary>
     @else
