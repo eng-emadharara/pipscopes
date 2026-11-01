@@ -4,8 +4,10 @@ namespace App\Support;
 
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -147,18 +149,25 @@ class TelegramAppLogin
 
         $expired = (int) data_get($callback, 'message.date', 0) < now()->subMinutes(self::VALID_MINUTES)->timestamp;
 
+        $returnUrl = null;
+
         if ($m[1] === 'ok' && ! $expired) {
+            $identity = array_map('strval', array_filter(
+                array_intersect_key($callback['from'], array_flip(['id', 'first_name', 'last_name', 'username'])), 'filled',
+            ));
+
             DB::table('telegram_app_logins')->where('created_at', '<', now()->subDay())->delete();
             DB::table('telegram_app_logins')->updateOrInsert(['token' => $m[2]], [
-                'data' => json_encode(array_map('strval', array_filter(
-                    array_intersect_key($callback['from'], array_flip(['id', 'first_name', 'last_name', 'username'])), 'filled',
-                ))),
+                'data' => json_encode($identity),
                 'created_at' => now(), 'updated_at' => now(),
             ]);
+
+            $returnUrl = self::returnUrl($m[2], $identity);
         }
 
         self::api('answerCallbackQuery', ['callback_query_id' => $callback['id']]);
-        self::api('editMessageText', [
+
+        $reply = [
             'chat_id' => data_get($callback, 'message.chat.id'),
             'message_id' => data_get($callback, 'message.message_id'),
             'text' => match (true) {
@@ -166,7 +175,66 @@ class TelegramAppLogin
                 $expired => __('انتهت صلاحية هذا الطلب. ارجع إلى الموقع وحاول مرة أخرى.'),
                 default => '✅ '.__('تم التأكيد. ارجع إلى الموقع وستجد نفسك مسجّلاً.'),
             },
-        ]);
+        ];
+
+        try {
+            self::api('editMessageText', $reply + ($returnUrl ? ['reply_markup' => ['inline_keyboard' => [
+                [['text' => '🌐 '.__('ارجع للموقع'), 'url' => $returnUrl]],
+            ]]] : []));
+        } catch (RuntimeException) {
+            // Telegram refuses some addresses for buttons; the browser that asked signs in by itself anyway
+            self::api('editMessageText', $reply);
+        }
+    }
+
+    /** Called while the page waits: remembers where this browser was heading, for the bot's "back to the site" button */
+    public static function rememberWaiting(Request $request): void
+    {
+        if ($token = $request->session()->get(self::SESSION_KEY)) {
+            $member = (bool) $request->user();
+            Cache::put("telegram-app-waiting:$token", [
+                'member' => $member,
+                'url' => $member ? url()->previous() : $request->session()->get('url.intended', route('home')),
+            ], now()->addMinutes(self::VALID_MINUTES * 2));
+        }
+    }
+
+    /**
+     * Where the bot's button goes. Signing in: a link that works once, for a few minutes. It is only ever sent
+     * in the member's own chat, after they confirmed. Linking to an account: just the page, since
+     * signing that identity in could open a second account before the link is saved.
+     *
+     * @param  array<string, string>  $identity
+     */
+    protected static function returnUrl(string $token, array $identity): string
+    {
+        $waiting = Cache::get("telegram-app-waiting:$token", []);
+        $url = self::safeUrl($waiting['url'] ?? null);
+
+        if ($waiting['member'] ?? false) {
+            return $url;
+        }
+
+        $key = Str::random(40);
+        Cache::put("telegram-app-return:$key", ['identity' => $identity, 'url' => $url], now()->addMinutes(self::VALID_MINUTES));
+
+        return URL::temporarySignedRoute('social.telegram.app-return', now()->addMinutes(self::VALID_MINUTES), ['key' => $key]);
+    }
+
+    /** Only pages of this site */
+    protected static function safeUrl(?string $url): string
+    {
+        return $url && ($url === url('/') || str_starts_with($url, url('/').'/')) ? $url : route('home');
+    }
+
+    /**
+     * What the button's link stands for, used once.
+     *
+     * @return array{identity: array<string, string>, url: string}|null
+     */
+    public static function pullReturn(string $key): ?array
+    {
+        return Cache::pull("telegram-app-return:$key");
     }
 
     /**

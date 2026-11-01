@@ -151,6 +151,95 @@ class TelegramAppLoginTest extends TestCase
         $this->assertFalse($member->socialAccounts()->exists());
     }
 
+    /** The address on the bot's button after the last confirmation */
+    protected function buttonUrl(): ?string
+    {
+        $edits = Http::recorded(fn ($request) => str_contains($request->url(), 'editMessageText'));
+
+        return data_get($edits->last()[0]->data(), 'reply_markup.inline_keyboard.0.0.url');
+    }
+
+    public function test_the_button_signs_in_once_and_lands_on_the_page_they_came_from(): void
+    {
+        $this->turnOn();
+        $page = url('/p/some-channel');
+
+        // The page was waiting, heading back to a channel
+        $this->withSession([TelegramAppLogin::SESSION_KEY => self::TOKEN, 'url.intended' => $page])
+            ->getJson(route('social.telegram.app-status'))->assertJson(['status' => 'pending']);
+
+        $this->press()->assertOk();
+        $url = $this->buttonUrl();
+        $this->assertNotNull($url);
+        $this->assertStringContainsString('signature=', $url);
+
+        // Another browser: the button's link has its own session
+        $this->flushSession();
+        $this->get($url)->assertRedirect($page);
+        $this->assertSame('777', SocialAccount::where('provider', 'telegram')->value('provider_id'));
+        $this->assertAuthenticated();
+
+        // Works only once
+        auth()->logout();
+        $this->flushSession();
+        $this->get($url)->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_the_button_link_expires_and_cannot_be_forged(): void
+    {
+        $this->turnOn();
+        $this->press();
+        $url = $this->buttonUrl();
+
+        $this->get($url.'x')->assertRedirect(route('login'));
+        $this->assertGuest();
+
+        $this->travel(TelegramAppLogin::VALID_MINUTES + 1)->minutes();
+        $this->get($url)->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_when_linking_the_button_only_opens_the_page(): void
+    {
+        $this->turnOn();
+        $member = User::factory()->create();
+        $page = route('profile.edit');
+
+        $this->actingAs($member)->withSession([TelegramAppLogin::SESSION_KEY => self::TOKEN])
+            ->withHeader('referer', $page)->getJson(route('social.telegram.app-status'))->assertJson(['status' => 'pending']);
+
+        $this->press();
+
+        $this->assertSame($page, $this->buttonUrl());
+        $this->assertFalse(SocialAccount::where('provider', 'telegram')->exists());
+    }
+
+    public function test_a_waiting_page_outside_the_site_is_ignored(): void
+    {
+        $this->turnOn();
+        $member = User::factory()->create();
+
+        $this->actingAs($member)->withSession([TelegramAppLogin::SESSION_KEY => self::TOKEN])
+            ->withHeader('referer', 'https://evil.example/phish')->getJson(route('social.telegram.app-status'));
+        $this->press();
+
+        $this->assertSame(route('home'), $this->buttonUrl());
+    }
+
+    public function test_a_refused_button_still_answers_the_member(): void
+    {
+        Setting::put([TelegramAppLogin::SETTING => ['enabled' => true, 'bot_username' => 'PipScopesBot']]);
+        Http::fake(fn ($request) => isset($request['reply_markup'])
+            ? Http::response(['ok' => false, 'description' => 'Bad Request: BUTTON_URL_INVALID'], 400)
+            : Http::response(['ok' => true, 'result' => []]));
+
+        $this->press()->assertOk();
+
+        $this->assertSame(1, DB::table('telegram_app_logins')->count());
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'editMessageText') && ! isset($request['reply_markup']));
+    }
+
     public function test_the_admin_switch_connects_the_bot_and_goes_back(): void
     {
         Http::fake(['api.telegram.org/*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'PipScopesBot']]),

@@ -138,6 +138,8 @@ class SocialAuthController extends Controller
 
         $data = TelegramAppLogin::pull($request);
         if (! $data) {
+            TelegramAppLogin::rememberWaiting($request);
+
             return response()->json(['status' => 'pending']);
         }
 
@@ -157,6 +159,26 @@ class SocialAuthController extends Controller
         }
 
         return response()->json(['status' => 'done', 'redirect' => $this->signIn($request, 'telegram', $profile)->getTargetUrl()]);
+    }
+
+    /** The bot's "back to the site" button, after the member confirmed in the Telegram app */
+    public function telegramAppReturn(Request $request, string $key)
+    {
+        abort_unless(TelegramAppLogin::isOn(), 404);
+
+        $return = $request->hasValidSignature() ? TelegramAppLogin::pullReturn($key) : null;
+
+        if ($request->user()) {
+            return redirect($return['url'] ?? route('home'));
+        }
+
+        if (! $return) {
+            return redirect()->route('login')->with('error', __('انتهت صلاحية هذا الرابط. سجّل دخولك من جديد.'));
+        }
+
+        $request->session()->put('url.intended', $return['url']);
+
+        return $this->signIn($request, 'telegram', $this->telegramProfile($return['identity']));
     }
 
     /** Signing in with Telegram grants the bot permission to write again, after a block (App\Notifications\Channels\TelegramChannel) */
