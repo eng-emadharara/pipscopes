@@ -9,6 +9,7 @@ import './submission-form';
 import './analytics';
 import './provider-filters';
 import './ui';
+import './mobile-chrome';
 import './profile';
 
 // Prevent double submission (double-click / Enter + click) on every form

@@ -104,6 +104,20 @@ class ProviderTabsTest extends TestCase
         $this->assertStringNotContainsString('id="impersonators"', explode('</aside>', explode('<aside', $html)[1])[0]);
     }
 
+    public function test_the_review_bar_offers_the_right_action(): void
+    {
+        $this->get(route('providers.show', $this->provider))->assertOk()
+            ->assertSee('data-site-header', false)
+            ->assertSee('data-review-anchor', false)
+            ->assertSeeInOrder(['data-review-bar', route('reviews.create', $this->provider), __('اكتب تقييماً')], false);
+
+        $member = User::factory()->create();
+        Review::create(['provider_id' => $this->provider->id, 'user_id' => $member->id, 'rating' => 4, 'body' => 'A long enough review body for testing.', 'status' => Review::STATUS_APPROVED]);
+
+        $this->actingAs($member)->get(route('providers.show', $this->provider))
+            ->assertSeeInOrder(['data-review-bar', __('تعديل تقييمك')], false);
+    }
+
     public function test_bottom_sheets_have_a_close_button_with_its_label(): void
     {
         $sheetClose = fn (string $page) => $this->get($page)->assertOk()->getContent();

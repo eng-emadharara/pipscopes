@@ -229,3 +229,17 @@
 .hero-bg::after {
     background: radial-gradient(ellipse 50% 45% at 50% 30%, rgb(0 182 122 / .14), transparent 70%);
 }
+
+/* Phones: the header follows the page, leaving while reading down (resources/js/mobile-chrome.js).
+   Below the bottom sheets' dimmed background, which belongs to layers from z-30 up. */
+@media (width < 48rem) {
+    html { scroll-padding-top: 5rem; }
+    .site-header { position: sticky; top: 0; z-index: 25; transition: transform .2s ease; }
+    .site-header.is-hidden { transform: translateY(-100%); }
+    .below-site-header { top: var(--site-header-offset, 0px); transition: top .2s ease; }
+    .review-bar { transform: translateY(100%); visibility: hidden; transition: transform .2s ease, visibility .2s; }
+    .review-bar.is-shown { transform: none; visibility: visible; }
+}
+@media (width < 48rem) and (prefers-reduced-motion: reduce) {
+    .site-header, .below-site-header, .review-bar { transition: none; }
+}

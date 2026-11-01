@@ -20,7 +20,7 @@
     @endunless
     {{-- Owner mode: a management toolbar at the very top, above the channel itself --}}
     @if ($managing)
-        <div class="sticky top-0 z-30 bg-sky-800 text-white shadow-md">
+        <div class="below-site-header sticky top-0 z-30 bg-sky-800 text-white shadow-md">
             <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 text-sm">
                 <span class="inline-flex items-center gap-2 font-semibold">
                     <x-ui-icon name="shield" class="h-5 w-5 text-sky-200" />
@@ -140,7 +140,7 @@
             {{-- Actions, side by side --}}
             {{-- Phones: one fixed height for the whole row, the main action gets the most room,
                  Telegram uses a short label so it never wraps, share is a square icon --}}
-            <div class="flex items-center gap-2 md:col-start-1 md:row-start-2 md:flex-wrap md:ps-28">
+            <div class="flex items-center gap-2 md:col-start-1 md:row-start-2 md:flex-wrap md:ps-28" data-review-anchor>
                 @if ($userReview)
                     <a href="{{ route('reviews.create', $provider) }}" class="btn-outline whitespace-nowrap max-md:h-11 max-md:min-w-0 max-md:flex-[1.4] max-md:px-3">
                         <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('تعديل تقييمك') }}
@@ -411,4 +411,13 @@
             <x-impersonators :provider="$provider" :impersonators="$impersonators" />
         </div>
     </div>
+
+    {{-- Phones: the main action stays reachable once the one under the channel's name has scrolled away (resources/js/mobile-chrome.js) --}}
+    @unless ($managing)
+        <div class="review-bar fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl md:hidden" data-review-bar>
+            <a href="{{ route('reviews.create', $provider) }}" @class(['w-full whitespace-nowrap', 'btn-outline' => $userReview, 'btn-primary' => ! $userReview])>
+                <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ $userReview ? __('تعديل تقييمك') : __('اكتب تقييماً') }}
+            </a>
+        </div>
+    @endunless
 </x-layouts.app>

@@ -88,7 +88,8 @@
     {!! \App\Support\Site::get('head_code') !!}
 </head>
 <body class="min-h-screen flex flex-col">
-    <header class="bg-ink text-white">
+    {{-- On phones it leaves while reading down and returns on the way up (resources/js/mobile-chrome.js) --}}
+    <header class="site-header bg-ink text-white" data-site-header>
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <x-site-logo />
 

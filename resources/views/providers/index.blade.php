@@ -57,7 +57,7 @@
 
     {{-- One toolbar for every control; it stays on screen while scrolling. No backdrop-blur here:
          it would make the phones' filters sheet (position: fixed, inside) open within the toolbar. --}}
-    <div class="sticky top-0 z-30 border-b border-gray-200 bg-white">
+    <div class="below-site-header sticky top-0 z-30 border-b border-gray-200 bg-white">
         <div class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
             <label class="relative min-w-0 flex-1 lg:max-w-sm">
                 <span class="sr-only">{{ __('بحث') }}</span>
