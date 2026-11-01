@@ -14,6 +14,7 @@ const remembered = {
 
 let timer = null;
 let panel = null;
+let asking = false; // One question at a time: a second one could use up the message the first one just set
 
 const stop = () => {
     clearInterval(timer);
@@ -25,7 +26,9 @@ const stop = () => {
 
 const check = async (link) => {
     if (Date.now() - remembered.get() > WAIT_MS) { stop(); return; }
+    if (asking) return;
 
+    asking = true;
     try {
         const response = await fetch(link.dataset.statusUrl, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
         const result = await response.json();
@@ -35,6 +38,8 @@ const check = async (link) => {
         }
     } catch {
         // Offline for a moment (common while switching apps): the next round tries again
+    } finally {
+        asking = false;
     }
 };
 

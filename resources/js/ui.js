@@ -122,3 +122,10 @@ document.querySelectorAll('time[data-local-date]').forEach((el) => {
         numberingSystem: 'latn',
     }).format(moment);
 });
+
+// [data-toast] messages leave by themselves after a while, or with their close button
+document.querySelectorAll('[data-toast]').forEach((toast) => {
+    const hide = () => toast.remove();
+    toast.querySelector('[data-toast-close]')?.addEventListener('click', hide);
+    setTimeout(hide, 7000);
+});

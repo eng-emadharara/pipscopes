@@ -151,9 +151,11 @@ class SocialAuthController extends Controller
                 $this->telegramReachable($user, 'telegram');
             }
 
-            $request->session()->flash($linked ? 'success' : 'error', $linked
-                ? __('تم ربط حساب تيليجرام بنجاح.')
-                : __('حساب تيليجرام هذا مرتبط بعضو آخر.'));
+            if ($linked) {
+                $request->session()->put(SocialLogin::NOTICE_KEY, ['title' => __('تم ربط حساب تيليجرام بنجاح.')]);
+            } else {
+                $request->session()->flash('error', __('حساب تيليجرام هذا مرتبط بعضو آخر.'));
+            }
 
             return response()->json(['status' => 'done', 'redirect' => url()->previous()]);
         }
@@ -169,6 +171,11 @@ class SocialAuthController extends Controller
         $return = $request->hasValidSignature() ? TelegramAppLogin::pullReturn($key) : null;
 
         if ($request->user()) {
+            // Same browser, already signed in by the waiting page: this tap still deserves the answer
+            if ($return) {
+                $request->session()->put(SocialLogin::NOTICE_KEY, ['title' => __('تم تسجيل دخولك بنجاح'), 'name' => $request->user()->name]);
+            }
+
             return redirect($return['url'] ?? route('home'));
         }
 
@@ -230,9 +237,12 @@ class SocialAuthController extends Controller
                 : __('أهلاً :name! أضف بريدك الإلكتروني لتتمكن من كتابة التقييمات.', ['name' => $user->name]));
         }
 
-        return redirect()->intended(route('home'))->with('success', $user->wasRecentlyCreated
-            ? __('أهلاً بك :name! تم إنشاء حسابك.', ['name' => $user->name])
-            : __('مرحباً بعودتك :name!', ['name' => $user->name]));
+        $request->session()->put(SocialLogin::NOTICE_KEY, [
+            'title' => $user->wasRecentlyCreated ? __('تم إنشاء حسابك وتسجيل دخولك بنجاح') : __('تم تسجيل دخولك بنجاح'),
+            'name' => $user->name,
+        ]);
+
+        return redirect()->intended(route('home'));
     }
 
     protected function failed(string $provider)

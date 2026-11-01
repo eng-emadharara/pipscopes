@@ -639,5 +639,8 @@
     "تم التأكيد. ارجع إلى الموقع وستجد نفسك مسجّلاً.": "Confirmed. Go back to the site and you'll be signed in.",
     "عن القناة": "About",
     "ارجع للموقع": "Back to the site",
-    "انتهت صلاحية هذا الرابط. سجّل دخولك من جديد.": "This link has expired. Please sign in again."
+    "انتهت صلاحية هذا الرابط. سجّل دخولك من جديد.": "This link has expired. Please sign in again.",
+    "تم تسجيل دخولك بنجاح": "You're signed in",
+    "تم إنشاء حسابك وتسجيل دخولك بنجاح": "Your account is ready and you're signed in",
+    "أهلاً بك، :name": "Welcome, :name"
 }

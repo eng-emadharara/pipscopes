@@ -240,6 +240,52 @@ class TelegramAppLoginTest extends TestCase
         Http::assertSent(fn ($request) => str_contains($request->url(), 'editMessageText') && ! isset($request['reply_markup']));
     }
 
+    public function test_signing_in_shows_a_clear_message_that_background_requests_cannot_use_up(): void
+    {
+        $this->turnOn();
+        $this->press();
+
+        $this->askStatus()->assertJson(['status' => 'done']);
+
+        // Another round from the waiting page comes back before the page changes
+        $this->getJson(route('social.telegram.app-status'))->assertJson(['status' => 'pending']);
+
+        $this->get(route('home'))->assertOk()
+            ->assertSee('data-toast', false)
+            ->assertSee(__('تم إنشاء حسابك وتسجيل دخولك بنجاح'))
+            ->assertSee('Sara Ali');
+
+        // Once only
+        $this->get(route('home'))->assertDontSee('data-toast', false);
+
+        // Back later: the plain message
+        auth()->logout();
+        $this->flushSession();
+        $this->press();
+        $this->askStatus();
+        $this->get(route('home'))->assertSee(__('تم تسجيل دخولك بنجاح'));
+    }
+
+    public function test_the_message_shows_on_the_launch_page_without_the_add_channel_text(): void
+    {
+        $this->turnOn();
+        Setting::put(['prelaunch_enabled' => true, 'launch_at' => now()->addDays(3)->format('Y-m-d H:i'), 'launch_timezone' => 'UTC']);
+        $this->press();
+        $this->askStatus();
+
+        $this->get(route('home'))->assertOk()->assertSee('data-prelaunch-page', false)
+            ->assertSee(__('تم إنشاء حسابك وتسجيل دخولك بنجاح'))
+            ->assertDontSee(__('يمكنك إضافة قناة أخرى.'));
+    }
+
+    public function test_the_button_link_also_shows_the_message(): void
+    {
+        $this->turnOn();
+        $this->press();
+
+        $this->followingRedirects()->get($this->buttonUrl())->assertOk()->assertSee(__('تم إنشاء حسابك وتسجيل دخولك بنجاح'));
+    }
+
     public function test_the_admin_switch_connects_the_bot_and_goes_back(): void
     {
         Http::fake(['api.telegram.org/*/getMe' => Http::response(['ok' => true, 'result' => ['username' => 'PipScopesBot']]),

@@ -20,6 +20,9 @@ class SocialLogin
     /** Providers that use the OAuth redirect flow (Telegram signs in through its own widget). */
     public const OAUTH = ['google', 'facebook'];
 
+    /** Session key of the "you're signed in" message (components/signed-in-toast) */
+    public const NOTICE_KEY = 'signed_in_notice';
+
     /** Admin switches (Settings → مفاتيح تسجيل الدخول) for showing each method to members at all */
     public const SHOWN_SETTING = 'social_shown';
 

@@ -259,6 +259,8 @@
         @endif
     @endauth
 
+    <x-signed-in-toast />
+
     {{-- Pages that show the message next to their own form pass :hide-flash="true" --}}
     @if (session('success') && ! ($hideFlash ?? false))
         <div class="bg-brand-50 border-b border-brand-100">
