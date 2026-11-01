@@ -83,6 +83,17 @@
                         </a>
                     @endif
                     <p class="mt-0.5 text-sm text-gray-600 md:mt-1 md:text-base">{{ $serviceType }}</p>
+                    {{-- Phones and tablets: the official accounts, one tap away. From lg up the sidebar lists them --}}
+                    @if ($headerLinks = $provider->officialLinks())
+                        <div class="mt-2 flex flex-wrap gap-1.5 lg:hidden" role="group" aria-label="{{ __('الروابط الرسمية') }}" data-official-icons>
+                            @foreach ($headerLinks as $link)
+                                <a href="{{ $link['url'] }}" target="_blank" rel="nofollow noopener" title="{{ $link['label'] }}" aria-label="{{ $link['label'] }}"
+                                   class="grid h-8 w-8 place-items-center rounded-full border border-gray-200 text-gray-600 transition hover:border-gray-400 hover:text-ink">
+                                    <x-ui-icon :name="$link['icon']" class="h-4 w-4" />
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -162,32 +173,33 @@
         </div>
     @endif
 
-    <div class="mx-auto grid max-w-6xl gap-5 px-4 py-5 md:gap-6 md:py-8 lg:grid-cols-[1fr_320px]">
+    {{-- The tabs cover the whole grid: on phones and tablets the sidebar is the "about" tab; from lg up it's always beside them --}}
+    <div class="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 md:gap-6 md:py-8 lg:grid-cols-[1fr_320px] lg:grid-rows-[auto_1fr]" data-tabs data-tabs-url>
         @php
             $hasTrend = \App\Support\TelegramTrend::enabled() && \App\Support\TelegramTrend::drawable($trend = \App\Support\TelegramTrend::lastDays($provider));
             $tabs = array_filter([
                 'reviews' => __('التقييمات'),
                 'analysis' => __('تحليل التقييم'),
                 'telegram' => $hasTrend ? __('أداء القناة على تيليجرام') : null,
+                'about' => __('عن القناة'),
             ]);
+            // Only one of these shows at a time: Telegram from lg up, About below (where it holds Telegram too)
+            $tabSizes = ['telegram' => 'max-lg:hidden', 'about' => 'lg:hidden'];
+            $tabAlternatives = ['telegram' => 'about', 'about' => $hasTrend ? 'telegram' : 'reviews'];
             // Reviews first; ?tab= opens another one
             $activeTab = array_key_exists(request('tab'), $tabs) ? request('tab') : 'reviews';
         @endphp
-        <div class="min-w-0 space-y-4" data-tabs data-tabs-url id="tabs">
+        {{-- On phones its children join the grid, so the "about" tab can put the sidebar above the Telegram numbers --}}
+        <div class="min-w-0 max-lg:contents lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:space-y-4">
             {{-- Tab bar: real links (?tab=…) so it works without JS; resources/js/ui.js switches in place --}}
-            <nav class="card flex gap-1 overflow-x-auto p-1.5" role="tablist" aria-label="{{ __('أقسام صفحة القناة') }}">
+            <nav class="card max-lg:-order-2 flex scroll-mt-4 gap-1 overflow-x-auto p-1.5" id="tabs" role="tablist" aria-label="{{ __('أقسام صفحة القناة') }}">
                 @foreach ($tabs as $key => $label)
-                    <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}#tabs" data-tab="{{ $key }}" role="tab"
+                    <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}#tabs" data-tab="{{ $key }}" role="tab" @isset($tabAlternatives[$key]) data-tab-alt="{{ $tabAlternatives[$key] }}" @endisset
                        data-track="tab_view" data-track-params='@json(['tab' => $key])'
                        aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" aria-controls="{{ $key === 'reviews' ? 'reviews' : 'panel-'.$key }}"
-                       class="flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white md:gap-2 md:px-4 md:py-2.5 md:text-sm">
+                       class="{{ $tabSizes[$key] ?? '' }} flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-semibold text-gray-600 transition hover:bg-gray-50 hover:text-ink aria-selected:bg-ink aria-selected:text-white md:gap-2 md:px-4 md:py-2.5 md:text-sm">
                         @if ($key === 'telegram') <x-ui-icon name="telegram" class="h-4 w-4" /> @endif
-                        {{-- The Telegram tab's long name is just "Telegram" on phones --}}
-                        @if ($key === 'telegram')
-                            <span class="md:hidden">{{ __('تيليجرام') }}</span><span class="max-md:hidden">{{ $label }}</span>
-                        @else
-                            {{ $label }}
-                        @endif
+                        {{ $label }}
                         @if ($key === 'reviews' && $provider->reviews_count)
                             <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{{ number_format($provider->reviews_count) }}</span>
                         @endif
@@ -275,7 +287,7 @@
             </section>
 
             @if ($hasTrend)
-                <div class="{{ $activeTab === 'telegram' ? '' : 'hidden' }}" data-panel="telegram" id="panel-telegram" role="tabpanel">
+                <div class="{{ in_array($activeTab, ['telegram', 'about'], true) ? '' : 'hidden' }} max-lg:order-1" data-panel="telegram" data-panel-also="about" id="panel-telegram" role="tabpanel">
                     @include('providers._telegram-trend', ['trend' => $trend])
                 </div>
             @endif
@@ -327,7 +339,7 @@
         </div>
 
         {{-- Sidebar --}}
-        <aside class="space-y-4">
+        <aside class="{{ $activeTab === 'about' ? '' : 'hidden' }} space-y-4 lg:col-start-2 lg:row-start-1 lg:block!" data-panel="about" id="panel-about" role="tabpanel">
             <div class="card p-5">
                 <h2 class="mb-3 font-bold">{{ __('عن مقدم الخدمة') }}</h2>
                 @if ($provider->tr('bio'))
@@ -372,7 +384,7 @@
             </div>
 
             @if ($links = $provider->officialLinks())
-                <div class="card p-5" id="official-links">
+                <div class="card p-5 max-lg:hidden" id="official-links">
                     <h2 class="mb-1 flex items-center gap-2 font-bold">
                         <x-ui-icon name="shield" class="h-5 w-5 text-brand-600" />
                         {{ __('الروابط الرسمية') }}
@@ -392,7 +404,11 @@
                 </div>
             @endif
 
-            <x-impersonators :provider="$provider" :impersonators="$impersonators" />
         </aside>
+
+        {{-- Outside the tabs: on phones it follows whichever tab is open, and the red notice above links down to it --}}
+        <div class="min-w-0 max-lg:order-2 lg:col-start-2 lg:row-start-2 lg:self-start">
+            <x-impersonators :provider="$provider" :impersonators="$impersonators" />
+        </div>
     </div>
 </x-layouts.app>

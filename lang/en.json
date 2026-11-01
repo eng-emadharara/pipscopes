@@ -636,5 +636,6 @@
     "أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.": "Welcome to :site. Your notifications from the site will arrive here.",
     "تم الإلغاء، ولم يتم تسجيل أي دخول.": "Cancelled. No one was signed in.",
     "انتهت صلاحية هذا الطلب. ارجع إلى الموقع وحاول مرة أخرى.": "This request has expired. Go back to the site and try again.",
-    "تم التأكيد. ارجع إلى الموقع وستجد نفسك مسجّلاً.": "Confirmed. Go back to the site and you'll be signed in."
+    "تم التأكيد. ارجع إلى الموقع وستجد نفسك مسجّلاً.": "Confirmed. Go back to the site and you'll be signed in.",
+    "عن القناة": "About"
 }

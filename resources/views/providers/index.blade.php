@@ -85,7 +85,7 @@
                     <div class="flex items-center justify-between border-b border-gray-100 px-5 pb-3 pt-2 lg:hidden">
                         <div class="absolute inset-x-0 top-2 mx-auto h-1 w-10 rounded-full bg-gray-300"></div>
                         <h2 class="mt-3 text-lg font-bold">{{ __('الفلاتر') }}</h2>
-                        <button type="button" class="mt-3 grid h-9 w-9 place-items-center rounded-full hover:bg-gray-100" data-close-filters aria-label="{{ __('إغلاق') }}">&times;</button>
+                        <x-sheet-close class="mt-3" data-close-filters />
                     </div>
 
                     <div class="flex-1 space-y-6 overflow-y-auto px-5 py-5 lg:flex lg:items-center lg:gap-2 lg:space-y-0 lg:overflow-visible lg:p-0">

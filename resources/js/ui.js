@@ -28,7 +28,8 @@ document.querySelectorAll('[data-tabs]').forEach((group) => {
 
     const select = (key) => {
         buttons.forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === key ? 'true' : 'false'));
-        panels.forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== key));
+        // A panel may belong to a second tab too (data-panel-also)
+        panels.forEach((p) => p.classList.toggle('hidden', p.dataset.panel !== key && p.dataset.panelAlso !== key));
     };
 
     buttons.forEach((b) => b.addEventListener('click', (event) => {
@@ -40,13 +41,35 @@ document.querySelectorAll('[data-tabs]').forEach((group) => {
     const withError = panels.find((p) => p.querySelector('.error'));
     let target = null;
     try { target = location.hash && document.querySelector(location.hash); } catch {}
-    const withTarget = target && panels.find((p) => p.contains(target));
+    const withTarget = target && getComputedStyle(target).display !== 'none' && panels.find((p) => p.contains(target));
 
-    if (withError) select(withError.dataset.panel);
+    // A panel may be visible whatever the tab (the sidebar on wide screens): then nothing needs switching
+    const showPanel = (panel) => {
+        if (getComputedStyle(panel).display === 'none') select(panel.dataset.panel);
+    };
+
+    if (withError) showPanel(withError);
     else if (withTarget) {
-        select(withTarget.dataset.panel);
+        showPanel(withTarget);
         target.scrollIntoView({ block: 'start' });
     }
+
+    // Links to something inside a closed tab open that tab first, then the browser scrolls to it
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href^="#"]');
+        let linked = null;
+        try { linked = link && link.hash && document.querySelector(link.hash); } catch {}
+        const panel = linked && panels.find((p) => p.contains(linked));
+        if (panel) showPanel(panel);
+    });
+
+    // A tab may exist only at some widths (data-tab-alt is its stand-in at the others)
+    const fitWidth = () => {
+        const current = buttons.find((b) => b.getAttribute('aria-selected') === 'true');
+        if (current?.dataset.tabAlt && current.offsetParent === null) select(current.dataset.tabAlt);
+    };
+    fitWidth();
+    window.addEventListener('resize', fitWidth);
 });
 
 // [data-clamp] text is cut to a few lines; its [data-clamp-toggle] button appears only when
