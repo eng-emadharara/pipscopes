@@ -40,7 +40,7 @@
                         <x-ui-icon name="telegram" class="h-5 w-5" /> {{ __('تابعنا لتعرف لحظة الإطلاق') }}
                     </a>
                 @endif
-                <a href="#add-provider" @class(['px-7 py-3 text-base', 'btn-primary' => ! $telegram, 'inline-flex items-center justify-center rounded-full border border-white/25 font-semibold text-white transition hover:bg-white/10' => $telegram])>
+                <a href="#add-provider" class="btn-primary px-7 py-3 text-base">
                     {{ __('أضف قناة أو مقدم خدمة الآن') }}
                 </a>
             </div>
