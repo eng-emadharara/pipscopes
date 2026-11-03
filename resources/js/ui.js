@@ -96,7 +96,7 @@ document.querySelectorAll('[data-show-next]').forEach((button) => {
     });
 });
 
-// <textarea data-count="20"> shows its length in [data-count-for="its id"]: how many characters are
+// <textarea data-count="10"> shows its length in [data-count-for="its id"]: how many characters are
 // still needed (data-short) until the minimum, then the count out of the maximum (data-ok). ":n" is the number.
 document.querySelectorAll('textarea[data-count]').forEach((field) => {
     const output = document.querySelector(`[data-count-for="${field.id}"]`);
@@ -128,4 +128,10 @@ document.querySelectorAll('[data-toast]').forEach((toast) => {
     const hide = () => toast.remove();
     toast.querySelector('[data-toast-close]')?.addEventListener('click', hide);
     setTimeout(hide, 7000);
+});
+
+// The beta countdown bar, closed until the visitor's next visit (components/launch-bar)
+document.querySelector('[data-launch-bar-close]')?.addEventListener('click', (event) => {
+    event.target.closest('[data-launch-bar]').remove();
+    try { sessionStorage.setItem('tt:launch-bar-closed', '1'); } catch {}
 });

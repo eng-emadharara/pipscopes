@@ -52,7 +52,7 @@ class LaunchSettings extends Page implements HasForms
 
     public static function getNavigationBadge(): ?string
     {
-        return Launch::isPrelaunch() ? 'قبل الإطلاق' : null;
+        return Launch::isPrelaunch() ? 'قبل الإطلاق' : (Launch::isBeta() ? 'نسخة تجريبية' : null);
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -64,6 +64,7 @@ class LaunchSettings extends Page implements HasForms
     {
         $this->form->fill([
             'prelaunch_enabled' => Setting::get('prelaunch_enabled', false),
+            'launch_mode' => Setting::get('launch_mode', 'prelaunch'),
             'launch_at' => Setting::get('launch_at'),
             'launch_timezone' => Setting::get('launch_timezone', 'Asia/Amman'),
             'show_countdown' => Setting::get('show_countdown', true),
@@ -92,9 +93,17 @@ class LaunchSettings extends Page implements HasForms
             ]),
 
             Forms\Components\Section::make('وضع ما قبل الإطلاق')->schema([
-                Forms\Components\Toggle::make('prelaunch_enabled')->label('تفعيل وضع ما قبل الإطلاق')
-                    ->helperText('عند التفعيل يرى الزوار صفحة الإطلاق ونموذج إضافة مقدم خدمة (مع صفحات من نحن وتواصل معنا والخصوصية)، ويستطيعون التسجيل والدخول. التصفح والبحث مغلقان، والتقييم متاح فقط في القنوات التي فعّلت لها «فتح مبكر» من صفحة مقدمي الخدمة. المدراء يرون الموقع كاملاً دائماً.')
+                Forms\Components\Toggle::make('prelaunch_enabled')->label('الموقع لم يُطلق رسمياً بعد')
+                    ->helperText('اختر أدناه كيف يبدو الموقع للزوار حتى موعد الإطلاق. المدراء يرون الموقع كاملاً دائماً.')
                     ->live(),
+                Forms\Components\Radio::make('launch_mode')->label('الوضع')
+                    ->options([
+                        'beta' => 'نسخة تجريبية: الموقع كله مفتوح، مع شريط عداد للإطلاق الرسمي في كل الصفحات',
+                        'prelaunch' => 'قبل الإطلاق: صفحة الإطلاق ونموذج الإضافة فقط، ولا يُفتح إلا ما فعّلت له «فتح مبكر»',
+                    ])
+                    ->default('prelaunch')->required()
+                    ->helperText('في الوضعين تُنشر التقييمات فوراً، مع شارة «تقييم مبكر» للإدارة فقط وإنذارات بالإيميل. والتسجيل مفتوح.')
+                    ->visible(fn (Forms\Get $get) => $get('prelaunch_enabled'))->live(),
             ]),
 
             Forms\Components\Section::make('العداد التنازلي')
@@ -127,6 +136,7 @@ class LaunchSettings extends Page implements HasForms
 
         Setting::put([
             'prelaunch_enabled' => (bool) $data['prelaunch_enabled'],
+            'launch_mode' => $data['launch_mode'] ?? Setting::get('launch_mode', 'prelaunch'),
             'launch_at' => $data['launch_at'] ?: null,
             'launch_timezone' => $data['launch_timezone'] ?: null,
             'show_countdown' => (bool) $data['show_countdown'],
@@ -141,6 +151,11 @@ class LaunchSettings extends Page implements HasForms
     {
         $launchAt = Launch::launchAt();
         $local = $launchAt?->copy()->setTimezone(Setting::get('launch_timezone') ?: 'UTC');
+
+        if (Launch::isBeta()) {
+            return '🔵 <strong>نسخة تجريبية:</strong> الموقع كله مفتوح، والتقييمات تُنشر فوراً مع إنذارات.'
+                .($launchAt ? '<br>الإطلاق الرسمي: <strong dir="ltr">'.e($local->format('Y-m-d H:i')).'</strong>. عندها يختفي شريط العداد لوحده.' : '<br>لم تحدد موعد الإطلاق، فالشريط يقول «قريباً» بلا عداد.');
+        }
 
         if (! Launch::isPrelaunch()) {
             $text = '🟢 <strong>الموقع مفتوح للجميع.</strong>';

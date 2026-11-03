@@ -185,7 +185,7 @@ class EarlyAccessTest extends TestCase
         $this->get(route('providers.show', $this->open))->assertDontSee('noindex', false);
     }
 
-    public function test_on_launch_day_everything_opens_and_holds_return(): void
+    public function test_on_launch_day_everything_opens_and_holds_work_if_switched_on(): void
     {
         $early = User::factory()->create();
         $this->review($early);
@@ -197,6 +197,7 @@ class EarlyAccessTest extends TestCase
 
         $this->assertSame(Review::STATUS_APPROVED, Review::firstOrFail()->status);
 
+        \App\Models\Setting::put([\App\Support\SignupGuard::SETTING => ['hold_new_reviews' => true, 'hold_same_ip' => true]]);
         $this->review(User::factory()->create(), ip: '10.9.9.9');
         $late = Review::latest('id')->first();
         $this->assertSame(Review::STATUS_PENDING, $late->status);
@@ -209,7 +210,7 @@ class EarlyAccessTest extends TestCase
         $this->actingAs(User::factory()->create(['is_admin' => true]));
 
         $this->get('/admin/providers')->assertOk()->assertSee('فتح مبكر');
-        $this->get('/admin/signup-protection')->assertOk()->assertSee('إنذار القنوات المفتوحة مبكراً');
+        $this->get('/admin/signup-protection')->assertOk()->assertSee('إنذار: عدد التقييمات لقناة واحدة خلال ساعة');
 
         $review = Review::create(['provider_id' => $this->open->id, 'user_id' => User::factory()->create()->id, 'rating' => 5,
             'body' => 'A long enough review body for testing.', 'status' => Review::STATUS_APPROVED, 'is_early' => true]);

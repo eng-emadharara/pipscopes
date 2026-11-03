@@ -7,15 +7,28 @@ use App\Models\Setting;
 use Illuminate\Support\Carbon;
 
 /**
- * Pre-launch mode: while active, visitors only see the launch page and the
- * "add a provider" form. Admins always see the full site.
+ * Before the official launch the site runs in one of two modes (Admin → إعدادات الإطلاق):
+ * pre-launch, where visitors only see the launch page and the "add a provider" form (admins always see
+ * the full site), or beta, where everything is open with a countdown to the launch on every page.
  */
 class Launch
 {
+    /** The beta period: until the launch time, which ends it whatever the auto-launch switch says, since nothing is closed. */
+    public static function isBeta(): bool
+    {
+        return Setting::get('prelaunch_enabled', false) && Setting::get('launch_mode') === 'beta' && ! static::launchAt()?->isPast();
+    }
+
+    /** Reviews written now publish straight away and are marked as early: the beta period, or a channel opened early. */
+    public static function collectingEarly(Provider $provider): bool
+    {
+        return static::isBeta() || static::earlyOpen($provider);
+    }
+
     /** Pre-launch is switched on and, if auto-launch is set, the launch time hasn't passed yet. */
     public static function isPrelaunch(): bool
     {
-        if (! Setting::get('prelaunch_enabled', false)) {
+        if (! Setting::get('prelaunch_enabled', false) || Setting::get('launch_mode') === 'beta') {
             return false;
         }
 

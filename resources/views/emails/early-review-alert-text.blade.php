@@ -1,4 +1,4 @@
-إنذار تقييمات على قناة مفتوحة مبكراً
+إنذار تقييمات مشبوهة
 
 القناة: {{ $review->provider->name }}
 @foreach ($labels as $label)

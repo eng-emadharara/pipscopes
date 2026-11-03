@@ -642,5 +642,8 @@
     "انتهت صلاحية هذا الرابط. سجّل دخولك من جديد.": "This link has expired. Please sign in again.",
     "تم تسجيل دخولك بنجاح": "You're signed in",
     "تم إنشاء حسابك وتسجيل دخولك بنجاح": "Your account is ready and you're signed in",
-    "أهلاً بك، :name": "Welcome, :name"
+    "أهلاً بك، :name": "Welcome, :name",
+    "النسخة التجريبية": "Beta",
+    "الإطلاق الرسمي خلال": "Official launch in",
+    "الإطلاق الرسمي قريباً": "Official launch coming soon"
 }

@@ -69,7 +69,7 @@
 
             <div>
                 <label class="label" for="body">{{ __('تجربتك') }} <span class="text-red-500">*</span></label>
-                <textarea id="body" name="body" dir="auto" rows="6" class="input" minlength="20" maxlength="3000" data-count="20"
+                <textarea id="body" name="body" dir="auto" rows="6" class="input" minlength="10" maxlength="3000" data-count="10"
                           placeholder="{{ __('كيف كانت النتائج؟ هل التزموا بما وعدوا؟ كيف كان التعامل؟') }}" required>{{ old('body', $review->body) }}</textarea>
                 <div class="mt-1 flex items-start justify-between gap-3 text-xs">
                     <div>@error('body') <p class="error !mt-0">{{ $message }}</p> @enderror</div>

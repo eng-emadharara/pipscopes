@@ -120,9 +120,12 @@ class ReviewResource extends Resource
                     Review::STATUS_PENDING => 'warning',
                     default => 'danger',
                 }),
-            // Admins only: written before launch on a channel opened early, and what looks suspicious about it
-            Tables\Columns\TextColumn::make('early_flags')->label('مبكر')->badge()
-                ->state(fn (Review $r) => $r->is_early ? [...($r->alerts ? array_map(fn ($reason) => '⚠️ '.(EarlyReviewAlerts::REASONS[$reason] ?? $reason), $r->alerts) : []), 'تقييم مبكر'] : [])
+            // Admins only: written before the launch, and what looks suspicious about it
+            Tables\Columns\TextColumn::make('early_flags')->label('علامات')->badge()
+                ->state(fn (Review $r) => [
+                    ...array_map(fn ($reason) => '⚠️ '.(EarlyReviewAlerts::REASONS[$reason] ?? $reason), $r->alerts ?? []),
+                    ...($r->is_early ? ['تقييم مبكر'] : []),
+                ])
                 ->color(fn ($state) => str_starts_with((string) $state, '⚠️') ? 'danger' : 'info'),
             Tables\Columns\TextColumn::make('helpful_count')->label('مفيد')->sortable()->alignCenter(),
             Tables\Columns\TextColumn::make('open_reports_count')->label('بلاغات')->sortable()->alignCenter()

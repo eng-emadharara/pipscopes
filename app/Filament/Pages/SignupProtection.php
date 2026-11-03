@@ -84,9 +84,9 @@ class SignupProtection extends Page implements HasForms
                         ->numeric()->minValue(0)->maxValue(90)->required(),
                     Forms\Components\Toggle::make('hold_same_ip')->label('حجز التقييم إذا قيّم حساب آخر نفس القناة من نفس IP')
                         ->columnSpanFull(),
-                    Forms\Components\TextInput::make('early_alert_burst')->label('إنذار القنوات المفتوحة مبكراً: عدد التقييمات خلال ساعة')
+                    Forms\Components\TextInput::make('early_alert_burst')->label('إنذار: عدد التقييمات لقناة واحدة خلال ساعة')
                         ->numeric()->minValue(2)->maxValue(1000)->required()
-                        ->helperText('قبل الإطلاق تُنشر تقييمات هذه القنوات فوراً بدون حجز، ويصلك إنذار بالإيميل عند هذا العدد، أو عند تطابق نصين، أو عند تقييم حسابين من نفس IP.')
+                        ->helperText('كل تقييم يُنشر مباشرة يخضع للإنذار: يصلك إيميل عند هذا العدد، أو عند تطابق نصين، أو عند تقييم حسابين من نفس IP. وقبل الإطلاق تُنشر التقييمات فوراً حتى لو فعّلت الحجز أعلاه.')
                         ->columnSpanFull(),
                 ]),
         ]);

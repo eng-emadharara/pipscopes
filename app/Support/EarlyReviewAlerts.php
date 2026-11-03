@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Early-open channels publish reviews straight away, with no moderation (App\Support\Launch::earlyOpen),
+ * Reviews publish straight away, with no moderation (Admin → حماية التسجيل can bring holds back),
  * so anything that looks organised is flagged on the review and emailed to the admins. It never stops a review.
  */
 class EarlyReviewAlerts

@@ -116,8 +116,9 @@ class SignupGuardTest extends TestCase
         $this->register('four@gmail.com')->assertSessionHasNoErrors();
     }
 
-    public function test_new_accounts_reviews_wait_for_moderation(): void
+    public function test_new_accounts_reviews_wait_for_moderation_when_holds_are_on(): void
     {
+        \App\Models\Setting::put([\App\Support\SignupGuard::SETTING => ['hold_new_reviews' => true, 'hold_same_ip' => true]]);
         $provider = $this->provider();
         $newcomer = User::factory()->create();
         $veteran = User::factory()->create(['created_at' => now()->subMonth()]);
@@ -137,8 +138,9 @@ class SignupGuardTest extends TestCase
         $this->assertNull($held->fresh()->hold_reason);
     }
 
-    public function test_a_second_account_reviewing_the_same_channel_from_the_same_ip_is_held(): void
+    public function test_a_second_account_reviewing_the_same_channel_from_the_same_ip_is_held_when_holds_are_on(): void
     {
+        \App\Models\Setting::put([\App\Support\SignupGuard::SETTING => ['hold_new_reviews' => true, 'hold_same_ip' => true]]);
         $provider = $this->provider();
         [$first, $second] = User::factory(2)->create(['created_at' => now()->subMonth()]);
 

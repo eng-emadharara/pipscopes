@@ -1,5 +1,5 @@
 <x-email.layout>
-    <h1 style="margin:0 0 12px;font-size:20px;">إنذار تقييمات على قناة مفتوحة مبكراً</h1>
+    <h1 style="margin:0 0 12px;font-size:20px;">إنذار تقييمات مشبوهة</h1>
     <p style="margin:0 0 12px;">القناة: <strong>{{ $review->provider->name }}</strong></p>
     <ul style="margin:0 0 16px;padding:0 20px;">
         @foreach ($labels as $label)

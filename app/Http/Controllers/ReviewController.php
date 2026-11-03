@@ -34,7 +34,7 @@ class ReviewController extends Controller
         $criteria = array_keys(__('trust.criteria'));
         $rules = [
             'rating' => ['required', 'integer', 'between:1,5'],
-            'body' => ['required', 'string', 'min:20', 'max:3000'],
+            'body' => ['required', 'string', 'min:10', 'max:3000'],
             'show_name' => ['nullable', 'boolean'],
             'pros' => ['nullable', 'array'],
             'pros.*' => [Rule::in(array_keys(__('trust.pros')))],
@@ -58,8 +58,8 @@ class ReviewController extends Controller
         $data['ip'] = $request->ip();
         $data['hold_reason'] = null;
 
-        // Channels opened early before launch publish straight away; EarlyReviewAlerts watches them instead
-        $early = Launch::earlyOpen($provider);
+        // Before the launch reviews publish straight away
+        $early = Launch::collectingEarly($provider);
         $existing = $provider->reviews()->where('user_id', $request->user()->id)->first();
 
         // New accounts and a second account on the same device wait for an admin before they count
@@ -86,7 +86,8 @@ class ReviewController extends Controller
             AdminAlerts::review($review);
         }
 
-        if ($review->is_early && $early) {
+        // What's published without an admin's eye gets watched
+        if ($review->status === Review::STATUS_APPROVED) {
             EarlyReviewAlerts::check($review);
         }
 

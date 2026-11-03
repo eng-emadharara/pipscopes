@@ -84,6 +84,7 @@ class ReviewFormTest extends TestCase
 
     public function test_details_from_the_thank_you_page_keep_a_held_review_held(): void
     {
+        \App\Models\Setting::put([\App\Support\SignupGuard::SETTING => ['hold_new_reviews' => true, 'hold_same_ip' => true]]);
         $user = User::factory()->create();
         $this->post_review($user);
 
@@ -125,6 +126,7 @@ class ReviewFormTest extends TestCase
 
     public function test_a_held_review_explains_why_it_waits(): void
     {
+        \App\Models\Setting::put([\App\Support\SignupGuard::SETTING => ['hold_new_reviews' => true, 'hold_same_ip' => true]]);
         $user = User::factory()->create();
 
         $this->post_review($user)->assertRedirect(route('reviews.thanks', $this->provider));
@@ -151,6 +153,20 @@ class ReviewFormTest extends TestCase
             ->assertSee('href="https://t.me/pipscopes"', false)
             ->assertSee('href="https://instagram.com/pipscopes"', false)
             ->assertSee('review_thanks', false);
+    }
+
+    public function test_a_review_needs_at_least_ten_characters(): void
+    {
+        $user = User::factory()->create(['created_at' => now()->subMonth()]);
+
+        $this->actingAs($user)->get(route('reviews.create', $this->provider))
+            ->assertSee('minlength="10"', false)->assertSee('data-count="10"', false);
+
+        $this->post_review($user, ['body' => '123456789'])->assertSessionHasErrors('body');
+        $this->assertSame(0, Review::count());
+
+        $this->post_review($user, ['body' => '1234567890'])->assertSessionHasNoErrors();
+        $this->assertSame(1, Review::count());
     }
 
     public function test_the_thank_you_page_needs_a_review(): void
