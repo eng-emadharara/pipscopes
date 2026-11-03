@@ -63,7 +63,7 @@ class EarlyAccessTest extends TestCase
             ->assertSee('data-early-banner', false)
             ->assertSee('PipScopes قيد الإطلاق، وموعد الإطلاق', false)
             ->assertSee('data-local-date', false)
-            ->assertSee('تم فتح هذه القناة مبكراً بموافقة صاحبها، وستستطيع تصفح جميع القنوات بعد الإطلاق.');
+            ->assertSee('تم فتح هذه القناة مبكراً بموافقة صاحبها، وستستطيع تصفح جميع القنوات بعد الإطلاق. كن من أوائل المقيّمين، وتجربتك رح تساعد غيرك يختار صح.');
 
         Setting::put(['launch_at' => null]);
         $this->get(route('providers.show', $this->open))

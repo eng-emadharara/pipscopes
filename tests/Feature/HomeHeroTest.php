@@ -46,6 +46,28 @@ class HomeHeroTest extends TestCase
             ->assertSee(__('حساب منتحل تم كشفه'));
     }
 
+    public function test_the_review_count_stays_hidden_until_100_then_shows_the_hundreds_passed(): void
+    {
+        $this->assertNull(Review::publicCount(0));
+        $this->assertNull(Review::publicCount(99));
+        $this->assertSame('+100', Review::publicCount(100));
+        $this->assertSame('+100', Review::publicCount(199));
+        $this->assertSame('+200', Review::publicCount(250));
+        $this->assertSame('+1,200', Review::publicCount(1234));
+
+        $this->review('A long enough review body for testing.');
+        $this->get('/')->assertOk()->assertDontSee('data-reviews-count', false);
+    }
+
+    public function test_the_count_shows_on_the_home_page_once_there_are_100(): void
+    {
+        foreach (range(1, 100) as $i) {
+            $this->review("A long enough review body number $i.");
+        }
+
+        $this->get('/')->assertOk()->assertSee('data-reviews-count', false)->assertSee('+100');
+    }
+
     public function test_popular_channels_are_the_most_reviewed_ones(): void
     {
         $quiet = Provider::create(['name' => 'Quiet Channel', 'service_type' => 'Signals', 'is_active' => true]);

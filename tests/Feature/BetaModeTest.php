@@ -41,7 +41,7 @@ class BetaModeTest extends TestCase
         $this->assertFalse(Launch::isPrelaunch());
 
         foreach ([route('home'), route('providers.index'), route('providers.show', $this->channel), route('login'), route('register')] as $page) {
-            $this->get($page)->assertOk()->assertSee('data-launch-bar', false)->assertSee('data-countdown', false)->assertSee(__('النسخة التجريبية'));
+            $this->get($page)->assertOk()->assertSee('data-launch-bar', false)->assertSee('data-countdown', false)->assertSee(__('النسخة التجريبية'))->assertSee('كن من أوائل المقيّمين، وتجربتك رح تساعد غيرك يختار صح.');
         }
 
         $this->get(route('home'))->assertDontSee('data-prelaunch-page', false);

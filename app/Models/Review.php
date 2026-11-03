@@ -133,6 +133,12 @@ class Review extends Model
         return route('reviews.show', [$this, 'lang' => app()->getLocale()]);
     }
 
+    /** The site-wide count as visitors see it: hidden below 100, then the hundreds passed (+100, +200…) */
+    public static function publicCount(int $count): ?string
+    {
+        return $count >= 100 ? '+'.number_format(intdiv($count, 100) * 100) : null;
+    }
+
     /** A short line for page titles, share cards and search results: the start of the experience (old titles stay hidden) */
     public function headline(int $limit = 70): string
     {

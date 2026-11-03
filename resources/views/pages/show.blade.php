@@ -28,15 +28,18 @@
         @endforeach
 
         {{-- Live numbers --}}
-        <div class="grid grid-cols-3 gap-3 text-center">
+        @php($reviewsCount = \App\Models\Review::publicCount($stats['reviews']))
+        <div @class(['grid gap-3 text-center', 'grid-cols-3' => $reviewsCount, 'grid-cols-2' => ! $reviewsCount])>
             <div class="card p-4">
                 <div class="text-2xl font-bold text-brand-600">{{ number_format($stats['providers']) }}</div>
                 <div class="text-xs text-gray-500">{{ __('مقدم خدمة') }}</div>
             </div>
-            <div class="card p-4">
-                <div class="text-2xl font-bold text-brand-600">{{ number_format($stats['reviews']) }}</div>
-                <div class="text-xs text-gray-500">{{ __('تقييم منشور') }}</div>
-            </div>
+            @if ($reviewsCount)
+                <div class="card p-4" data-reviews-count>
+                    <div class="text-2xl font-bold text-brand-600" dir="ltr">{{ $reviewsCount }}</div>
+                    <div class="text-xs text-gray-500">{{ __('تقييم منشور') }}</div>
+                </div>
+            @endif
             <div class="card p-4">
                 <div class="text-2xl font-bold text-brand-600">{{ number_format($stats['categories']) }}</div>
                 <div class="text-xs text-gray-500">{{ __('تصنيف') }}</div>

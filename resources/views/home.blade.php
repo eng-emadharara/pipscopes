@@ -5,6 +5,8 @@
     @php
         // A zero would read as a weakness, so the number shows once there is something to show
         $showImpersonators = $stats['impersonators'] > 0;
+        $reviewsCount = \App\Models\Review::publicCount($stats['reviews']);
+        $statColumns = 1 + (int) (bool) $reviewsCount + (int) $showImpersonators;
     @endphp
     <section class="hero-bg relative isolate overflow-hidden bg-ink text-white">
         <div class="mx-auto max-w-3xl px-4 pb-16 pt-12 text-center md:pb-20 md:pt-16">
@@ -29,15 +31,17 @@
             @endif
 
             {{-- divide-x is logical in Tailwind 4, so it needs no RTL reverse. Each number comes first (order-first) so they line up even when a label wraps --}}
-            <dl @class(['mx-auto mt-8 grid divide-x divide-white/10', $showImpersonators ? 'max-w-xl grid-cols-3' : 'max-w-sm grid-cols-2'])>
+            <dl @class(['mx-auto mt-8 grid divide-x divide-white/10', [1 => 'max-w-40 grid-cols-1', 2 => 'max-w-sm grid-cols-2', 3 => 'max-w-xl grid-cols-3'][$statColumns]])>
                 <div class="flex flex-col items-center gap-1 px-2">
                     <dt class="text-xs text-gray-400 md:text-sm">{{ __('مقدم خدمة') }}</dt>
                     <dd class="order-first text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['providers']) }}</dd>
                 </div>
-                <div class="flex flex-col items-center gap-1 px-2">
-                    <dt class="text-xs text-gray-400 md:text-sm">{{ __('تقييم') }}</dt>
-                    <dd class="order-first text-xl font-bold tabular-nums md:text-2xl">{{ number_format($stats['reviews']) }}</dd>
-                </div>
+                @if ($reviewsCount)
+                    <div class="flex flex-col items-center gap-1 px-2" data-reviews-count>
+                        <dt class="text-xs text-gray-400 md:text-sm">{{ __('تقييم') }}</dt>
+                        <dd class="order-first text-xl font-bold tabular-nums md:text-2xl" dir="ltr">{{ $reviewsCount }}</dd>
+                    </div>
+                @endif
                 {{-- What sets us apart: impersonators caught; links to the account checker when it's on --}}
                 @php($checker = collect($layout)->contains('key', 'account_check'))
                 @if ($showImpersonators)

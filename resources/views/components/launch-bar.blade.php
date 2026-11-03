@@ -16,6 +16,7 @@
             @else
                 <span>{{ __('الإطلاق الرسمي قريباً') }}</span>
             @endif
+            <span class="max-md:basis-full md:ms-1">{{ __('كن من أوائل المقيّمين، وتجربتك رح تساعد غيرك يختار صح.') }}</span>
             <button type="button" class="absolute end-2 top-1/2 -translate-y-1/2 px-1.5 text-lg leading-none text-white/80 hover:text-white" data-launch-bar-close aria-label="{{ __('إغلاق') }}">&times;</button>
         </div>
     </div>
