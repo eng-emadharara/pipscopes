@@ -32,6 +32,23 @@
                 </div>
             @endif
 
+            {{-- The invitation to contribute, as soon as they arrive --}}
+            @if (\App\Support\ReviewInvite::available())
+                <div class="mx-auto mt-6 max-w-xl" data-hero-invite>
+                    <p class="text-sm font-semibold text-gray-200">{{ __('جرّبت قناة توصيات؟ تجربتك تحمي غيرك') }}</p>
+                    <div class="mt-3 flex flex-col justify-center gap-2 sm:flex-row">
+                        <a href="{{ route('providers.index') }}" class="btn-primary px-6 py-2.5" data-open-dialog="review-picker"
+                           data-track="review_invite_click" data-track-params='{"location":"hero"}'>
+                            <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('قيّم قناة جربتها') }}
+                        </a>
+                        <a href="{{ route('submissions.create') }}" class="btn bg-white px-6 py-2.5 text-ink hover:bg-gray-100"
+                           data-track="add_channel_click" data-track-params='{"location":"hero"}'>
+                            <x-ui-icon name="plus" class="h-4 w-4 shrink-0" /> {{ __('أضف قناة') }}
+                        </a>
+                    </div>
+                </div>
+            @endif
+
             {{-- divide-x is logical in Tailwind 4, so it needs no RTL reverse. Each number comes first (order-first) so they line up even when a label wraps --}}
             <dl @class(['mx-auto mt-8 grid divide-x divide-white/10', [1 => 'max-w-40 grid-cols-1', 2 => 'max-w-sm grid-cols-2', 3 => 'max-w-xl grid-cols-3'][$statColumns]])>
                 <div class="flex flex-col items-center gap-1 px-2">

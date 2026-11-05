@@ -14,6 +14,13 @@ class SearchController extends Controller
     /** Live suggestions for the search boxes: matching providers and categories. */
     public function suggest(Request $request): JsonResponse
     {
+        // The review picker's starting list, before anything is typed
+        if ($request->boolean('popular')) {
+            return response()->json(['providers' => Provider::active()->with('categories')
+                ->orderByDesc('reviews_count')->orderByDesc('telegram_members')->limit(6)->get()
+                ->map($this->suggestion(...)), 'categories' => [], 'impersonators' => []]);
+        }
+
         $term = mb_substr(trim((string) $request->query('q')), 0, 100);
         $words = SearchText::words($term);
 
@@ -35,18 +42,7 @@ class SearchController extends Controller
             ->orderByDesc('reviews_count')
             ->limit(6)
             ->get()
-            ->map(fn (Provider $p) => [
-                'name' => $p->name,
-                'handle' => $p->telegramHandle(),
-                'subtitle' => $p->tr('service_type'),
-                'category' => $p->categories->first()?->tr('name'),
-                'rating' => $p->reviews_count ? number_format($p->rating_avg, 1) : null,
-                'reviews' => trans_choice(':count تقييم', $p->reviews_count),
-                'verified' => $p->is_verified,
-                'avatar' => $p->avatarUrl(),
-                'initial' => $p->initials(),
-                'url' => route('providers.show', $p),
-            ]);
+            ->map($this->suggestion(...));
 
         // Few categories, so they are matched in PHP against both languages
         $categories = Category::where('is_active', true)->orderBy('sort_order')->get()
@@ -64,5 +60,23 @@ class SearchController extends Controller
             ->values();
 
         return response()->json(['providers' => $providers, 'categories' => $categories, 'impersonators' => $impersonators]);
+    }
+
+    /** @return array<string, mixed> */
+    protected function suggestion(Provider $p): array
+    {
+        return [
+            'name' => $p->name,
+            'handle' => $p->telegramHandle(),
+            'subtitle' => $p->tr('service_type'),
+            'category' => $p->categories->first()?->tr('name'),
+            'rating' => $p->reviews_count ? number_format($p->rating_avg, 1) : null,
+            'reviews' => trans_choice(':count تقييم', $p->reviews_count),
+            'verified' => $p->is_verified,
+            'avatar' => $p->avatarUrl(),
+            'initial' => $p->initials(),
+            'url' => route('providers.show', $p),
+            'review_url' => route('reviews.create', $p),
+        ];
     }
 }

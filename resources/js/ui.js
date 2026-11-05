@@ -1,10 +1,13 @@
 // Small UI behaviours shared by Blade views: dialogs, tabs and "add another row" buttons.
 
-// <button data-open-dialog="id"> opens <dialog id="id">; [data-close-dialog] closes the dialog it's in.
+// <button or a data-open-dialog="id"> opens <dialog id="id">; [data-close-dialog] closes the dialog it's in.
 // A dialog with data-open-on-load opens immediately (e.g. after a failed submit).
 document.addEventListener('click', (event) => {
     const opener = event.target.closest('[data-open-dialog]');
-    if (opener) document.getElementById(opener.dataset.openDialog)?.showModal();
+    if (opener) {
+        event.preventDefault(); // It may be a link, for browsers without JS
+        document.getElementById(opener.dataset.openDialog)?.showModal();
+    }
 
     const closer = event.target.closest('[data-close-dialog]');
     if (closer) closer.closest('dialog')?.close();

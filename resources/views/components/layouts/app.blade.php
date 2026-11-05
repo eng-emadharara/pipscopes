@@ -281,6 +281,8 @@
         {{ $slot }}
     </main>
 
+    <x-review-invite />
+
     <footer class="mt-16 bg-ink text-gray-400">
         <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 text-sm md:grid-cols-3">
             <div>
