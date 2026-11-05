@@ -111,13 +111,11 @@ class AnalyticsEventsTest extends TestCase
 
         $this->from(route('submissions.create'))->post(route('submissions.store'), [
             'telegram_url' => '@new_channel',
-            'category_ids' => [Category::value('id')],
-            'market_ids' => [Market::where('slug', 'gold')->value('id')],
         ])->assertSessionHasNoErrors();
 
         $events = $this->analytics($this->get(route('submissions.create')))['events'];
         $this->assertSame('channel_submit', $events[0]['name']);
-        $this->assertSame(['channel_name' => 'New Channel', 'channel_category' => 'signals', 'channel_subscribers' => 12345], $events[0]['params']);
+        $this->assertSame(['channel_name' => 'New Channel', 'channel_subscribers' => 12345], $events[0]['params']);
     }
 
     public function test_telegram_buttons_are_tracked(): void

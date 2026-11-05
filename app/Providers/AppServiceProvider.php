@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Category;
-use App\Models\Market;
 use App\Models\Page;
 use App\Support\SocialKeys;
 use Illuminate\Auth\Events\Login;
@@ -66,14 +64,6 @@ class AppServiceProvider extends ServiceProvider
                 $this->ensureRememberTokenIsSet($user);
                 $this->queueRecallerCookie($user);
             }
-        });
-
-        // The add-provider form is used on /submit and on the pre-launch page
-        View::composer('submissions._form', function ($view) {
-            $view->with([
-                'categories' => Category::where('is_active', true)->orderBy('sort_order')->get(),
-                'markets' => Market::active()->get(),
-            ]);
         });
 
         // Content pages linked from the public header/footer

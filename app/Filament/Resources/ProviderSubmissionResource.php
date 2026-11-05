@@ -132,7 +132,16 @@ class ProviderSubmissionResource extends Resource
             ->visible(fn (ProviderSubmission $record) => ! $record->provider_id)
             ->requiresConfirmation()
             ->modalDescription('سيتم إنشاء صفحة مقدم خدمة جديدة من بيانات هذا الطلب، ويمكنك تعديلها بعد ذلك.')
-            ->action(function (ProviderSubmission $record) {
+            ->fillForm(fn (ProviderSubmission $record) => $record->only(['category_ids', 'market_ids', 'service_type']))
+            ->form([
+                Forms\Components\Select::make('category_ids')->label('التصنيفات')
+                    ->options(fn () => Category::orderBy('sort_order')->pluck('name', 'id'))->multiple()->required(),
+                Forms\Components\TextInput::make('service_type')->label('نوع الخدمة')->required()->maxLength(255),
+                Forms\Components\Select::make('market_ids')->label('الأسواق')
+                    ->options(fn () => Market::orderBy('sort_order')->pluck('name', 'id'))->multiple(),
+            ])
+            ->action(function (ProviderSubmission $record, array $data) {
+                $record->update($data);
                 $provider = $record->convertToProvider();
 
                 Notification::make()->title('تمت إضافة مقدم الخدمة')->success()->send();

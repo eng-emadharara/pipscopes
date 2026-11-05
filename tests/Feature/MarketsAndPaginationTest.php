@@ -63,24 +63,20 @@ class MarketsAndPaginationTest extends TestCase
         $this->assertSame(['Gold Only'], Provider::search('Gold')->pluck('name')->all());
     }
 
-    public function test_submission_requires_markets_and_carries_them_to_the_provider(): void
+    public function test_markets_the_admin_sets_on_a_submission_carry_to_the_provider(): void
     {
         Storage::fake('public');
         $this->fakeTelegram(['new_channel' => []]);
 
-        $payload = [
-            'submitter_name' => 'Tester', 'submitter_contact' => '@tester', 'relation' => 'owner',
-            'category_ids' => [$this->category->id], 'name' => 'New Channel', 'service_type' => 'Gold signals',
-            'telegram_url' => 'https://t.me/new_channel',
-        ];
-
-        $this->post(route('submissions.store'), $payload)->assertSessionHasErrors('market_ids');
+        // The visitor only gives the link
+        $this->post(route('submissions.store'), ['telegram_url' => 'https://t.me/new_channel'])->assertSessionHasNoErrors();
 
         $gold = Market::where('slug', 'gold')->value('id');
         $oil = Market::where('slug', 'commodities')->value('id');
-        $this->post(route('submissions.store'), $payload + ['market_ids' => [$gold, $oil]])->assertSessionHasNoErrors();
+        $submission = ProviderSubmission::first();
+        $submission->update(['category_ids' => [$this->category->id], 'service_type' => 'Gold signals', 'market_ids' => [$gold, $oil]]);
 
-        $provider = ProviderSubmission::first()->convertToProvider();
+        $provider = $submission->convertToProvider();
         $this->assertEqualsCanonicalizing(['gold', 'commodities'], $provider->markets->pluck('slug')->all());
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\ProviderSubmission;
 use App\Services\TelegramChannel;
 use App\Support\AdminAlerts;
@@ -10,19 +9,17 @@ use App\Support\Analytics;
 use App\Support\Launch;
 use App\Support\SubmissionLinks;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
- * "Add a channel": the visitor gives the Telegram link, markets and categories only; the name,
- * description, photo and stats are read from the channel's public page (App\Services\TelegramChannel).
- * Who sent it is not asked.
+ * "Add a channel": the visitor gives the Telegram link only; the name, description, photo and stats are
+ * read from the channel's public page (App\Services\TelegramChannel), and the admin picks the categories
+ * and markets when approving it. Who sent it is not asked.
  */
 class SubmissionController extends Controller
 {
     public function create()
     {
-        // Categories and markets for the form come from the view composer in AppServiceProvider
         return view('submissions.create');
     }
 
@@ -61,16 +58,8 @@ class SubmissionController extends Controller
 
         $data = $request->validate([
             'telegram_url' => ['required', 'string', 'max:255'],
-            'category_ids' => ['required', 'array', 'min:1'],
-            'category_ids.*' => ['integer', Rule::exists('categories', 'id')->where('is_active', true)],
-            'market_ids' => ['required', 'array', 'min:1'],
-            'market_ids.*' => ['integer', Rule::exists('markets', 'id')->where('is_active', true)],
         ], [], [
             'telegram_url' => __('رابط قناة التيليجرام'),
-            'category_ids' => __('التصنيف'),
-            'category_ids.*' => __('التصنيف'),
-            'market_ids' => __('الأسواق'),
-            'market_ids.*' => __('الأسواق'),
         ]);
 
         $fail = fn (string $message) => throw ValidationException::withMessages(['telegram_url' => $message]);
@@ -84,16 +73,14 @@ class SubmissionController extends Controller
             $fail(self::message($channel['status']));
         }
 
-        $categoryIds = array_values(array_unique(array_map('intval', $data['category_ids'])));
-
         $submission = ProviderSubmission::create([
             'telegram_url' => $channel['url'],
-            'category_ids' => $categoryIds,
-            'market_ids' => array_values(array_unique(array_map('intval', $data['market_ids']))),
+            'category_ids' => [],
+            'market_ids' => [],
             'name' => $channel['title'],
             'description' => $channel['description'],
-            // The admin can refine it when approving; until then the chosen categories describe it
-            'service_type' => Category::whereIn('id', $categoryIds)->orderBy('sort_order')->pluck('name')->implode(' / '),
+            // The admin fills it in when approving
+            'service_type' => '',
             // Our own copy of the photo; Telegram's URL only if the download failed
             'avatar' => TelegramChannel::storePhoto($channel['photo_url'], $channel['username']) ?? $channel['photo_url'],
             'telegram_data' => [
@@ -109,7 +96,6 @@ class SubmissionController extends Controller
 
         Analytics::flash('channel_submit', [
             'channel_name' => $channel['title'],
-            'channel_category' => Category::whereIn('id', $categoryIds)->pluck('slug')->implode(','),
             'channel_subscribers' => $channel['subscribers'],
         ]);
 

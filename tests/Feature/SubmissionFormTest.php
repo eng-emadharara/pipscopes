@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\FakesTelegram;
 use Tests\TestCase;
 
-/** The add-channel form (link + markets + categories, the rest read from Telegram) and the default language. */
+/** The add-channel form (just the link, the rest read from Telegram) and the default language. */
 class SubmissionFormTest extends TestCase
 {
     use FakesTelegram, RefreshDatabase;
@@ -34,11 +34,7 @@ class SubmissionFormTest extends TestCase
     /** @return array<string, mixed> */
     protected function payload(array $overrides = []): array
     {
-        return $overrides + [
-            'telegram_url' => '@GoldChannel',
-            'category_ids' => [$this->category->id],
-            'market_ids' => [Market::where('slug', 'gold')->value('id')],
-        ];
+        return $overrides + ['telegram_url' => '@GoldChannel'];
     }
 
     public function test_site_opens_in_arabic_whatever_the_browser_language(): void
@@ -50,17 +46,48 @@ class SubmissionFormTest extends TestCase
         $this->get('/', ['Accept-Language' => 'ar'])->assertSee('lang="en"', false);
     }
 
-    public function test_form_asks_only_for_the_link_markets_and_categories(): void
+    public function test_form_asks_only_for_the_link_and_offers_to_add_it_for_them(): void
     {
         $this->get(route('submissions.create'))
             ->assertSee('name="telegram_url"', false)
-            ->assertSee('name="market_ids[]"', false)
-            ->assertSee('name="category_ids[]"', false)
+            ->assertDontSee('name="market_ids[]"', false)
+            ->assertDontSee('name="category_ids[]"', false)
             ->assertDontSee('name="name"', false)
             ->assertDontSee('name="submitter_name"', false)
             ->assertDontSee('name="submitter_contact"', false);
     }
 
+    public function test_the_contact_option_follows_the_site_settings(): void
+    {
+        \App\Models\Setting::put([\App\Support\Site::KEY => [...\App\Support\Site::all(), 'telegram_contact' => 'https://t.me/pipscopes?direct']]);
+        $this->get(route('submissions.create'))->assertOk()
+            ->assertSeeInOrder(['name="telegram_url"', 'data-submit-contact', 'href="https://t.me/pipscopes?direct"'], false);
+
+        \App\Models\Setting::put([\App\Support\Site::KEY => [...\App\Support\Site::all(), 'telegram_contact' => null]]);
+        $this->get(route('submissions.create'))->assertOk()->assertDontSee('data-submit-contact', false);
+    }
+
+    public function test_the_admin_sets_what_the_visitor_no_longer_gives_when_approving(): void
+    {
+        $this->post(route('submissions.store'), $this->payload())->assertSessionHasNoErrors();
+        $submission = ProviderSubmission::first();
+        $this->actingAs(\App\Models\User::factory()->create(['is_admin' => true]));
+        $gold = Market::where('slug', 'gold')->value('id');
+
+        \Livewire\Livewire::test(\App\Filament\Resources\ProviderSubmissionResource\Pages\ListProviderSubmissions::class)
+            ->callTableAction('convert', $submission, data: ['category_ids' => [], 'service_type' => ''])
+            ->assertHasTableActionErrors(['category_ids' => 'required', 'service_type' => 'required']);
+        $this->assertNull($submission->fresh()->provider_id);
+
+        \Livewire\Livewire::test(\App\Filament\Resources\ProviderSubmissionResource\Pages\ListProviderSubmissions::class)
+            ->callTableAction('convert', $submission, data: ['category_ids' => [$this->category->id], 'service_type' => 'توصيات ذهب', 'market_ids' => [$gold]])
+            ->assertHasNoTableActionErrors();
+
+        $provider = $submission->fresh()->provider;
+        $this->assertSame('توصيات ذهب', $provider->service_type);
+        $this->assertTrue($provider->categories->contains($this->category));
+        $this->assertTrue($provider->markets->contains('id', $gold));
+    }
     public function test_channel_details_and_photo_are_read_from_telegram_and_stored(): void
     {
         $this->post(route('submissions.store'), $this->payload())->assertSessionHasNoErrors();
@@ -69,7 +96,8 @@ class SubmissionFormTest extends TestCase
         $this->assertSame('https://t.me/GoldChannel', $submission->telegram_url);
         $this->assertSame('قناة الذهب الذهبية', $submission->name);
         $this->assertSame('Daily gold signals', $submission->description);
-        $this->assertSame('توصيات', $submission->service_type);
+        $this->assertSame('', $submission->service_type);
+        $this->assertSame([], $submission->category_ids);
         $this->assertNull($submission->submitter_name);
         $this->assertSame(12345, $submission->telegram_data['subscribers']);
         $this->assertTrue($submission->telegram_data['verified']);
