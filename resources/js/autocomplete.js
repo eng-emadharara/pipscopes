@@ -76,8 +76,14 @@ function setup(input) {
     };
 
     const open = () => {
+        const wasClosed = panel.classList.contains('hidden');
         panel.classList.remove('hidden');
         input.setAttribute('aria-expanded', 'true');
+
+        // Phones: the keyboard covers the lower half, so bring the field up to leave the results room
+        if (wasClosed && window.matchMedia('(max-width: 47.99rem)').matches) {
+            box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
     };
 
     const setActive = (index) => {

@@ -68,6 +68,15 @@ class HomeHeroTest extends TestCase
         $this->get('/')->assertOk()->assertSee('data-reviews-count', false)->assertSee('+100');
     }
 
+    public function test_search_suggestions_can_show_over_the_category_cards(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // Nothing around the search form clips it or keeps it below the cards (z-10)
+        $this->assertStringContainsString('<section class="relative bg-ink text-white">', $html);
+        $this->assertMatchesRegularExpression('/<form [^>]*class="relative z-20[^"]*"[^>]*>\s*(<[^>]+>\s*)*<input type="search" name="q" data-autocomplete/', $html);
+    }
+
     public function test_popular_channels_are_the_most_reviewed_ones(): void
     {
         $quiet = Provider::create(['name' => 'Quiet Channel', 'service_type' => 'Signals', 'is_active' => true]);

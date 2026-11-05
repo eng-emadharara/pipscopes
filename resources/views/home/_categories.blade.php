@@ -1,5 +1,5 @@
 {{-- Category cards; right under the hero they overlap its bottom edge, so they sit on a layer above it
-     (the hero is positioned for its background, which would otherwise paint over them) --}}
+     (the hero is positioned for its background, which would otherwise paint over them), and below the search form's suggestions --}}
 @if ($categories->isNotEmpty())
     <section @class(['mx-auto max-w-6xl px-4', 'relative z-10 -mt-8' => $first, 'mt-14' => ! $first])>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

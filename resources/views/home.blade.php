@@ -8,12 +8,14 @@
         $reviewsCount = \App\Models\Review::publicCount($stats['reviews']);
         $statColumns = 1 + (int) (bool) $reviewsCount + (int) $showImpersonators;
     @endphp
-    <section class="hero-bg relative isolate overflow-hidden bg-ink text-white">
-        <div class="mx-auto max-w-3xl px-4 pb-16 pt-12 text-center md:pb-20 md:pt-16">
+    {{-- The background is a layer of its own: clipping or isolating the section itself would trap the search suggestions under the category cards --}}
+    <section class="relative bg-ink text-white">
+        <div class="hero-bg absolute inset-0 isolate overflow-hidden" aria-hidden="true"></div>
+        <div class="relative mx-auto max-w-3xl px-4 pb-16 pt-12 text-center md:pb-20 md:pt-16">
             <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ __('اقرأ التقييمات. اختر بثقة.') }}</h1>
             <p class="mx-auto mt-4 max-w-xl text-gray-300">{{ __('تجارب حقيقية من متداولين حول قنوات التوصيات، خدمات نسخ الصفقات، ومقدمي خدمات التداول قبل أن تشترك.') }}</p>
 
-            <form action="{{ route('providers.index') }}" method="GET" class="mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10">
+            <form action="{{ route('providers.index') }}" method="GET" class="relative z-20 mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10">
                 <x-ui-icon name="search" class="mx-3 h-5 w-5 shrink-0 text-gray-400" />
                 <input type="search" name="q" data-autocomplete="{{ route('search.suggest') }}" placeholder="{{ __('ابحث باسم القناة أو مقدم الخدمة أو رابط التيليجرام…') }}" class="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder-gray-400 focus:outline-none" aria-label="{{ __('بحث') }}">
                 <button class="btn-primary shrink-0">{{ __('بحث') }}</button>
