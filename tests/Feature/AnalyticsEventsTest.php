@@ -9,7 +9,10 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Support\Site;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 use Tests\Concerns\FakesTelegram;
 use Tests\TestCase;
 
@@ -116,6 +119,40 @@ class AnalyticsEventsTest extends TestCase
         $events = $this->analytics($this->get(route('submissions.create')))['events'];
         $this->assertSame('channel_submit', $events[0]['name']);
         $this->assertSame(['channel_name' => 'New Channel', 'channel_subscribers' => 12345], $events[0]['params']);
+    }
+
+    public function test_signing_up_by_email_is_reported_once_on_the_next_page(): void
+    {
+        Mail::fake();
+
+        $this->post(route('register'), [
+            'name' => 'Sara', 'email' => 'sara@gmail.com',
+            'password' => 'A-long-Passw0rd!x', 'password_confirmation' => 'A-long-Passw0rd!x',
+        ])->assertRedirect(route('verification.notice'));
+
+        $events = $this->analytics($this->get(route('verification.notice')))['events'];
+        $this->assertSame([['name' => 'sign_up', 'params' => ['method' => 'email']]], $events);
+
+        $this->assertNotContains('sign_up', $this->eventNames($this->get(route('verification.notice'))));
+    }
+
+    public function test_only_the_first_google_sign_in_counts_as_a_sign_up(): void
+    {
+        config(['services.google' => ['client_id' => 'gid', 'client_secret' => 'gsecret', 'redirect' => '/auth/google/callback']]);
+        $person = (new SocialiteUser)->setRaw(['email_verified' => true])
+            ->map(['id' => 'g-1', 'name' => 'Sara', 'email' => 'sara@gmail.com', 'avatar' => null, 'nickname' => null])->setToken('token');
+        $driver = \Mockery::mock();
+        $driver->shouldReceive('user')->andReturn($person);
+        Socialite::shouldReceive('driver')->with('google')->andReturn($driver);
+
+        $this->get('/auth/google/callback?code=x')->assertRedirect(route('home'));
+        $events = $this->analytics($this->get('/'))['events'];
+        $this->assertContains(['name' => 'sign_up', 'params' => ['method' => 'google']], $events);
+
+        auth()->logout();
+
+        $this->get('/auth/google/callback?code=x')->assertRedirect(route('home'));
+        $this->assertNotContains('sign_up', $this->eventNames($this->get('/')));
     }
 
     public function test_telegram_buttons_are_tracked(): void

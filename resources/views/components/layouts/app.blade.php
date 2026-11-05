@@ -88,6 +88,7 @@
     {!! \App\Support\Site::get('head_code') !!}
 </head>
 <body class="min-h-screen flex flex-col">
+    <div class="page-loader" data-page-loader aria-hidden="true"></div>
     <x-launch-bar />
 
     {{-- On phones it leaves while reading down and returns on the way up (resources/js/mobile-chrome.js) --}}

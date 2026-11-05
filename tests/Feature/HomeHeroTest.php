@@ -77,6 +77,13 @@ class HomeHeroTest extends TestCase
         $this->assertMatchesRegularExpression('/<form [^>]*class="relative z-20[^"]*"[^>]*>\s*(<[^>]+>\s*)*<input type="search" name="q" data-autocomplete/', $html);
     }
 
+    public function test_public_pages_carry_the_loading_bar(): void
+    {
+        foreach (['/', '/providers', '/login', '/submit'] as $page) {
+            $this->get($page)->assertOk()->assertSee('data-page-loader', false);
+        }
+    }
+
     public function test_popular_channels_are_the_most_reviewed_ones(): void
     {
         $quiet = Provider::create(['name' => 'Quiet Channel', 'service_type' => 'Signals', 'is_active' => true]);

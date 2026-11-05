@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Rules\AllowedSignupEmail;
+use App\Support\Analytics;
 use App\Support\EmailVerification;
 use App\Support\LoginThrottle;
 use App\Support\SignupGuard;
@@ -84,6 +85,8 @@ class AuthController extends Controller
 
         Auth::login($user, remember: true);
         $request->session()->regenerate();
+
+        Analytics::flash('sign_up', ['method' => 'email']);
 
         // Where they were heading stays in url.intended and is used after the code is confirmed
         $sent = EmailVerification::send($user);

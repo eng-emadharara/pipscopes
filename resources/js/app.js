@@ -11,6 +11,7 @@ import './provider-filters';
 import './ui';
 import './mobile-chrome';
 import './review-invite';
+import './page-loader';
 import './profile';
 
 // Prevent double submission (double-click / Enter + click) on every form

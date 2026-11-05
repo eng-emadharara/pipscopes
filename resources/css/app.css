@@ -243,3 +243,28 @@
 @media (width < 48rem) and (prefers-reduced-motion: reduce) {
     .site-header, .below-site-header, .review-bar { transition: none; }
 }
+
+/* The loading bar at the top of the page (resources/js/page-loader.js): runs to 90% and waits for the next page.
+   Amber: it has to show on the dark header, the green launch bar and white pages alike. */
+.page-loader {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    z-index: 70;
+    height: 3px;
+    background: #fbbf24;
+    box-shadow: 0 0 8px rgb(251 191 36 / .7);
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+    pointer-events: none;
+}
+[dir="rtl"] .page-loader { transform-origin: right; }
+.page-loader.is-loading { opacity: 1; animation: page-loader-run 8s cubic-bezier(.08, .7, .2, 1) forwards; }
+@keyframes page-loader-run {
+    from { transform: scaleX(.08); }
+    to { transform: scaleX(.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .page-loader.is-loading { animation: none; transform: scaleX(1); }
+}

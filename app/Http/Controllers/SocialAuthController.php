@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Analytics;
 use App\Support\SocialLogin;
 use App\Support\TelegramAppLogin;
 use App\Support\TelegramLogin;
@@ -230,6 +231,10 @@ class SocialAuthController extends Controller
         Auth::login($user, remember: true);
         $request->session()->regenerate();
         $this->telegramReachable($user, $provider);
+
+        if ($user->wasRecentlyCreated) {
+            Analytics::flash('sign_up', ['method' => $provider]);
+        }
 
         if (! $user->isVerifiedMember() && ! $user->is_admin) {
             return redirect()->route('verification.notice')->with('success', $user->email
