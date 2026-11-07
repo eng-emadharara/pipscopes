@@ -134,9 +134,30 @@ class TelegramAppLogin
                     [['text' => '❌ '.__('إلغاء'), 'callback_data' => 'tgl:no:'.$m[1]]],
                 ]],
             ]);
+        } elseif (preg_match('/^\/start\s+ads_([a-z0-9]{1,20})$/', trim($text), $m)) {
+            // Telegram Ads may only link to Telegram, so its ads open this bot; the button carries the ad's name to the site's analytics
+            self::api('sendMessage', [
+                'chat_id' => $chatId,
+                'text' => __('👋 أهلاً بك في :site.', ['site' => config('app.name')])."\n\n"
+                    .__('جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.'),
+                'reply_markup' => ['inline_keyboard' => [
+                    [['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
+                ]],
+            ]);
         } elseif (str_starts_with(trim($text), '/start')) {
             self::api('sendMessage', ['chat_id' => $chatId, 'text' => __('أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.', ['site' => config('app.name')])]);
         }
+    }
+
+    /** The channel list, tagged with the Telegram ad that brought the visitor (t.me/<bot>?start=ads_<name>) */
+    public static function adUrl(string $ad): string
+    {
+        return route('providers.index', [
+            'utm_source' => 'telegram',
+            'utm_medium' => 'paid',
+            'utm_campaign' => 'rate_test',
+            'utm_content' => $ad,
+        ]);
     }
 
     protected static function handleCallback(array $callback): void
