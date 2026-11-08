@@ -12,12 +12,13 @@
     <section class="relative bg-ink text-white">
         <div class="hero-bg absolute inset-0 isolate overflow-hidden" aria-hidden="true"></div>
         <div class="relative mx-auto max-w-3xl px-4 pb-16 pt-12 text-center md:pb-20 md:pt-16">
-            <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ __('اقرأ التقييمات. اختر بثقة.') }}</h1>
-            <p class="mx-auto mt-4 max-w-xl text-gray-300">{{ __('تجارب حقيقية من متداولين حول قنوات التوصيات، خدمات نسخ الصفقات، ومقدمي خدمات التداول قبل أن تشترك.') }}</p>
+            {{-- While reviews are still being gathered, the page asks for them rather than promising them --}}
+            <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ __('جرّبت قناة توصيات؟ شاركنا تجربتك.') }}</h1>
+            <p class="mx-auto mt-4 max-w-xl text-gray-300">{{ __('تجربتك الحقيقية، جيدة كانت أو سيئة، تحمي متداولاً آخر قبل أن يدفع اشتراكه.') }}</p>
 
             <form action="{{ route('providers.index') }}" method="GET" class="relative z-20 mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10">
                 <x-ui-icon name="search" class="mx-3 h-5 w-5 shrink-0 text-gray-400" />
-                <input type="search" name="q" data-autocomplete="{{ route('search.suggest') }}" placeholder="{{ __('ابحث باسم القناة أو مقدم الخدمة أو رابط التيليجرام…') }}" class="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder-gray-400 focus:outline-none" aria-label="{{ __('بحث') }}">
+                <input type="search" name="q" data-autocomplete="{{ route('search.suggest') }}" placeholder="{{ __('ابحث عن القناة التي جرّبتها…') }}" class="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder-gray-400 focus:outline-none" aria-label="{{ __('بحث') }}">
                 <button class="btn-primary shrink-0">{{ __('بحث') }}</button>
             </form>
 
@@ -35,8 +36,7 @@
             {{-- The invitation to contribute, as soon as they arrive --}}
             @if (\App\Support\ReviewInvite::available())
                 <div class="mx-auto mt-6 max-w-xl" data-hero-invite>
-                    <p class="text-sm font-semibold text-gray-200">{{ __('جرّبت قناة توصيات؟ تجربتك تحمي غيرك') }}</p>
-                    <div class="mt-3 flex flex-col justify-center gap-2 sm:flex-row">
+                    <div class="flex flex-col justify-center gap-2 sm:flex-row">
                         <a href="{{ route('providers.index') }}" class="btn-primary px-6 py-2.5" data-open-dialog="review-picker"
                            data-track="review_invite_click" data-track-params='{"location":"hero"}'>
                             <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('قيّم قناة جربتها') }}

@@ -47,6 +47,7 @@ class Provider extends Model
 
             // Categories are synced after the save, so callers that change them run refreshSearchIndex()
             $provider->search_index = $provider->buildSearchIndex();
+            $provider->search_keys = $provider->buildSearchKeys();
         });
 
         // A channel opened early belongs in the pre-launch sitemap right away
@@ -80,10 +81,16 @@ class Provider extends Model
         return SearchText::normalize($parts->filter()->join(' '));
     }
 
+    /** How the name and the Telegram handle sound, in either alphabet (SearchText::soundKeys) */
+    public function buildSearchKeys(): string
+    {
+        return SearchText::soundKeys($this->name.' '.str_replace(['_', '-'], ' ', (string) $this->telegramHandle()));
+    }
+
     public function refreshSearchIndex(): void
     {
         $this->unsetRelation('categories')->unsetRelation('markets');
-        $this->forceFill(['search_index' => $this->buildSearchIndex()])->saveQuietly();
+        $this->forceFill(['search_index' => $this->buildSearchIndex(), 'search_keys' => $this->buildSearchKeys()])->saveQuietly();
     }
 
     /**
@@ -98,7 +105,14 @@ class Provider extends Model
         }
 
         foreach ($words as $word) {
-            $query->whereRaw('search_index LIKE ? '.SearchText::LIKE_ESCAPE, [SearchText::like($word)]);
+            // The word as typed, or a name word that sounds like it in the other alphabet ("قمر" ↔ "Qamar")
+            $key = SearchText::soundKey($word);
+            $query->where(function (Builder $q) use ($word, $key) {
+                $q->whereRaw('search_index LIKE ? '.SearchText::LIKE_ESCAPE, [SearchText::like($word)]);
+                if (strlen($key) >= 2) {
+                    $q->orWhereRaw('search_keys LIKE ? '.SearchText::LIKE_ESCAPE, ['% '.SearchText::escapeLike($key).'%']);
+                }
+            });
         }
 
         if (! $rankByName) {

@@ -84,6 +84,14 @@ class HomeHeroTest extends TestCase
         }
     }
 
+    public function test_the_hero_asks_visitors_to_share_their_experience(): void
+    {
+        $this->get('/')->assertOk()
+            ->assertSee(__('جرّبت قناة توصيات؟ شاركنا تجربتك.'))
+            ->assertSee(__('تجربتك الحقيقية، جيدة كانت أو سيئة، تحمي متداولاً آخر قبل أن يدفع اشتراكه.'))
+            ->assertSee(__('ابحث عن القناة التي جرّبتها…'))
+            ->assertDontSee('اقرأ التقييمات. اختر بثقة.');
+    }
     public function test_popular_channels_are_the_most_reviewed_ones(): void
     {
         $quiet = Provider::create(['name' => 'Quiet Channel', 'service_type' => 'Signals', 'is_active' => true]);
