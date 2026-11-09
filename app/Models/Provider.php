@@ -317,6 +317,26 @@ class Provider extends Model
         return $this->pricing ? __('trust.pricing_options.'.$this->pricing) : null;
     }
 
+    /**
+     * Subscribers of the listed channels, rounded down to two leading digits so it never overstates:
+     * 352,513 → "+350 ألف", 1,234,567 → "+1.2 مليون". Hidden below a thousand.
+     */
+    public static function publicSubscribers(int $total): ?string
+    {
+        if ($total < 1000) {
+            return null;
+        }
+
+        $step = 10 ** max(0, strlen((string) $total) - 2);
+        $rounded = intdiv($total, $step) * $step;
+
+        $number = $rounded >= 1_000_000 ? rtrim(rtrim(number_format($rounded / 1_000_000, 1), '0'), '.') : number_format(intdiv($rounded, 1000));
+        // Isolated left-to-right so the "+" stays before the digits in Arabic text
+        $n = "\u{2066}+{$number}\u{2069}";
+
+        return $rounded >= 1_000_000 ? __(':n مليون', ['n' => $n]) : __(':n ألف', ['n' => $n]);
+    }
+
     public static function ratingLabel(float $rating): string
     {
         return __('trust.rating_labels.'.static::ratingColor($rating));

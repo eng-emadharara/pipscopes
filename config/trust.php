@@ -16,6 +16,9 @@ return [
      | main admin fields is in this language, the others are stored as translations.
      | To add a language: add it here and create lang/{code}.json + lang/{code}/trust.php.
      */
+    // "شائع:" row of most reviewed channels under the homepage search; off until there are enough channels
+    'home_popular' => (bool) env('HOME_POPULAR', false),
+
     'locales' => [
         'ar' => ['name' => 'العربية', 'dir' => 'rtl'],
         'en' => ['name' => 'English', 'dir' => 'ltr'],

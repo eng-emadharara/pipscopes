@@ -59,6 +59,37 @@ class HomeHeroTest extends TestCase
         $this->get('/')->assertOk()->assertDontSee('data-reviews-count', false);
     }
 
+    public function test_listed_channel_subscribers_are_rounded_down_and_never_overstated(): void
+    {
+        $plain = fn (?string $s) => $s === null ? null : str_replace(["\u{2066}", "\u{2069}"], '', $s);
+
+        $this->assertNull(Provider::publicSubscribers(0));
+        $this->assertNull(Provider::publicSubscribers(999));
+        $this->assertSame('+1 ألف', $plain(Provider::publicSubscribers(1999)));
+        $this->assertSame('+12 ألف', $plain(Provider::publicSubscribers(12975)));
+        $this->assertSame('+350 ألف', $plain(Provider::publicSubscribers(352513)));
+        $this->assertSame('+1.2 مليون', $plain(Provider::publicSubscribers(1234567)));
+        $this->assertSame('+3 مليون', $plain(Provider::publicSubscribers(3049999)));
+    }
+
+    public function test_subscribers_stand_in_for_reviews_until_there_are_100(): void
+    {
+        $this->provider->update(['telegram_members' => 300000]);
+        Provider::create(['name' => 'Second', 'service_type' => 'Signals', 'is_active' => true, 'telegram_members' => 52513]);
+        Provider::create(['name' => 'Hidden', 'service_type' => 'Signals', 'is_active' => false, 'telegram_members' => 900000]);
+
+        $this->get('/')->assertOk()
+            ->assertSee('data-subscribers-count', false)
+            ->assertSee(__('مشترك في القنوات المدرجة'))
+            ->assertSee('+350', false)
+            ->assertDontSee('data-reviews-count', false);
+
+        foreach (range(1, 100) as $i) {
+            $this->review("A long enough review body number $i.");
+        }
+
+        $this->get('/')->assertSee('data-reviews-count', false)->assertDontSee('data-subscribers-count', false);
+    }
     public function test_the_count_shows_on_the_home_page_once_there_are_100(): void
     {
         foreach (range(1, 100) as $i) {
@@ -92,8 +123,32 @@ class HomeHeroTest extends TestCase
             ->assertSee(__('ابحث عن القناة التي جرّبتها…'))
             ->assertDontSee('اقرأ التقييمات. اختر بثقة.');
     }
+    public function test_the_hero_points_to_adding_a_missing_channel(): void
+    {
+        $this->review('A long enough review body for testing.');
+
+        $this->get('/')->assertOk()
+            ->assertSee('data-hero-add', false)
+            ->assertSee(__('ما لقيت قناتك؟'))
+            ->assertSee(__('أضفها برابط التيلجرام فقط'))
+            ->assertSee(route('submissions.create'))
+            // "شائع" stays hidden until it is switched on
+            ->assertDontSee(__('شائع:'));
+    }
+
+    public function test_an_empty_search_offers_adding_the_channel(): void
+    {
+        $this->get(route('providers.index', ['q' => 'nothing like this']))->assertOk()
+            ->assertSee(__('قناتك مش موجودة؟ أضفها'))
+            ->assertSee('"location":"search_page_empty"', false);
+
+        // The live suggestions get the same offer
+        $this->get('/')->assertSee('"add_url":', false);
+    }
+
     public function test_popular_channels_are_the_most_reviewed_ones(): void
     {
+        config(['trust.home_popular' => true]);
         $quiet = Provider::create(['name' => 'Quiet Channel', 'service_type' => 'Signals', 'is_active' => true]);
         $this->review('A long enough review body for testing.');
 

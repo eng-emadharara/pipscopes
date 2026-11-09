@@ -256,7 +256,15 @@
                 @if ($activeFilters)
                     <a href="{{ route('providers.index', request()->only('q')) }}" class="btn-outline mt-4" data-clear-all>{{ __('مسح الفلاتر') }}</a>
                 @endif
-                <a href="{{ route('submissions.create') }}" class="btn-outline mt-4">{{ __('اقترح إضافة مقدم خدمة') }}</a>
+                @if (filled(request('q')))
+                    {{-- Searched for a channel that isn't here yet: adding it is the next step --}}
+                    <p class="mt-4 text-sm text-gray-500">{{ __('بس ابعتلنا رابط التيلجرام، والباقي علينا') }}</p>
+                    <a href="{{ route('submissions.create') }}" class="btn-primary mt-3" data-track="add_channel_click" data-track-params='{"location":"search_page_empty"}'>
+                        <x-ui-icon name="plus" class="h-4 w-4 shrink-0" /> {{ __('قناتك مش موجودة؟ أضفها') }}
+                    </a>
+                @else
+                    <a href="{{ route('submissions.create') }}" class="btn-outline mt-4">{{ __('اقترح إضافة مقدم خدمة') }}</a>
+                @endif
             </div>
         @else
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-results-grid>

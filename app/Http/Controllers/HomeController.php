@@ -65,6 +65,7 @@ class HomeController extends Controller
             'stats' => [
                 'providers' => Provider::active()->count(),
                 'reviews' => Review::where('status', Review::STATUS_APPROVED)->count(),
+                'subscribers' => (int) Provider::active()->sum('telegram_members'),
                 'impersonators' => Impersonator::confirmed()->whereHas('provider', fn ($q) => $q->active())->count(),
             ],
             // Hero: the most reviewed channels as quick searches

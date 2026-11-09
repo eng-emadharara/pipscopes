@@ -139,7 +139,16 @@ function setup(input) {
         }
 
         if (!data.providers.length && !data.categories.length && !(data.impersonators || []).length) {
-            html += `<div class="px-4 py-3 text-sm text-gray-500">${escapeHtml(label('empty', q))}</div>`;
+            html += `<div class="px-4 pt-3 text-sm text-gray-500">${escapeHtml(label('empty', q))}</div>`;
+            // Not listed yet: adding it is the next step, and it takes only the Telegram link
+            if (i18n.add_url) {
+                html += option(i18n.add_url, `
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-500 text-xl font-bold text-white">+</span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block font-semibold text-ink">${escapeHtml(label('add'))}</span>
+                        <span class="block text-xs text-gray-500">${escapeHtml(label('add_hint'))}</span>
+                    </span>`).replace('<a ', '<a data-track="add_channel_click" data-track-params=\'{"location":"search_empty"}\' ');
+            }
         }
 
         // Always offer the full results page as the last option

@@ -6,7 +6,9 @@
         // A zero would read as a weakness, so the number shows once there is something to show
         $showImpersonators = $stats['impersonators'] > 0;
         $reviewsCount = \App\Models\Review::publicCount($stats['reviews']);
-        $statColumns = 1 + (int) (bool) $reviewsCount + (int) $showImpersonators;
+        // Until the reviews pass 100, the subscribers of the listed channels stand in for them
+        $subscribers = $reviewsCount ? null : \App\Models\Provider::publicSubscribers($stats['subscribers']);
+        $statColumns = 1 + (int) (bool) ($reviewsCount ?: $subscribers) + (int) $showImpersonators;
     @endphp
     {{-- The background is a layer of its own: clipping or isolating the section itself would trap the search suggestions under the category cards --}}
     <section class="relative bg-ink text-white">
@@ -22,8 +24,16 @@
                 <button class="btn-primary shrink-0">{{ __('بحث') }}</button>
             </form>
 
-            {{-- The most reviewed channels, one tap away; always one line (phones keep the first two) --}}
-            @if ($popular->isNotEmpty())
+            {{-- Not listed yet? Adding it takes only the Telegram link --}}
+            <p class="mx-auto mt-4 max-w-xl text-sm text-gray-300" data-hero-add>
+                {{ __('ما لقيت قناتك؟') }}
+                <a href="{{ route('submissions.create') }}" class="font-semibold text-brand-500 underline-offset-4 hover:text-brand-100 hover:underline"
+                   data-track="add_channel_click" data-track-params='{"location":"hero_search"}'>{{ __('أضفها برابط التيلجرام فقط') }} <span aria-hidden="true">←</span></a>
+            </p>
+
+            {{-- The most reviewed channels, one tap away; always one line (phones keep the first two).
+                 Hidden for now (config trust.home_popular) until there are enough channels and reviews --}}
+            @if (config('trust.home_popular') && $popular->isNotEmpty())
                 <div class="mx-auto mt-4 flex max-w-xl items-center justify-center gap-2 text-xs">
                     <span class="shrink-0 text-gray-400">{{ __('شائع:') }}</span>
                     @foreach ($popular as $item)
@@ -41,10 +51,13 @@
                            data-track="review_invite_click" data-track-params='{"location":"hero"}'>
                             <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('قيّم قناة جربتها') }}
                         </a>
-                        <a href="{{ route('submissions.create') }}" class="btn bg-white px-6 py-2.5 text-ink hover:bg-gray-100"
-                           data-track="add_channel_click" data-track-params='{"location":"hero"}'>
-                            <x-ui-icon name="plus" class="h-4 w-4 shrink-0" /> {{ __('أضف قناة') }}
-                        </a>
+                        {{-- Adding a channel is offered right under the search, so this one browses (when browsing is open) --}}
+                        @unless (\App\Support\Launch::appliesToVisitor())
+                            <a href="{{ route('providers.index') }}" class="btn bg-white px-6 py-2.5 text-ink hover:bg-gray-100" data-hero-browse
+                               data-track="browse_click" data-track-params='{"location":"hero"}'>
+                                <x-ui-icon name="search" class="h-4 w-4 shrink-0" /> {{ __('تصفح جميع القنوات') }}
+                            </a>
+                        @endunless
                     </div>
                 </div>
             @endif
@@ -59,6 +72,11 @@
                     <div class="flex flex-col items-center gap-1 px-2" data-reviews-count>
                         <dt class="text-xs text-gray-400 md:text-sm">{{ __('تقييم') }}</dt>
                         <dd class="order-first text-xl font-bold tabular-nums md:text-2xl" dir="ltr">{{ $reviewsCount }}</dd>
+                    </div>
+                @elseif ($subscribers)
+                    <div class="flex flex-col items-center gap-1 px-2" data-subscribers-count>
+                        <dt class="text-xs leading-snug text-balance text-gray-400 md:text-sm">{{ __('مشترك في القنوات المدرجة') }}</dt>
+                        <dd class="order-first text-xl font-bold tabular-nums md:text-2xl">{{ $subscribers }}</dd>
                     </div>
                 @endif
                 {{-- What sets us apart: impersonators caught; links to the account checker when it's on --}}
