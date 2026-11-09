@@ -112,14 +112,15 @@ class TelegramAppLogin
         if ($callback = $update['callback_query'] ?? null) {
             self::handleCallback($callback);
         } elseif (data_get($update, 'message.chat.type') === 'private' && is_string($text = data_get($update, 'message.text'))) {
-            self::useLanguageOf($update['message']['from'] ?? []);
+            self::useArabic();
             self::handleMessage((int) $update['message']['chat']['id'], $text);
         }
     }
 
-    protected static function useLanguageOf(array $from): void
+    /** The bot always answers in Arabic: the site and its ads are Arabic, while many Arab traders keep Telegram in English */
+    protected static function useArabic(): void
     {
-        app()->setLocale(str_starts_with((string) ($from['language_code'] ?? ''), 'en') ? 'en' : 'ar');
+        app()->setLocale('ar');
     }
 
     protected static function handleMessage(int $chatId, string $text): void
@@ -162,7 +163,7 @@ class TelegramAppLogin
 
     protected static function handleCallback(array $callback): void
     {
-        self::useLanguageOf($callback['from'] ?? []);
+        self::useArabic();
 
         if (! preg_match('/^tgl:(ok|no):([A-Za-z0-9]{40})$/', (string) ($callback['data'] ?? ''), $m)) {
             return;

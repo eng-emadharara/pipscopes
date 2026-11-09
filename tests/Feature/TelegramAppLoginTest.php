@@ -77,7 +77,8 @@ class TelegramAppLoginTest extends TestCase
     {
         $this->turnOn();
 
-        $this->webhook(['message' => ['text' => '/start ads_a', 'chat' => ['id' => 777, 'type' => 'private'], 'from' => ['id' => 777, 'language_code' => 'ar']]])->assertOk();
+        // Arabic even when the user's Telegram is in English
+        $this->webhook(['message' => ['text' => '/start ads_a', 'chat' => ['id' => 777, 'type' => 'private'], 'from' => ['id' => 777, 'language_code' => 'en']]])->assertOk();
 
         Http::assertSent(fn ($request) => str_contains($request->url(), 'sendMessage')
             && str_contains($request['text'], 'جرّبت قناة توصيات')
