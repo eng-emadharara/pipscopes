@@ -147,7 +147,7 @@
                     </a>
                 @else
                     <a href="{{ route('reviews.create', $provider) }}" class="btn-primary whitespace-nowrap shadow-sm shadow-brand-500/30 max-md:h-11 max-md:min-w-0 max-md:flex-[1.4] max-md:px-3">
-                        <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('اكتب تقييماً') }}
+                        <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('اكتب تجربتك') }}
                     </a>
                 @endif
                 @if ($provider->telegram_url)
@@ -416,7 +416,7 @@
     @unless ($managing)
         <div class="review-bar fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl md:hidden" data-review-bar>
             <a href="{{ route('reviews.create', $provider) }}" @class(['w-full whitespace-nowrap', 'btn-outline' => $userReview, 'btn-primary' => ! $userReview])>
-                <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ $userReview ? __('تعديل تقييمك') : __('اكتب تقييماً') }}
+                <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ $userReview ? __('تعديل تقييمك') : __('اكتب تجربتك') }}
             </a>
         </div>
     @endunless

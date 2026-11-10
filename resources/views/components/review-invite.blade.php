@@ -32,7 +32,7 @@
                     <p class="font-bold">{{ __('هل اشتركت في قناة توصيات من قبل؟') }}</p>
                     <p class="mt-0.5 text-sm text-gray-600">{{ __('شاركنا تجربتك في دقيقة، حتى لو كانت سيئة.') }}</p>
                     <a href="{{ route('providers.index') }}" class="btn-primary mt-3 px-5 py-2 text-sm" data-open-dialog="review-picker"
-                       data-track="review_invite_click" data-track-params='{"location":"card"}'>{{ __('قيّم الآن') }}</a>
+                       data-track="review_invite_click" data-track-params='{"location":"card"}'>{{ __('قيّم تجربتك') }}</a>
                 </div>
                 <button type="button" class="shrink-0 px-1 text-xl leading-none text-gray-400 hover:text-gray-700" data-review-invite-close aria-label="{{ __('إغلاق') }}">&times;</button>
             </div>

@@ -27,7 +27,7 @@ class ReviewInviteTest extends TestCase
     {
         $this->get(route('home'))->assertOk()
             ->assertSee('data-hero-invite', false)
-            ->assertSee(__('قيّم قناة جربتها'))
+            ->assertSee(__('قيّم تجربتك'))
             ->assertSee(__('تصفح جميع القنوات'))
             ->assertSee('data-hero-browse', false)
             ->assertSee('data-open-dialog="review-picker"', false)

@@ -49,7 +49,7 @@
                     <div class="flex flex-col justify-center gap-2 sm:flex-row">
                         <a href="{{ route('providers.index') }}" class="btn-primary px-6 py-2.5" data-open-dialog="review-picker"
                            data-track="review_invite_click" data-track-params='{"location":"hero"}'>
-                            <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('قيّم قناة جربتها') }}
+                            <x-ui-icon name="star" class="h-4 w-4 shrink-0" /> {{ __('قيّم تجربتك') }}
                         </a>
                         {{-- Adding a channel is offered right under the search, so this one browses (when browsing is open) --}}
                         @unless (\App\Support\Launch::appliesToVisitor())

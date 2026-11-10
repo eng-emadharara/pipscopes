@@ -22,7 +22,7 @@
 
         <div class="mt-6 flex flex-wrap gap-3">
             <a href="{{ route('providers.show', $provider) }}#reviews" class="btn-outline">{{ __('كل تقييمات :name', ['name' => $provider->name]) }}</a>
-            <a href="{{ route('reviews.create', $provider) }}" class="btn-primary">{{ __('اكتب تقييمك') }}</a>
+            <a href="{{ route('reviews.create', $provider) }}" class="btn-primary">{{ __('اكتب تجربتك') }}</a>
         </div>
     </div>
 </x-layouts.app>

@@ -106,7 +106,7 @@
             </fieldset>
 
             <div class="flex flex-wrap items-center gap-3">
-                <button class="btn-primary">{{ $review->exists ? __('حفظ التعديلات') : __('نشر التقييم') }}</button>
+                <button class="btn-primary">{{ $review->exists ? __('حفظ التعديلات') : __('انشر تجربتك') }}</button>
                 <a href="{{ route('providers.show', $provider) }}" class="btn-outline">{{ __('إلغاء') }}</a>
             </div>
         </form>
