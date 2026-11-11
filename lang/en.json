@@ -741,5 +741,18 @@
     "نتابع هذه القناة يومياً": "We follow this channel daily",
     "عدد المنشورات المحذوفة يجهز يوم :date، أي بعد :n يوماً. ارجع إلى هذا الرابط حينها لترى النتيجة.": "The deleted-posts count is ready on :date, in :n days. Come back to this link then to see it.",
     "هذه القناة قيد المراجعة الآن. نبدأ متابعتها يومياً فور إضافتها، وتجهز النتائج بعد أسبوعين من الإضافة، فارجع إلى هذا الرابط حينها.": "This channel is under review. We start following it daily once it's added, and results are ready two weeks later, so come back to this link then.",
-    "مجاناً وبضغطة واحدة. بعد مراجعتها نتابعها يومياً، وتجهز النتائج بعد أسبوعين من إضافتها على هذا الرابط نفسه.": "Free, one tap. Once reviewed we follow it daily, and results are ready two weeks after it is added, on this same link."
+    "مجاناً وبضغطة واحدة. بعد مراجعتها نتابعها يومياً، وتجهز النتائج بعد أسبوعين من إضافتها على هذا الرابط نفسه.": "Free, one tap. Once reviewed we follow it daily, and results are ready two weeks after it is added, on this same link.",
+    "قابلية التحقق": "Verifiability",
+    "تنشر صفقاتها مسبقاً": "Posts its trades beforehand",
+    "ادعاءات أكثر من الصفقات": "More claims than trades",
+    "تنشر نتائج دون صفقات مسبقة": "Posts results without trades beforehand",
+    "منشورات ترويجية": "Promotional posts",
+    "ترويج قليل": "Little promotion",
+    "ترويج ملحوظ": "Noticeable promotion",
+    "ترويج كثير": "A lot of promotion",
+    ":n من آخر :total منشوراً تبيع شيئاً: اشتراكاً في قناة خاصة، أو دورة، أو تسجيلاً لدى وسيط.": ":n of the last :total posts sell something: a private channel, a course, or a broker sign-up.",
+    "تنشر روابط تسجيل لدى: :brokers، وقد تربح القناة من تسجيلك عبرها.": "It posts sign-up links for: :brokers, and may earn when you sign up through them.",
+    "صفقات :s · ادعاءات :c": "Trades :s · claims :c",
+    "في آخر :total منشوراً: صفقات منشورة قبل حدوثها بأرقام واضحة (يمكن التحقق منها): :s. إعلانات عن نتائج بعد حدوثها مثل «150 نقطة» (لا يمكن التحقق منها): :c. القناة التي تنشر النتائج فقط قد تختار الرابحة منها.": "In the last :total posts: trades given beforehand with clear numbers (checkable): :s. Results announced afterwards such as \"150 pips\" (not checkable): :c. A channel that only posts results may be picking its winners.",
+    "من بينها صفقات كانت منشورة بأرقام واضحة: :n.": "Trades that had been posted with clear numbers among them: :n."
 }

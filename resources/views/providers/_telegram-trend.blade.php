@@ -14,7 +14,7 @@
     {{-- What the channel's posts show (App\Support\TelegramInsights); each opens to explain itself --}}
     @php($insights = \App\Support\TelegramInsights::for($provider))
     @if ($insights)
-        <div @class(['mb-6 grid gap-2', 'grid-cols-3' => count($insights) === 3, 'grid-cols-2' => count($insights) === 2]) data-telegram-insights>
+        <div @class(['mb-6 grid gap-2', 'grid-cols-2' => in_array(count($insights), [1, 2]), 'grid-cols-2 sm:grid-cols-4' => count($insights) === 4, 'grid-cols-3' => in_array(count($insights), [3, 5])]) data-telegram-insights>
             @foreach ($insights as $card)
                 @include('providers._insight-card', ['card' => $card])
             @endforeach

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Provider;
 use App\Models\TelegramPost;
+use App\Support\PostKind;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -38,6 +39,9 @@ class TelegramPosts
                 $values = [
                     'posted_at' => $item['posted_at'] ? Carbon::parse($item['posted_at'])->setTimezone(config('app.timezone')) : null,
                     'views' => $item['views'],
+                    // Sorted from the text as it reads now (an edit can change it); the text itself isn't kept
+                    'kind' => PostKind::of($item['text'] ?? '', $item['photo'] ?? false),
+                    'brokers' => implode(',', PostKind::brokers($item['text'] ?? '')) ?: null,
                 ];
 
                 if ($post = $known->get($item['msg_id'])) {

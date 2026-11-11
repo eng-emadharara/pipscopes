@@ -171,7 +171,9 @@ class TelegramChannel
      * The posts on a preview page, by number: when, how many views, whether it was edited.
      * Telegram numbers a channel's posts in order, so a number that's gone was deleted.
      *
-     * @return list<array{msg_id: int, posted_at: ?string, views: ?int, edited: bool}>
+     * The text (with each link's address after its label) is only used to sort the post (App\Support\PostKind); it isn't stored.
+     *
+     * @return list<array{msg_id: int, posted_at: ?string, views: ?int, edited: bool, text: string, photo: bool}>
      */
     public static function postItems(string $html, string $username): array
     {
@@ -189,10 +191,21 @@ class TelegramChannel
                 'views' => preg_match('/tgme_widget_message_views">([^<]+)</', $part, $m) ? self::number($m[1]) : null,
                 // The meta line reads "edited" right before the post's date link
                 'edited' => (bool) preg_match('/edited\s*(?:&nbsp;)?\s*<a class="tgme_widget_message_date"/', $part),
+                'text' => preg_match('/<div class="tgme_widget_message_text[^"]*"[^>]*>(.*?)<\/div>/s', $part, $m) ? self::plainText($m[1]) : '',
+                'photo' => str_contains($part, 'tgme_widget_message_photo_wrap'),
             ];
         }
 
         return array_values($items);
+    }
+
+    /** A post's HTML as one line of text, each link followed by its address (so broker links show) */
+    protected static function plainText(string $html): string
+    {
+        $html = preg_replace('/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/s', '$2 $1 ', $html);
+        $html = preg_replace('/<br\s*\/?>/i', "\n", $html);
+
+        return trim(preg_replace('/[ \t]+/u', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5)));
     }
 
     /**

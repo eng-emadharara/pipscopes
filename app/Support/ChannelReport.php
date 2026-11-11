@@ -80,6 +80,13 @@ class ChannelReport
             $cards['engagement'] = TelegramInsights::engagementCard($views->avg() / $subscribers * 100);
         }
 
+        // What the posts are: trades given beforehand, results announced afterwards, things for sale
+        $kinds = collect($items)->map(fn ($p) => PostKind::of($p['text'] ?? '', $p['photo'] ?? false))->countBy();
+        $verifiability = TelegramInsights::verifiabilityCard($kinds[PostKind::SIGNAL] ?? 0, $kinds[PostKind::CLAIM] ?? 0, count($items));
+        if ($verifiability) {
+            $cards['verifiability'] = $verifiability;
+        }
+
         // How often, over the stretch the latest posts cover
         $first = $posts->min('at');
         $days = max(1, $first->diffInDays(now()));
@@ -103,6 +110,11 @@ class ChannelReport
             'note' => __('عُدّل :n من آخر :total منشوراً بعد نشرها. التعديل عادي أحياناً، لكن تعديل التوصيات بعد تحرك السعر أسلوب معروف للتلاعب. لا نعرف ما الذي تغيّر في كل منشور.',
                 ['n' => $edited, 'total' => $posts->count()]),
         ];
+
+        $brokers = collect($items)->flatMap(fn ($p) => PostKind::brokers($p['text'] ?? ''))->unique()->values()->all();
+        if ($promotion = TelegramInsights::promotionCard($kinds[PostKind::AD] ?? 0, count($items), $brokers)) {
+            $cards['promotion'] = $promotion;
+        }
 
         // Real audiences vary from post to post; near-identical counts can mean bought views. Shown only when it stands out
         if ($views->count() >= TelegramInsights::ENGAGEMENT_MIN_POSTS && $views->avg() > 0) {

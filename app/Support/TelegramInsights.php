@@ -7,13 +7,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * Three plain indicators from a channel's posts (App\Services\TelegramPosts), for its page:
- * engagement (views ÷ subscribers), posts deleted lately, and how active it is.
+ * Plain indicators from a channel's posts (App\Services\TelegramPosts), for its page: engagement
+ * (views ÷ subscribers), trades given beforehand against results claimed afterwards, posts deleted
+ * lately, how active it is, and how much of it sells something.
  * Each describes a number and never accuses; an indicator without enough data isn't shown at all.
  */
 class TelegramInsights
 {
-    public const KEYS = ['engagement', 'deleted', 'activity'];
+    public const KEYS = ['engagement', 'verifiability', 'deleted', 'activity', 'promotion'];
 
     public const WINDOW_DAYS = 30;
 
@@ -36,12 +37,19 @@ class TelegramInsights
 
         $hidden = $provider->telegram_hidden_insights ?? [];
         $since = now()->subDays(self::WINDOW_DAYS);
-        $posts = $provider->telegramPosts()->where('posted_at', '>=', $since)->get(['msg_id', 'posted_at', 'views', 'deleted_at']);
+        $posts = $provider->telegramPosts()->where('posted_at', '>=', $since)->get(['msg_id', 'posted_at', 'views', 'kind', 'brokers', 'deleted_at']);
+        $kinds = $posts->countBy('kind');
+        $show = fn (string $key) => ! in_array($key, $hidden, true);
 
         return array_filter([
-            'engagement' => in_array('engagement', $hidden, true) ? null : self::engagement($provider, $posts),
-            'deleted' => in_array('deleted', $hidden, true) ? null : self::deleted($provider),
-            'activity' => in_array('activity', $hidden, true) ? null : self::activity($provider, $posts),
+            'engagement' => $show('engagement') ? self::engagement($provider, $posts) : null,
+            // Deleted ones count too: a trade given and then removed was still given
+            'verifiability' => $show('verifiability')
+                ? self::verifiabilityCard($kinds[PostKind::SIGNAL] ?? 0, $kinds[PostKind::CLAIM] ?? 0, $posts->count()) : null,
+            'deleted' => $show('deleted') ? self::deleted($provider) : null,
+            'activity' => $show('activity') ? self::activity($provider, $posts) : null,
+            'promotion' => $show('promotion') ? self::promotionCard($kinds[PostKind::AD] ?? 0, $posts->count(),
+                $posts->pluck('brokers')->filter()->flatMap(fn ($b) => explode(',', $b))->unique()->values()->all()) : null,
         ]);
     }
 
@@ -99,7 +107,9 @@ class TelegramInsights
             ];
         }
 
-        $count = $provider->telegramPosts()->where('deleted_at', '>=', now()->subDays(self::WINDOW_DAYS))->count();
+        $deleted = $provider->telegramPosts()->where('deleted_at', '>=', now()->subDays(self::WINDOW_DAYS))->pluck('kind');
+        $count = $deleted->count();
+        $trades = $deleted->filter(fn ($kind) => $kind === PostKind::SIGNAL)->count();
         $level = $count <= 2 ? 'good' : ($count <= 10 ? 'warn' : 'bad');
 
         return [
@@ -108,7 +118,9 @@ class TelegramInsights
             'value' => number_format($count),
             'label' => __('منشور محذوف (30 يوماً)'),
             'status' => ['good' => __('لا يوجد حذف يُذكر'), 'warn' => __('حذفت بعض المنشورات'), 'bad' => __('حذفت عدداً كبيراً من المنشورات')][$level],
-            'note' => __('رصدنا :n منشوراً نُشر ثم حُذف خلال آخر 30 يوماً. حذف المنشورات أمر عادي أحياناً، لكن الحذف المتكرر قد يُخفي صفقات خاسرة.', ['n' => number_format($count)]),
+            'note' => __('رصدنا :n منشوراً نُشر ثم حُذف خلال آخر 30 يوماً. حذف المنشورات أمر عادي أحياناً، لكن الحذف المتكرر قد يُخفي صفقات خاسرة.', ['n' => number_format($count)])
+                // Deleted trades are the ones that matter most
+                .($trades ? ' '.__('من بينها صفقات كانت منشورة بأرقام واضحة: :n.', ['n' => $trades]) : ''),
         ];
     }
 
@@ -129,6 +141,54 @@ class TelegramInsights
             : null;
 
         return self::activityCard(Carbon::parse($last), $perWeek);
+    }
+
+    /**
+     * Trades given beforehand (checkable) against results announced afterwards (not checkable).
+     * Null when there are too few of either to say anything.
+     */
+    public static function verifiabilityCard(int $signals, int $claims, int $total): ?array
+    {
+        if ($signals + $claims < 3) {
+            return null;
+        }
+
+        $level = $signals === 0 ? 'bad' : ($signals < $claims ? 'warn' : 'good');
+
+        return [
+            'key' => 'verifiability',
+            'level' => $level,
+            'value' => __('صفقات :s · ادعاءات :c', ['s' => $signals, 'c' => $claims]),
+            'label' => __('قابلية التحقق'),
+            'status' => ['good' => __('تنشر صفقاتها مسبقاً'), 'warn' => __('ادعاءات أكثر من الصفقات'), 'bad' => __('تنشر نتائج دون صفقات مسبقة')][$level],
+            'note' => __('في آخر :total منشوراً: صفقات منشورة قبل حدوثها بأرقام واضحة (يمكن التحقق منها): :s. إعلانات عن نتائج بعد حدوثها مثل «150 نقطة» (لا يمكن التحقق منها): :c. القناة التي تنشر النتائج فقط قد تختار الرابحة منها.',
+                ['total' => $total, 's' => $signals, 'c' => $claims]),
+        ];
+    }
+
+    /**
+     * Posts selling something: a private channel, a course, a broker sign-up.
+     *
+     * @param  list<string>  $brokers
+     */
+    public static function promotionCard(int $ads, int $total, array $brokers): ?array
+    {
+        if ($total < 10) {
+            return null;
+        }
+
+        $share = $ads / $total * 100;
+        $level = $share < 15 ? 'good' : ($share < 35 ? 'warn' : 'bad');
+
+        return [
+            'key' => 'promotion',
+            'level' => $level,
+            'value' => round($share).'%',
+            'label' => __('منشورات ترويجية'),
+            'status' => ['good' => __('ترويج قليل'), 'warn' => __('ترويج ملحوظ'), 'bad' => __('ترويج كثير')][$level],
+            'note' => __(':n من آخر :total منشوراً تبيع شيئاً: اشتراكاً في قناة خاصة، أو دورة، أو تسجيلاً لدى وسيط.', ['n' => $ads, 'total' => $total])
+                .($brokers ? ' '.__('تنشر روابط تسجيل لدى: :brokers، وقد تربح القناة من تسجيلك عبرها.', ['brokers' => implode('، ', $brokers)]) : ''),
+        ];
     }
 
     /** The activity card: when it last posted, and how often a week when that's known (also used by the channel check) */

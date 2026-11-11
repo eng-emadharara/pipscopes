@@ -85,6 +85,24 @@ class ChannelCheckTest extends TestCase
             ->assertDontSee(__('أضف القناة للمراقبة'));
     }
 
+    public function test_results_without_trades_and_broker_links_are_reported(): void
+    {
+        $posts = $this->posts(12, fn ($i) => 1500 + $i * 40);
+        $texts = ['150pips✔️ done', '360 PIPS RUNNING', 'مبروك الهدف الاول 150نقطه', 'سجل معي https://one.justmarkets.link/a/7zkl804aw7',
+            'للانضمام إلى القناة الخاصة VIP', 'صباح الخير'];
+        foreach ($posts as $i => &$post) {
+            $post['text'] = $texts[$i % count($texts)];
+            $post['photo'] = false;
+        }
+
+        $cards = ChannelReport::cards($posts, 10000);
+
+        $this->assertSame('bad', $cards['verifiability']['level']);
+        $this->assertSame(__('صفقات :s · ادعاءات :c', ['s' => 0, 'c' => 6]), $cards['verifiability']['value']);
+        $this->assertSame(['warn', '33%'], [$cards['promotion']['level'], $cards['promotion']['value']]);
+        $this->assertStringContainsString('JustMarkets', $cards['promotion']['note']);
+    }
+
     public function test_near_identical_views_are_pointed_out_and_normal_ones_are_not(): void
     {
         $steady = ChannelReport::cards($this->posts(15, fn ($i) => 4000 + ($i % 3) * 20), 10000);

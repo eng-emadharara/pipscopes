@@ -138,7 +138,7 @@ class TelegramPostsTest extends TestCase
         $this->follow(days: 20, posts: 30, views: 1500, deleted: 12);
         $cards = TelegramInsights::for($this->channel->fresh());
 
-        $this->assertSame(['engagement', 'deleted', 'activity'], array_keys($cards));
+        $this->assertSame(['engagement', 'deleted', 'activity', 'promotion'], array_keys($cards), 'no trades or claims among these posts, so no verifiability');
         $this->assertSame(['good', '15%'], [$cards['engagement']['level'], $cards['engagement']['value']]);
         $this->assertSame(['bad', '12'], [$cards['deleted']['level'], $cards['deleted']['value']]);
         $this->assertSame('good', $cards['activity']['level']);
@@ -163,7 +163,7 @@ class TelegramPostsTest extends TestCase
         $this->follow(days: 20, posts: 12, views: 150);
         $this->assertSame(['bad', '1.5%'], array_values(array_intersect_key(TelegramInsights::for($this->channel->fresh())['engagement'], array_flip(['level', 'value']))));
 
-        $this->channel->update(['telegram_hidden_insights' => ['engagement', 'deleted']]);
+        $this->channel->update(['telegram_hidden_insights' => ['engagement', 'deleted', 'promotion']]);
         $this->assertSame(['activity'], array_keys(TelegramInsights::for($this->channel->fresh())));
     }
 
@@ -173,17 +173,44 @@ class TelegramPostsTest extends TestCase
         $this->channel->categories()->attach(\App\Models\Category::create(['name' => 'Signals', 'slug' => 'signals'])->id);
         $page = fn () => \Livewire\Livewire::test(\App\Filament\Resources\ProviderResource\Pages\EditProvider::class, ['record' => $this->channel->getRouteKey()]);
 
-        $page()->assertFormSet(['telegram_hidden_insights' => ['engagement', 'deleted', 'activity']])
+        $page()->assertFormSet(['telegram_hidden_insights' => TelegramInsights::KEYS])
             ->fillForm(['telegram_hidden_insights' => ['activity']])
             ->call('save')->assertHasNoFormErrors();
 
         // Unticked = hidden
-        $this->assertSame(['engagement', 'deleted'], $this->channel->fresh()->telegram_hidden_insights);
+        $this->assertSame(['engagement', 'verifiability', 'deleted', 'promotion'], $this->channel->fresh()->telegram_hidden_insights);
         $page()->assertFormSet(['telegram_hidden_insights' => ['activity']])
-            ->fillForm(['telegram_hidden_insights' => ['engagement', 'deleted', 'activity']])
+            ->fillForm(['telegram_hidden_insights' => TelegramInsights::KEYS])
             ->call('save')->assertHasNoFormErrors();
 
         $this->assertNull($this->channel->fresh()->telegram_hidden_insights);
+    }
+
+    public function test_followed_posts_are_sorted_and_a_deleted_trade_is_named(): void
+    {
+        $texts = [
+            1 => 'BUY GOLD NOW 2814 Tp 2820 Tp 2830 Sl 2807',
+            2 => '150pips✔️ done',
+            3 => '360 PIPS RUNNING',
+            4 => 'سجل معي https://one.justmarkets.link/a/7zkl804aw7',
+            5 => 'صباح الخير',
+        ];
+        $items = fn (array $ids) => array_map(fn ($id) => ['msg_id' => $id, 'posted_at' => now()->subDays(2)->toIso8601String(), 'views' => 1000,
+            'edited' => false, 'text' => $texts[$id], 'photo' => false], $ids);
+
+        TelegramPosts::record($this->channel, $items([1, 2, 3, 4, 5]));
+        $this->assertSame(['signal', 'claim', 'claim', 'ad', 'other'], TelegramPost::orderBy('msg_id')->pluck('kind')->all());
+        $this->assertSame('JustMarkets', TelegramPost::where('msg_id', 4)->value('brokers'));
+
+        // The trade disappears
+        TelegramPost::where('msg_id', 1)->update(['deleted_at' => now()]);
+        $this->channel->forceFill(['telegram_posts_since' => now()->subDays(20), 'telegram_data' => ['preview_enabled' => true]])->saveQuietly();
+
+        $cards = TelegramInsights::for($this->channel->fresh());
+        $this->assertStringContainsString(__('من بينها صفقات كانت منشورة بأرقام واضحة: :n.', ['n' => 1]), $cards['deleted']['note']);
+        // A trade given and then deleted was still given
+        $this->assertSame('warn', $cards['verifiability']['level']);
+        $this->assertSame(__('صفقات :s · ادعاءات :c', ['s' => 1, 'c' => 2]), $cards['verifiability']['value']);
     }
 
     public function test_the_cards_show_on_the_channel_page(): void

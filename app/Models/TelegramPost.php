@@ -10,7 +10,7 @@ class TelegramPost extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['provider_id', 'msg_id', 'posted_at', 'views', 'edited', 'first_seen_at', 'deleted_at'];
+    protected $fillable = ['provider_id', 'msg_id', 'posted_at', 'views', 'edited', 'kind', 'brokers', 'first_seen_at', 'deleted_at'];
 
     protected $casts = [
         'msg_id' => 'integer',
