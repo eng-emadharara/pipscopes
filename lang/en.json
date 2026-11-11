@@ -784,5 +784,22 @@
     "التقرير الكامل وإضافتها للمراقبة": "Full report, and add it for monitoring",
     "تقرير قناة :name": "Channel report: :name",
     "القناة موجودة على :app": "This channel is on :app",
-    "أو افحص من تيليجرام: أرسل رابط القناة لبوت :bot": "Or check from Telegram: send the channel link to :bot"
+    "أو افحص من تيليجرام: أرسل رابط القناة لبوت :bot": "Or check from Telegram: send the channel link to :bot",
+    "افحص قناة قبل أن تشترك": "Check a channel before you subscribe",
+    ":n لكل 1000 مشاهدة": ":n per 1,000 views",
+    "التفاعلات (الإيموجي)": "Reactions (emoji)",
+    "تفاعل طبيعي مع المنشورات": "Normal reactions to posts",
+    "تفاعلات قليلة": "Few reactions",
+    "تفاعلات نادرة جداً مقارنة بالمشاهدات": "Very few reactions for its views",
+    "في آخر :total منشوراً: :r تفاعلاً مقابل :v مشاهدة. في القنوات النشطة يتفاعل عادةً 5 إلى 20 من كل 1000 مشاهد، والتفاعلات القليلة جداً مقارنة بالمشاهدات قد تعني مشاهدات غير حقيقية.": "In the last :total posts: :r reactions for :v views. In active channels 5 to 20 of every 1,000 viewers usually react, and very few reactions for the views can mean fake views.",
+    "مفتوحة": "Open",
+    "مغلقة": "Closed",
+    "التعليقات": "Comments",
+    "يمكن التعليق على المنشورات": "Posts can be commented on",
+    "لا يمكن التعليق على المنشورات": "Posts can't be commented on",
+    "يمكن للمشتركين التعليق على المنشورات، فتجاربهم وشكاواهم ظاهرة لمن يتابع القناة.": "Subscribers can comment on posts, so their experiences and complaints are visible to the channel's followers.",
+    "القناة لا تسمح بالتعليق على منشوراتها، فلا تظهر تجارب المشتركين أو شكاواهم علناً. كثير من القنوات تغلقها، لكنها تستحق الانتباه مع المؤشرات الأخرى.": "The channel doesn't allow comments on its posts, so subscribers' experiences and complaints aren't public. Many channels turn them off, but it's worth noting alongside the other indicators.",
+    "افحص قناة التوصيات قبل أن تدفع اشتراكك.": "Check the signals channel before you pay for it.",
+    "أرقام حقيقية من تيليجرام، وتجارب متداولين جرّبوها، مجاناً وفي ثوانٍ.": "Real numbers from Telegram and experiences from traders who tried it, free and in seconds.",
+    "ابحث عن قناة أو الصق رابطها…": "Search for a channel or paste its link…"
 }

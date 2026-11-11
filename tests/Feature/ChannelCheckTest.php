@@ -57,6 +57,18 @@ class ChannelCheckTest extends TestCase
         $this->get('/')->assertSee(route('channel-check'));
     }
 
+    public function test_a_telegram_link_pasted_into_search_goes_to_the_check(): void
+    {
+        $this->get(route('providers.index', ['q' => 'https://t.me/goldpro']))
+            ->assertRedirect(route('channel-check', ['channel' => 'https://t.me/goldpro']));
+        $this->get(route('providers.index', ['q' => 't.me/goldpro']))
+            ->assertRedirect(route('channel-check', ['channel' => 't.me/goldpro']));
+
+        // Names and @handles are still searched
+        $this->get(route('providers.index', ['q' => 'gold pro']))->assertOk();
+        $this->get(route('providers.index', ['q' => '@goldpro']))->assertOk();
+    }
+
     public function test_the_homepage_has_the_check_right_under_the_categories_and_admins_can_switch_it_off(): void
     {
         $this->get('/')->assertOk()
@@ -153,6 +165,51 @@ class ChannelCheckTest extends TestCase
         $cards = ChannelReport::cards($posts, 60000, now()->subYears(2)->toIso8601String());
         $this->assertSame('good', $cards['losses']['level']);
         $this->assertSame(['good', __('قناة قديمة نسبياً')], [$cards['age']['level'], $cards['age']['status']]);
+    }
+
+    public function test_reactions_are_read_from_the_page_and_rare_ones_are_pointed_out(): void
+    {
+        $html = '<div class="tgme_widget_message" data-post="gold/5"><div class="tgme_widget_message_reactions js-message_reactions">'
+            .'<span class="tgme_reaction"><i class="emoji"><b>❤</b></i>26</span><span class="tgme_reaction"><i class="emoji"><b>👍</b></i>1.2K</span></div>'
+            .'<span class="tgme_widget_message_views">9K</span></div><div class="tgme_widget_message" data-post="gold/6"><span class="tgme_widget_message_views">80</span></div>';
+        $this->assertSame([1226, null], array_column(\App\Services\TelegramChannel::postItems($html, 'gold'), 'reactions'));
+
+        // 12 posts of 3 000 views: 2 reactions each is under 1 per 1 000 views
+        $posts = $this->posts(12, fn () => 3000);
+        $rare = array_map(fn ($p) => $p + ['reactions' => 2], $posts);
+        $this->assertSame('bad', ChannelReport::cards($rare, 10000)['reactions']['level']);
+
+        $normal = array_map(fn ($p) => $p + ['reactions' => 40], $posts);
+        $this->assertSame(['good', __(':n لكل 1000 مشاهدة', ['n' => 13])], [ChannelReport::cards($normal, 10000)['reactions']['level'], ChannelReport::cards($normal, 10000)['reactions']['value']]);
+
+        // No reactions anywhere: they may be switched off, so nothing is said
+        $this->assertArrayNotHasKey('reactions', ChannelReport::cards($posts, 10000));
+    }
+
+    public function test_comments_open_or_closed_come_from_the_bot_api_even_with_the_preview_off(): void
+    {
+        config(['services.telegram.bot_token' => '123456:TEST']);
+        Http::fake([
+            'api.telegram.org/*' => Http::sequence()
+                ->push(['ok' => true, 'result' => ['id' => -100, 'type' => 'channel']])
+                ->push(['ok' => true, 'result' => ['id' => -101, 'type' => 'channel', 'linked_chat_id' => -200]]),
+            't.me/s/closed*' => Http::response('<div>no preview</div>'),
+            't.me/closed' => Http::response('<meta property="og:title" content="closed"><div class="tgme_page_title"></div><div class="tgme_page_extra">50 000 subscribers</div>'),
+            't.me/s/open*' => Http::response('<div>no preview</div>'),
+            't.me/open' => Http::response('<meta property="og:title" content="open"><div class="tgme_page_title"></div><div class="tgme_page_extra">9 000 subscribers</div>'),
+            '*' => Http::response(''),
+        ]);
+
+        $this->get(route('channel-check', ['channel' => '@closed']))
+            ->assertSee('data-report-no-preview', false)
+            ->assertSee('data-insight="comments" data-level="warn"', false)
+            ->assertSee(__('لا يمكن التعليق على المنشورات'));
+
+        $this->get(route('channel-check', ['channel' => '@open']))
+            ->assertSee('data-insight="comments" data-level="good"', false);
+
+        // Without a bot there's no way to tell, and nothing is shown
+        $this->assertNull(\App\Support\TelegramInsights::commentsCard(null));
     }
 
     public function test_near_identical_views_are_pointed_out_and_normal_ones_are_not(): void

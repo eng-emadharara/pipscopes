@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  */
 class TelegramInsights
 {
-    public const KEYS = ['engagement', 'verifiability', 'losses', 'deleted', 'activity', 'age', 'promotion'];
+    public const KEYS = ['engagement', 'reactions', 'verifiability', 'losses', 'deleted', 'activity', 'age', 'comments', 'promotion'];
 
     /** A channel this young with this many subscribers grew unusually fast */
     public const YOUNG_MONTHS = 6;
@@ -42,12 +42,14 @@ class TelegramInsights
 
         $hidden = $provider->telegram_hidden_insights ?? [];
         $since = now()->subDays(self::WINDOW_DAYS);
-        $posts = $provider->telegramPosts()->where('posted_at', '>=', $since)->get(['msg_id', 'posted_at', 'views', 'kind', 'brokers', 'deleted_at']);
+        $posts = $provider->telegramPosts()->where('posted_at', '>=', $since)->get(['msg_id', 'posted_at', 'views', 'reactions', 'kind', 'brokers', 'deleted_at']);
         $kinds = $posts->countBy('kind');
         $show = fn (string $key) => ! in_array($key, $hidden, true);
 
         return array_filter([
             'engagement' => $show('engagement') ? self::engagement($provider, $posts) : null,
+            'reactions' => $show('reactions') ? self::reactionsCard($posts->filter(fn ($p) => ! $p->deleted_at && $p->posted_at <= now()->subDay())
+                ->map(fn ($p) => ['views' => $p->views, 'reactions' => $p->reactions])->values()->all()) : null,
             // Deleted ones count too: a trade given and then removed was still given
             'verifiability' => $show('verifiability')
                 ? self::verifiabilityCard($kinds[PostKind::SIGNAL] ?? 0, $kinds[PostKind::CLAIM] ?? 0, $posts->count()) : null,
@@ -56,6 +58,7 @@ class TelegramInsights
             'activity' => $show('activity') ? self::activity($provider, $posts) : null,
             'age' => $show('age') && ($first = $provider->telegram_data['first_post_at'] ?? null)
                 ? self::ageCard(Carbon::parse($first), $provider->telegram_members) : null,
+            'comments' => $show('comments') ? self::commentsCard($provider->telegram_data['comments'] ?? null) : null,
             'promotion' => $show('promotion') ? self::promotionCard($kinds[PostKind::AD] ?? 0, $posts->count(),
                 $posts->pluck('brokers')->filter()->flatMap(fn ($b) => explode(',', $b))->unique()->values()->all()) : null,
         ]);
@@ -171,6 +174,56 @@ class TelegramInsights
             'status' => ['good' => __('تنشر صفقاتها مسبقاً'), 'warn' => __('ادعاءات أكثر من الصفقات'), 'bad' => __('تنشر نتائج دون صفقات مسبقة')][$level],
             'note' => __('في آخر :total منشوراً: صفقات منشورة قبل حدوثها بأرقام واضحة (يمكن التحقق منها): :s. إعلانات عن نتائج بعد حدوثها مثل «150 نقطة» (لا يمكن التحقق منها): :c. القناة التي تنشر النتائج فقط قد تختار الرابحة منها.',
                 ['total' => $total, 's' => $signals, 'c' => $claims]),
+        ];
+    }
+
+    /**
+     * Emoji reactions per 1,000 views. Real audiences react; bought views don't. Null when there's too
+     * little to go on, or when the posts show no reactions at all (the owner may have switched them off).
+     *
+     * @param  list<array{views: ?int, reactions: ?int}>  $posts  posts at least a day old
+     */
+    public static function reactionsCard(array $posts): ?array
+    {
+        $posts = array_filter($posts, fn ($p) => $p['views']);
+        $reacted = array_filter($posts, fn ($p) => $p['reactions']);
+        if (count($posts) < self::ENGAGEMENT_MIN_POSTS || count($reacted) < 3) {
+            return null;
+        }
+
+        $views = array_sum(array_column($posts, 'views'));
+        $reactions = array_sum(array_map(fn ($p) => $p['reactions'] ?? 0, $posts));
+        $perThousand = $reactions / $views * 1000;
+        $level = $perThousand >= 5 ? 'good' : ($perThousand >= 2 ? 'warn' : 'bad');
+        $shown = $perThousand >= 10 ? (string) round($perThousand) : rtrim(rtrim(number_format($perThousand, 1), '0'), '.');
+
+        return [
+            'key' => 'reactions',
+            'level' => $level,
+            'value' => __(':n لكل 1000 مشاهدة', ['n' => $shown]),
+            'label' => __('التفاعلات (الإيموجي)'),
+            'status' => ['good' => __('تفاعل طبيعي مع المنشورات'), 'warn' => __('تفاعلات قليلة'), 'bad' => __('تفاعلات نادرة جداً مقارنة بالمشاهدات')][$level],
+            'note' => __('في آخر :total منشوراً: :r تفاعلاً مقابل :v مشاهدة. في القنوات النشطة يتفاعل عادةً 5 إلى 20 من كل 1000 مشاهد، والتفاعلات القليلة جداً مقارنة بالمشاهدات قد تعني مشاهدات غير حقيقية.',
+                ['total' => count($posts), 'r' => number_format($reactions), 'v' => number_format($views)]),
+        ];
+    }
+
+    /** Whether subscribers can comment (a discussion group is linked). Null when Telegram didn't say. */
+    public static function commentsCard(?bool $open): ?array
+    {
+        if ($open === null) {
+            return null;
+        }
+
+        return [
+            'key' => 'comments',
+            'level' => $open ? 'good' : 'warn',
+            'value' => $open ? __('مفتوحة') : __('مغلقة'),
+            'label' => __('التعليقات'),
+            'status' => $open ? __('يمكن التعليق على المنشورات') : __('لا يمكن التعليق على المنشورات'),
+            'note' => $open
+                ? __('يمكن للمشتركين التعليق على المنشورات، فتجاربهم وشكاواهم ظاهرة لمن يتابع القناة.')
+                : __('القناة لا تسمح بالتعليق على منشوراتها، فلا تظهر تجارب المشتركين أو شكاواهم علناً. كثير من القنوات تغلقها، لكنها تستحق الانتباه مع المؤشرات الأخرى.'),
         ];
     }
 

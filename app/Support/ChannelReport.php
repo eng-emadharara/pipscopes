@@ -50,7 +50,9 @@ class ChannelReport
             'url' => $channel['url'],
             'channel' => $channel,
             'preview' => (bool) ($stats['preview_enabled'] ?? false),
-            'cards' => self::cards($stats['items'] ?? [], $channel['subscribers'], $stats['first_post_at'] ?? null),
+            // Comments come from the Bot API, so they show even when the post preview is off
+            'cards' => self::cards($stats['items'] ?? [], $channel['subscribers'], $stats['first_post_at'] ?? null)
+                + array_filter(['comments' => TelegramInsights::commentsCard($channel['comments'] ?? null)]),
             'provider' => $listed ? $provider : null,
             // Our own indicators, when we've been following it (deletions and the rest)
             'followed' => $listed ? TelegramInsights::for($provider) : [],
@@ -78,6 +80,11 @@ class ChannelReport
         $views = $posts->filter(fn ($p) => $p['views'] !== null && $p['at'] <= now()->subDay())->pluck('views');
         if ($subscribers >= TelegramInsights::ENGAGEMENT_MIN_SUBSCRIBERS && $views->count() >= TelegramInsights::ENGAGEMENT_MIN_POSTS) {
             $cards['engagement'] = TelegramInsights::engagementCard($views->avg() / $subscribers * 100);
+        }
+        $reactions = TelegramInsights::reactionsCard($posts->filter(fn ($p) => $p['at'] <= now()->subDay())
+            ->map(fn ($p) => ['views' => $p['views'], 'reactions' => $p['reactions'] ?? null])->values()->all());
+        if ($reactions) {
+            $cards['reactions'] = $reactions;
         }
 
         // What the posts are: trades given beforehand, results announced afterwards, things for sale

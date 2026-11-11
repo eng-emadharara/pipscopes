@@ -150,19 +150,22 @@
                 </aside>
 
                 {{-- What the numbers say --}}
-                @if ($cards)
+                @if ($cards || ! $report['preview'])
                     <section class="lg:col-start-1">
                         <h2 class="mb-3 font-bold">{{ __('ماذا تقول أرقامها؟') }}</h2>
-                        <ul class="card divide-y divide-gray-100 p-0" data-report-cards>
-                            @foreach ($cards as $card)
-                                @include('channel-check._row', ['card' => $card])
-                            @endforeach
-                        </ul>
+                        @unless ($report['preview'])
+                            <p class="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600" data-report-no-preview>
+                                {{ __('صاحب القناة أغلق معاينة المنشورات للعامة، لذلك لا يمكن قياس التفاعل والنشاط. نعرض بيانات القناة الأساسية فقط.') }}
+                            </p>
+                        @endunless
+                        @if ($cards)
+                            <ul class="card divide-y divide-gray-100 p-0" data-report-cards>
+                                @foreach ($cards as $card)
+                                    @include('channel-check._row', ['card' => $card])
+                                @endforeach
+                            </ul>
+                        @endif
                     </section>
-                @elseif (! $report['preview'])
-                    <p class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600 lg:col-start-1" data-report-no-preview>
-                        {{ __('صاحب القناة أغلق معاينة المنشورات للعامة، لذلك لا يمكن قياس التفاعل والنشاط. نعرض بيانات القناة الأساسية فقط.') }}
-                    </p>
                 @endif
             </div>
 

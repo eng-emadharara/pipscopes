@@ -113,6 +113,7 @@ class TelegramChannel
             'photo_url' => $photo && ! str_contains($photo, 'telegram.org/img/') ? $photo : null,
             'subscribers' => self::number($extra),
             'verified' => str_contains($html, 'verified-icon'),
+            'comments' => self::commentsOpen($username),
             'stats' => self::posts($username),
         ];
     }
@@ -195,10 +196,45 @@ class TelegramChannel
                 'edited' => (bool) preg_match('/edited\s*(?:&nbsp;)?\s*<a class="tgme_widget_message_date"/', $part),
                 'text' => preg_match('/<div class="tgme_widget_message_text[^"]*"[^>]*>(.*?)<\/div>/s', $part, $m) ? self::plainText($m[1]) : '',
                 'photo' => str_contains($part, 'tgme_widget_message_photo_wrap'),
+                // Emoji reactions added up; null when the post shows none (reactions can be switched off)
+                'reactions' => preg_match_all('/<span class="tgme_reaction[^"]*">.*?<\/i>([\d.,]+\s*[KM]?)<\/span>/s', $part, $r)
+                    ? array_sum(array_map(fn ($n) => self::number($n) ?? 0, $r[1])) : null,
             ];
         }
 
         return array_values($items);
+    }
+
+    /**
+     * Whether the channel has a discussion group (comments under its posts), from the Bot API's getChat,
+     * which public pages don't show. Null without a bot token or when Telegram doesn't answer. Cached a day.
+     */
+    public static function commentsOpen(string $username): ?bool
+    {
+        $token = config('services.telegram.bot_token');
+        if (! $token) {
+            return null;
+        }
+
+        $key = 'tg-comments:'.Str::lower($username);
+        if (Cache::has($key)) {
+            return Cache::get($key);
+        }
+
+        try {
+            $response = Http::timeout(8)->get("https://api.telegram.org/bot$token/getChat", ['chat_id' => '@'.$username]);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! $response->json('ok')) {
+            return null;
+        }
+
+        $open = filled($response->json('result.linked_chat_id'));
+        Cache::put($key, $open, now()->addDay());
+
+        return $open;
     }
 
     /** Date of the oldest post still on the channel (the preview's first page after post 1) */

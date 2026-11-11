@@ -34,6 +34,11 @@ class ProviderController extends Controller
         ])));
         // Searches name, description, social links, categories and translations (see Provider::scopeSearch)
         $search = trim((string) $request->input('q'));
+
+        // A Telegram link pasted into a search box: check that channel (its report links here when it's listed)
+        if (preg_match('#^(https?://)?(www\.)?(t\.me|telegram\.me|telegram\.dog)/\S+$#i', $search)) {
+            return redirect()->route('channel-check', ['channel' => $search]);
+        }
         // Providers covering any of the selected markets
         $selectedMarkets = array_values(array_filter((array) $request->input('markets', []), 'is_string'));
         $minRating = $request->filled('min_rating') ? (float) $request->input('min_rating') : null;

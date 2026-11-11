@@ -23,7 +23,7 @@ class ShareImage
     public const HEIGHT = 630;
 
     /** Bump to regenerate every cached image after a design change */
-    protected const DESIGN_VERSION = 3;
+    protected const DESIGN_VERSION = 5;
 
     protected const PADDING = 64;
 
@@ -205,15 +205,17 @@ class ShareImage
     {
         $this->header();
         $width = self::WIDTH - 2 * self::PADDING;
-        $this->stars(5, 150, 56);
-        $y = 300;
-        foreach ($this->wrap(__('اقرأ التقييمات. اختر بثقة.'), 'bold', 72, $width, 2) as $line) {
-            $this->text($line, 'bold', 72, $y, 'white');
-            $y += 92;
+        $this->stars(5, 140, 50);
+        $y = 270;
+        // The homepage's headline, so a shared link says what the site does
+        foreach ($this->wrap(__('افحص قناة التوصيات قبل أن تدفع اشتراكك.'), 'bold', 60, $width, 2) as $line) {
+            $this->text($line, 'bold', 60, $y, 'white');
+            $y += 80;
         }
-        foreach ($this->wrap(__('منصة تقييمات مستقلة لقنوات التوصيات ومقدمي خدمات نسخ الصفقات والتداول.'), 'regular', 34, $width, 2) as $line) {
-            $this->text($line, 'regular', 34, $y, 'muted');
-            $y += 50;
+        $y += 6;
+        foreach ($this->wrap(__('أرقام حقيقية من تيليجرام، وتجارب متداولين جرّبوها، مجاناً وفي ثوانٍ.'), 'regular', 30, $width, 2) as $line) {
+            $this->text($line, 'regular', 30, $y, 'muted');
+            $y += 44;
         }
         $this->footer();
     }

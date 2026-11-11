@@ -21,7 +21,7 @@ class ChannelCheckBot
     protected const DOTS = ['good' => '🟢', 'warn' => '🟡', 'bad' => '🔴', 'pending' => '⚪'];
 
     /** The order the indicators are listed in (the image shows the first four) */
-    protected const ORDER = ['engagement', 'verifiability', 'losses', 'age', 'promotion', 'activity', 'edited', 'steady_views', 'deleted'];
+    protected const ORDER = ['engagement', 'reactions', 'verifiability', 'losses', 'age', 'comments', 'promotion', 'activity', 'edited', 'steady_views', 'deleted'];
 
     /** True when the message was a channel to check (then it's been answered) */
     public static function handles(int $chatId, string $text): bool
@@ -111,7 +111,7 @@ class ChannelCheckBot
             }
         }
 
-        if (! $cards) {
+        if (! ($report['preview'] ?? false)) {
             $lines[] = __('صاحب القناة أغلق معاينة المنشورات للعامة، لذلك لا يمكن قياس التفاعل والنشاط. نعرض بيانات القناة الأساسية فقط.');
         }
 

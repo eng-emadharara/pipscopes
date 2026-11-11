@@ -59,6 +59,7 @@ class TelegramRefresh
             'username' => $channel['username'],
             'subscribers' => $channel['subscribers'],
             'verified' => $channel['verified'],
+            'comments' => $channel['comments'] ?? null,
             ...$stats,
         ];
 

@@ -26,8 +26,8 @@ class ReviewInviteTest extends TestCase
     public function test_the_home_page_offers_both_actions_and_the_picker(): void
     {
         $this->get(route('home'))->assertOk()
-            ->assertSee('data-hero-invite', false)
-            ->assertSee(__('قيّم تجربتك'))
+            ->assertSee('data-hero-actions', false)
+            ->assertSee(__('افحص قناة قبل أن تشترك'))
             ->assertSee(__('تصفح جميع القنوات'))
             ->assertSee('data-hero-browse', false)
             ->assertSee('data-open-dialog="review-picker"', false)
@@ -68,7 +68,7 @@ class ReviewInviteTest extends TestCase
 
         $this->actingAs($member)->get(route('home'))
             ->assertDontSee('data-review-invite', false)
-            ->assertSee('data-hero-invite', false)
+            ->assertSee('data-hero-actions', false)
             ->assertSee('id="review-picker"', false);
     }
 
@@ -77,7 +77,7 @@ class ReviewInviteTest extends TestCase
         Setting::put(['prelaunch_enabled' => true]);
 
         $this->get(route('home'))->assertOk()->assertSee('data-prelaunch-page', false)
-            ->assertDontSee('data-hero-invite', false)
+            ->assertDontSee('data-hero-actions', false)
             ->assertDontSee('id="review-picker"', false)
             ->assertDontSee('data-review-invite', false);
     }
@@ -91,7 +91,7 @@ class ReviewInviteTest extends TestCase
         $this->app['auth']->shouldUse('web'); // actingAs() would make "owner" the default guard, as it never is on the site
 
         $this->get(route('home'))->assertOk()
-            ->assertDontSee('data-hero-invite', false)
+            ->assertDontSee('data-review-invite', false)
             ->assertDontSee('id="review-picker"', false);
     }
 }

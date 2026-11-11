@@ -118,9 +118,9 @@ class HomeHeroTest extends TestCase
     public function test_the_hero_asks_visitors_to_share_their_experience(): void
     {
         $this->get('/')->assertOk()
-            ->assertSee(__('جرّبت قناة توصيات؟ شاركنا تجربتك.'))
-            ->assertSee(__('تجربتك الحقيقية، جيدة كانت أو سيئة، تحمي متداولاً آخر قبل أن يدفع اشتراكه.'))
-            ->assertSee(__('ابحث عن القناة التي جرّبتها…'))
+            ->assertSee(__('افحص قناة التوصيات قبل أن تدفع اشتراكك.'))
+            ->assertSee(__('أرقام حقيقية من تيليجرام، وتجارب متداولين جرّبوها، مجاناً وفي ثوانٍ.'))
+            ->assertSee(__('ابحث عن قناة أو الصق رابطها…'))
             ->assertDontSee('اقرأ التقييمات. اختر بثقة.');
     }
     public function test_the_hero_points_to_adding_a_missing_channel(): void

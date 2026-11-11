@@ -39,6 +39,7 @@ class TelegramPosts
                 $values = [
                     'posted_at' => $item['posted_at'] ? Carbon::parse($item['posted_at'])->setTimezone(config('app.timezone')) : null,
                     'views' => $item['views'],
+                    'reactions' => $item['reactions'] ?? null,
                     // Sorted from the text as it reads now (an edit can change it); the text itself isn't kept
                     'kind' => PostKind::of($item['text'] ?? '', $item['photo'] ?? false),
                     'brokers' => implode(',', PostKind::brokers($item['text'] ?? '')) ?: null,

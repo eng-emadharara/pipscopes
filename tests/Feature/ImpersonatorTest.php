@@ -93,8 +93,10 @@ class ImpersonatorTest extends TestCase
         $this->getJson(route('search.suggest', ['q' => '@GoldPro_VIP']))
             ->assertJsonPath('impersonators.0.handle', '@goldpro_vip');
 
-        $this->get(route('providers.index', ['q' => 'https://t.me/goldpro_vip']))
-            ->assertSee('@goldpro_vip')
+        // A pasted link goes to the channel check, which warns about it
+        $this->followingRedirects()->get(route('providers.index', ['q' => 'https://t.me/goldpro_vip']))
+            ->assertSee('data-channel-report="impersonator"', false)
+            ->assertSee(__('تحذير: هذا حساب منتحل معروف'))
             ->assertSee('Gold Pro');
 
         // Partial words never trigger a warning
