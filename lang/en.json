@@ -801,5 +801,16 @@
     "القناة لا تسمح بالتعليق على منشوراتها، فلا تظهر تجارب المشتركين أو شكاواهم علناً. كثير من القنوات تغلقها، لكنها تستحق الانتباه مع المؤشرات الأخرى.": "The channel doesn't allow comments on its posts, so subscribers' experiences and complaints aren't public. Many channels turn them off, but it's worth noting alongside the other indicators.",
     "افحص قناة التوصيات قبل أن تدفع اشتراكك.": "Check the signals channel before you pay for it.",
     "أرقام حقيقية من تيليجرام، وتجارب متداولين جرّبوها، مجاناً وفي ثوانٍ.": "Real numbers from Telegram and experiences from traders who tried it, free and in seconds.",
-    "ابحث عن قناة أو الصق رابطها…": "Search for a channel or paste its link…"
+    "ابحث عن قناة أو الصق رابطها…": "Search for a channel or paste its link…",
+    "لا تبدو قناة تداول": "Doesn't look like a trading channel",
+    "هذه الأداة مخصصة لقنوات التوصيات والتداول. لم نجد في اسم القناة أو منشوراتها الأخيرة ما يدل على التداول، لذلك نعرض مؤشرات الجمهور فقط، ولا تُضاف للمراقبة.": "This tool is for signals and trading channels. Nothing in this channel's name or recent posts points to trading, so only audience indicators are shown and it can't be added for monitoring.",
+    "هل هي قناة تداول فعلاً؟": "Is it a trading channel after all?",
+    "أرسلها لنا لنراجعها": "Send it to us for review",
+    "لا تبدو قناة تداول: لم نجد في اسمها أو منشوراتها الأخيرة ما يدل على التداول، لذلك نعرض مؤشرات الجمهور فقط.": "Doesn't look like a trading channel: nothing in its name or recent posts points to trading, so only audience indicators are shown.",
+    "جاري جلب بيانات القناة من تيليجرام…": "Fetching the channel from Telegram…",
+    "جاري قراءة آخر المنشورات…": "Reading the latest posts…",
+    "جاري التحقق من الصفقات والادعاءات…": "Checking trades and claims…",
+    "جاري حساب التفاعل والمؤشرات…": "Working out engagement and indicators…",
+    "لحظات ويجهز التقرير…": "The report is almost ready…",
+    "يستغرق الفحص عادةً بضع ثوانٍ.": "A check usually takes a few seconds."
 }

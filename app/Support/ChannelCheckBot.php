@@ -88,9 +88,11 @@ class ChannelCheckBot
 
         $channel = $report['channel'];
         $url = route('channel-check', ['channel' => '@'.$channel['username'], 'utm_source' => 'telegram', 'utm_medium' => 'bot']);
-        $buttons = $report['provider']
-            ? [['⭐ '.__('صفحة القناة والتقييمات'), route('providers.show', $report['provider'])], ['📄 '.__('التقرير الكامل'), $url]]
-            : [['📄 '.__('التقرير الكامل وإضافتها للمراقبة'), $url]];
+        $buttons = match (true) {
+            (bool) $report['provider'] => [['⭐ '.__('صفحة القناة والتقييمات'), route('providers.show', $report['provider'])], ['📄 '.__('التقرير الكامل'), $url]],
+            $report['trading'] === TradingChannel::NOT_TRADING => [['📄 '.__('التقرير الكامل'), $url]],
+            default => [['📄 '.__('التقرير الكامل وإضافتها للمراقبة'), $url]],
+        };
 
         self::send($chatId, self::caption($report), $buttons, route('share-images.check', ['ar', $channel['username']]));
     }
@@ -104,6 +106,11 @@ class ChannelCheckBot
         $lines = ['📊 '.__('تقرير قناة :name', ['name' => $channel['title']])];
         $lines[] = '@'.$channel['username'].($channel['subscribers'] ? ' · '.trans_choice(':count مشترك', $channel['subscribers'], ['count' => number_format($channel['subscribers'])]) : '');
         $lines[] = '';
+
+        if (($report['trading'] ?? null) === TradingChannel::NOT_TRADING) {
+            $lines[] = '⚠️ '.__('لا تبدو قناة تداول: لم نجد في اسمها أو منشوراتها الأخيرة ما يدل على التداول، لذلك نعرض مؤشرات الجمهور فقط.');
+            $lines[] = '';
+        }
 
         foreach (self::ORDER as $key) {
             if ($card = $cards[$key] ?? null) {

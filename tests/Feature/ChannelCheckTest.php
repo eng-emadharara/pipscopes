@@ -57,6 +57,19 @@ class ChannelCheckTest extends TestCase
         $this->get('/')->assertSee(route('channel-check'));
     }
 
+    public function test_check_forms_show_the_steps_while_the_report_loads(): void
+    {
+        foreach ([route('channel-check'), route('home')] as $page) {
+            $this->get($page)->assertOk()
+                ->assertSee('data-check-loading', false)
+                ->assertSee('data-check-form', false)
+                ->assertSee(__('جاري جلب بيانات القناة من تيليجرام…'));
+        }
+
+        // The hero search shows them only for a pasted Telegram link (resources/js/channel-check.js)
+        $this->get(route('home'))->assertSee('data-check-if-link', false);
+    }
+
     public function test_a_telegram_link_pasted_into_search_goes_to_the_check(): void
     {
         $this->get(route('providers.index', ['q' => 'https://t.me/goldpro']))
@@ -220,6 +233,29 @@ class ChannelCheckTest extends TestCase
         $normal = ChannelReport::cards($this->posts(15, fn ($i) => [900, 2400, 1500, 3100, 700][$i % 5]), 10000);
         $this->assertArrayNotHasKey('steady_views', $normal);
         $this->assertSame('good', $normal['engagement']['level']);
+    }
+
+    public function test_a_channel_that_isnt_about_trading_gets_audience_indicators_only_and_no_monitoring(): void
+    {
+        $posts = collect(range(1, 12))->map(fn ($i) => '<div class="tgme_widget_message" data-post="footnews/'.(100 + $i).'">'
+            .'<div class="tgme_widget_message_text js-message_text">'.($i % 2 ? 'هدف رائع في مباراة اليوم ✅' : 'نتيجة المباراة 2-1').'</div>'
+            .'<span class="tgme_widget_message_views">5000</span><span class="tgme_widget_message_meta"><a class="tgme_widget_message_date" href="#">'
+            .'<time datetime="'.now()->subDays(13 - $i)->toIso8601String().'"></time></a></span></div>')->join('');
+        Http::fake([
+            't.me/s/footnews?*' => Http::response(''),
+            't.me/s/footnews' => Http::response($posts),
+            't.me/footnews' => Http::response('<meta property="og:title" content="أخبار الكرة"><div class="tgme_page_title"></div><div class="tgme_page_extra">40 000 subscribers</div>'),
+            '*' => Http::response(''),
+        ]);
+
+        $this->get(route('channel-check', ['channel' => '@footnews']))->assertOk()
+            ->assertSee('data-report-not-trading', false)
+            ->assertSee(__('لا تبدو قناة تداول'))
+            ->assertSee('data-insight="engagement"', false)
+            ->assertDontSee('data-insight="verifiability"', false)
+            ->assertDontSee('data-insight="promotion"', false)
+            ->assertDontSee('data-report-monitoring', false)
+            ->assertDontSee(__('أضف القناة للمراقبة'));
     }
 
     public function test_a_channel_with_the_preview_off_gets_the_basics_and_a_plain_note(): void

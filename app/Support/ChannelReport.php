@@ -14,12 +14,16 @@ use Illuminate\Support\Carbon;
  */
 class ChannelReport
 {
+    /** Indicators that only make sense for a trading channel (dropped when it isn't one) */
+    public const TRADING_ONLY = ['verifiability', 'losses', 'promotion', 'edited'];
+
     /** Views closer together than this (standard deviation ÷ mean) are unusual for real audiences */
     public const STEADY_VIEWS_BELOW = 0.05;
 
     /**
      * @return array{status: string, url?: string, message?: string, channel?: array, cards?: array<string, array>,
-     *               provider?: ?Provider, impersonators?: \Illuminate\Support\Collection, pending?: bool, preview?: bool}
+     *               provider?: ?Provider, impersonators?: \Illuminate\Support\Collection, pending?: bool, preview?: bool,
+     *               trading?: string}  trading: TradingChannel::TRADING | NOT_TRADING | UNSURE
      *         status: invalid | private | not_found | not_channel | unreachable | impersonator | report
      */
     public static function for(string $input): array
@@ -44,15 +48,27 @@ class ChannelReport
         $provider = SubmissionLinks::existingProvider($channel['url'])?->fresh();
         $listed = $provider?->is_active && (! Launch::appliesToVisitor() || Launch::earlyOpen($provider));
         $stats = $channel['stats'] ?? [];
+        $items = $stats['items'] ?? [];
+
+        // Comments come from the Bot API, so they show even when the post preview is off
+        $cards = self::cards($items, $channel['subscribers'], $stats['first_post_at'] ?? null)
+            + array_filter(['comments' => TelegramInsights::commentsCard($channel['comments'] ?? null)]);
+
+        // A channel already on the platform is a trading one by definition
+        $trading = $listed ? TradingChannel::TRADING : TradingChannel::verdict($channel['title'], $channel['description'] ?? null, $items,
+            collect($items)->map(fn ($p) => PostKind::of($p['text'] ?? '', $p['photo'] ?? false))->countBy()->all());
+        if ($trading === TradingChannel::NOT_TRADING) {
+            // Trades, claims, losses and sales mean nothing here; the audience indicators still do
+            $cards = array_diff_key($cards, array_flip(self::TRADING_ONLY));
+        }
 
         return [
             'status' => 'report',
             'url' => $channel['url'],
             'channel' => $channel,
             'preview' => (bool) ($stats['preview_enabled'] ?? false),
-            // Comments come from the Bot API, so they show even when the post preview is off
-            'cards' => self::cards($stats['items'] ?? [], $channel['subscribers'], $stats['first_post_at'] ?? null)
-                + array_filter(['comments' => TelegramInsights::commentsCard($channel['comments'] ?? null)]),
+            'trading' => $trading,
+            'cards' => $cards,
             'provider' => $listed ? $provider : null,
             // Our own indicators, when we've been following it (deletions and the rest)
             'followed' => $listed ? TelegramInsights::for($provider) : [],

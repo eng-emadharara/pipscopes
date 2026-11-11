@@ -11,6 +11,7 @@ import './provider-filters';
 import './ui';
 import './mobile-chrome';
 import './review-invite';
+import './channel-check';
 import './page-loader';
 import './profile';
 

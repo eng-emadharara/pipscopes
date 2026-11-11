@@ -345,5 +345,7 @@
         </div>
         <div class="border-t border-white/10 py-4 text-center text-xs">© {{ date('Y') }} {{ config('app.name') }}</div>
     </footer>
+    {{-- Shown while a channel check loads (resources/js/channel-check.js) --}}
+    <x-check-loading />
 </body>
 </html>

@@ -18,7 +18,7 @@
             <h1 class="text-3xl font-bold leading-tight md:text-5xl">{{ __('افحص قناة التوصيات قبل أن تدفع اشتراكك.') }}</h1>
             <p class="mx-auto mt-4 max-w-xl text-gray-300">{{ __('أرقام حقيقية من تيليجرام، وتجارب متداولين جرّبوها، مجاناً وفي ثوانٍ.') }}</p>
 
-            <form action="{{ route('providers.index') }}" method="GET" class="relative z-20 mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10">
+            <form action="{{ route('providers.index') }}" method="GET" data-check-if-link class="relative z-20 mx-auto mt-8 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30 ring-1 ring-white/10">
                 <x-ui-icon name="search" class="mx-3 h-5 w-5 shrink-0 text-gray-400" />
                 <input type="search" name="q" data-autocomplete="{{ route('search.suggest') }}" placeholder="{{ __('ابحث عن قناة أو الصق رابطها…') }}" class="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder-gray-400 focus:outline-none" aria-label="{{ __('بحث') }}">
                 <button class="btn-primary shrink-0">{{ __('بحث') }}</button>

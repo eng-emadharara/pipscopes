@@ -12,7 +12,7 @@
             </div>
 
             <div class="flex-1">
-                <form action="{{ route('channel-check') }}" method="GET" class="flex flex-col gap-2 sm:flex-row">
+                <form action="{{ route('channel-check') }}" method="GET" class="flex flex-col gap-2 sm:flex-row" data-check-form>
                     <input type="text" name="channel" required maxlength="255" dir="ltr" autocomplete="off"
                            class="input min-w-0 flex-1 text-start" placeholder="t.me/channel {{ __('أو') }} @channel" aria-label="{{ __('رابط القناة') }}">
                     <button type="submit" class="btn-primary shrink-0" data-track="channel_check_start" data-track-params='{"location":"home"}'>{{ __('افحص') }}</button>

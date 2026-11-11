@@ -15,7 +15,7 @@
             <h1 class="text-2xl font-bold md:text-4xl">{{ __('افحص قناة توصيات قبل أن تشترك') }}</h1>
             <p class="mx-auto mt-3 max-w-xl text-sm text-gray-300 md:text-base">{{ __('الصق رابط أي قناة على تيليجرام، ونعرض لك خلال ثوانٍ ما تقوله أرقامها: هل جمهورها حقيقي؟ هل ما زالت نشطة؟') }}</p>
 
-            <form method="GET" action="{{ route('channel-check') }}" class="mx-auto mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30" data-channel-check-form>
+            <form method="GET" action="{{ route('channel-check') }}" class="mx-auto mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-lg shadow-black/30" data-channel-check-form data-check-form>
                 <x-ui-icon name="telegram" class="mx-3 h-5 w-5 shrink-0 text-sky-500" />
                 <input type="text" name="channel" value="{{ $input }}" dir="ltr" required maxlength="255" autocomplete="off"
                        placeholder="t.me/channel {{ __('أو') }} @channel" aria-label="{{ __('رابط القناة') }}"
@@ -119,6 +119,16 @@
                                     </div>
                                 </div>
                             @endif
+                        </section>
+                    @elseif ($report['trading'] === \App\Support\TradingChannel::NOT_TRADING)
+                        {{-- Not a trading channel: nothing to monitor, and the trade indicators were left out --}}
+                        <section class="card border-amber-200 bg-amber-50 p-5 text-amber-900" data-report-not-trading>
+                            <h2 class="flex items-center gap-2 font-bold"><x-ui-icon name="alert" class="h-5 w-5 text-amber-600" /> {{ __('لا تبدو قناة تداول') }}</h2>
+                            <p class="mt-2 text-sm leading-relaxed">{{ __('هذه الأداة مخصصة لقنوات التوصيات والتداول. لم نجد في اسم القناة أو منشوراتها الأخيرة ما يدل على التداول، لذلك نعرض مؤشرات الجمهور فقط، ولا تُضاف للمراقبة.') }}</p>
+                            <p class="mt-3 text-sm">
+                                {{ __('هل هي قناة تداول فعلاً؟') }}
+                                <a href="{{ route('submissions.create') }}" class="font-semibold underline">{{ __('أرسلها لنا لنراجعها') }}</a>
+                            </p>
                         </section>
                     @else
                         <section class="card overflow-hidden border-brand-100 p-0" data-report-monitoring>
