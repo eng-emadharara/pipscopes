@@ -8,7 +8,7 @@ class ReviewInvite
     /** Pages with their own job to finish, or where the invitation is already on the page */
     protected const QUIET_ROUTES = [
         'login', 'register', 'verification.*', 'reviews.*', 'submissions.*', 'providers.show',
-        'profile.*', 'notifications.*', 'owner.*', 'contact*',
+        'profile.*', 'notifications.*', 'owner.*', 'contact*', 'channel-check',
     ];
 
     /** Visitors can open the channels and write; channel owners never review */

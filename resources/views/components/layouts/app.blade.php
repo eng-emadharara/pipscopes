@@ -104,6 +104,9 @@
                 @unless ($prelaunch)
                     <a href="{{ route('providers.index') }}" class="hover:text-brand-500">{{ __('تصفح مقدمي الخدمة') }}</a>
                 @endunless
+                @unless ($prelaunch)
+                    <a href="{{ route('channel-check') }}" @class(['hover:text-brand-500', 'text-brand-500' => request()->routeIs('channel-check')])>{{ __('افحص قناة') }}</a>
+                @endunless
                 <a href="{{ route('submissions.create') }}" class="hover:text-brand-500">{{ __('أضف مقدم خدمة') }}</a>
                 @foreach ($navPages->where('show_in_header', true) as $navPage)
                     <a href="{{ $navPage->url() }}" class="hover:text-brand-500">{{ $navPage->tr('title') }}</a>
@@ -163,6 +166,7 @@
         $menuLinks = array_filter([
             [route('home'), __('الرئيسية'), request()->routeIs('home')],
             $prelaunch ? null : [route('providers.index'), __('تصفح مقدمي الخدمة'), request()->routeIs('providers.index', 'categories.show')],
+            $prelaunch ? null : [route('channel-check'), __('افحص قناة'), request()->routeIs('channel-check')],
             [route('submissions.create'), __('أضف مقدم خدمة'), request()->routeIs('submissions.*')],
             ...$navPages->where('show_in_header', true)->map(fn ($p) => [$p->url(), $p->tr('title'), url()->current() === $p->url()])->all(),
         ]);
@@ -318,6 +322,7 @@
                 <ul class="space-y-1">
                     @unless ($prelaunch)
                         <li><a href="{{ route('providers.index') }}" class="hover:text-white">{{ __('تصفح مقدمي الخدمة') }}</a></li>
+                        <li><a href="{{ route('channel-check') }}" class="hover:text-white">{{ __('افحص قناة توصيات') }}</a></li>
                     @endunless
                     <li><a href="{{ route('submissions.create') }}" class="hover:text-white">{{ __('أرسل بيانات مقدم خدمة') }}</a></li>
                     @if (\App\Models\Setting::get('owner_portal_enabled', false))

@@ -42,6 +42,8 @@ Route::get('/lang/{locale}', function (string $locale) {
 
 Route::get('/providers', [ProviderController::class, 'index'])->name('providers.index');
 Route::get('/check-account', AccountCheckController::class)->middleware('throttle:30,1')->name('account-check');
+// Each check of a channel not read lately asks Telegram for up to 3 pages, hence the tighter limit
+Route::get('/check-channel', \App\Http\Controllers\ChannelCheckController::class)->middleware('throttle:15,1')->name('channel-check');
 Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1')->name('search.suggest');
 Route::get('/category/{category}', [ProviderController::class, 'index'])->name('categories.show');
 Route::get('/p/{provider}', [ProviderController::class, 'show'])->name('providers.show');

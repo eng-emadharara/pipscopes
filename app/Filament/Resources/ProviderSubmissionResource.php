@@ -144,6 +144,9 @@ class ProviderSubmissionResource extends Resource
                 $record->update($data);
                 $provider = $record->convertToProvider();
 
+                // Start following its posts now (deletions count after two weeks of it), not at the next hourly batch
+                rescue(fn () => \App\Services\TelegramRefresh::refresh($provider), report: false);
+
                 Notification::make()->title('تمت إضافة مقدم الخدمة')->success()->send();
 
                 return redirect(ProviderResource::getUrl('edit', ['record' => $provider]));

@@ -45,6 +45,12 @@ class TelegramInsights
         ]);
     }
 
+    /** The day the deleted-posts count shows: two weeks after we started following the channel (null before its first read) */
+    public static function deletedReadyAt(Provider $provider): ?Carbon
+    {
+        return $provider->telegram_posts_since?->copy()->addDays(self::DELETED_AFTER_DAYS)->startOfDay();
+    }
+
     /** Average views of posts at least a day old (fresh ones are still gathering views) ÷ subscribers */
     protected static function engagement(Provider $provider, Collection $posts): ?array
     {
@@ -55,7 +61,12 @@ class TelegramInsights
             return null;
         }
 
-        $ratio = $views->avg() / $subscribers * 100;
+        return self::engagementCard($views->avg() / $subscribers * 100);
+    }
+
+    /** The engagement card for a views ÷ subscribers percentage (also used by the channel check) */
+    public static function engagementCard(float $ratio): array
+    {
         $level = $ratio >= 8 ? 'good' : ($ratio >= 3 ? 'warn' : 'bad');
         $shown = $ratio >= 10 ? (string) round($ratio) : rtrim(rtrim(number_format($ratio, 1), '0'), '.');
 
@@ -81,7 +92,10 @@ class TelegramInsights
                 'value' => '…',
                 'label' => __('المنشورات المحذوفة'),
                 'status' => __('قيد الرصد'),
-                'note' => __('بدأنا متابعة منشورات القناة، وتظهر النتيجة بعد :n يوماً.', ['n' => self::DELETED_AFTER_DAYS - $watchingDays]),
+                'note' => __('بدأنا متابعة منشورات القناة، وتظهر النتيجة بعد :n يوماً (:date).', [
+                    'n' => self::DELETED_AFTER_DAYS - $watchingDays,
+                    'date' => self::deletedReadyAt($provider)->translatedFormat('j F'),
+                ]),
             ];
         }
 
@@ -107,16 +121,22 @@ class TelegramInsights
             return null;
         }
 
-        $last = Carbon::parse($last)->setTimezone(config('app.timezone'));
-        $days = (int) $last->diffInDays(now());
-        $level = $days <= 3 ? 'good' : ($days <= 14 ? 'warn' : 'bad');
-
         // A weekly rate over the days we've actually followed it (a week at least, a month at most)
         $watched = (int) $provider->telegram_posts_since->diffInDays(now());
         $span = min(self::WINDOW_DAYS, $watched);
         $perWeek = $watched >= 7
             ? (int) round($posts->where('posted_at', '>=', now()->subDays($span))->count() / $span * 7)
             : null;
+
+        return self::activityCard(Carbon::parse($last), $perWeek);
+    }
+
+    /** The activity card: when it last posted, and how often a week when that's known (also used by the channel check) */
+    public static function activityCard(Carbon $last, ?int $perWeek): array
+    {
+        $last = $last->copy()->setTimezone(config('app.timezone'));
+        $days = (int) $last->diffInDays(now());
+        $level = $days <= 3 ? 'good' : ($days <= 14 ? 'warn' : 'bad');
 
         return [
             'key' => 'activity',
