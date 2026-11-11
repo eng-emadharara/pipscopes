@@ -105,6 +105,9 @@
             @case('categories')
                 @include('home._categories')
                 @break
+            @case('channel_check')
+                @include('home._channel-check')
+                @break
             @case('picks')
                 @include('home._picks')
                 @break

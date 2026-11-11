@@ -22,6 +22,15 @@
                        class="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder-gray-400 focus:outline-none">
                 <button class="btn-primary shrink-0">{{ __('افحص') }}</button>
             </form>
+
+            {{-- The same check from inside Telegram (App\Support\ChannelCheckBot) --}}
+            @if (\App\Support\TelegramAppLogin::isOn())
+                <a href="https://t.me/{{ \App\Support\TelegramAppLogin::botUsername() }}" target="_blank" rel="noopener" data-check-bot-link
+                   data-track="channel_check_bot_click" data-track-params='{"location":"check_page"}'
+                   class="mt-4 inline-flex items-center gap-1.5 text-sm text-sky-300 hover:text-sky-200 hover:underline">
+                    <x-ui-icon name="telegram" class="h-4 w-4" /> {{ __('أو افحص من تيليجرام: أرسل رابط القناة لبوت :bot', ['bot' => '@'.\App\Support\TelegramAppLogin::botUsername()]) }}
+                </a>
+            @endif
         </div>
     </section>
 

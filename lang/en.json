@@ -768,5 +768,21 @@
     "وصول قناة بهذا العمر إلى :subs مشترك سريع، وقد يكون بسبب إعلانات ممولة أو مشتركين غير حقيقيين.": "Reaching :subs subscribers at this age is fast, and may come from paid ads or fake subscribers.",
     "فحص قناة": "Channel check",
     "افحص أي قناة توصيات قبل أن تشترك": "Check any signals channel before you subscribe",
-    "تقرير قناة :name على :app: هل جمهورها حقيقي؟ وهل تنشر صفقاتها قبل حدوثها؟": ":name report on :app: is its audience real? Does it post its trades before they happen?"
+    "تقرير قناة :name على :app: هل جمهورها حقيقي؟ وهل تنشر صفقاتها قبل حدوثها؟": ":name report on :app: is its audience real? Does it post its trades before they happen?",
+    "مجاني وفوري": "Free and instant",
+    "الصق رابط أي قناة على تيليجرام، حتى لو لم تكن على المنصة، ونعرض لك ما تقوله أرقامها خلال ثوانٍ.": "Paste any Telegram channel link, even one that isn't on the platform, and see what its numbers say in seconds.",
+    "هل جمهورها حقيقي؟": "Is its audience real?",
+    "صفقات مسبقة أم ادعاءات بعد حدوثها؟": "Trades beforehand, or claims afterwards?",
+    "هل تذكر خساراتها؟": "Does it mention its losses?",
+    "كم عمرها؟": "How old is it?",
+    "طلبات كثيرة خلال وقت قصير. حاول مرة أخرى بعد دقائق.": "Too many requests in a short time. Try again in a few minutes.",
+    "جاري فحص القناة :channel…": "Checking :channel…",
+    "افحص أي قناة توصيات قبل أن تشترك: أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك تقريراً مجانياً عنها.": "Check any signals channel before you subscribe: send me its link or username, like @channel or t.me/channel, and I'll send you a free report on it.",
+    "هذا الحساب ينتحل اسم «:name». لا ترسل له أموالاً ولا تشترك من خلاله.": "This account impersonates \":name\". Don't send it money or subscribe through it.",
+    "القناة الأصلية على :app": "The real channel on :app",
+    "التقرير الكامل": "Full report",
+    "التقرير الكامل وإضافتها للمراقبة": "Full report, and add it for monitoring",
+    "تقرير قناة :name": "Channel report: :name",
+    "القناة موجودة على :app": "This channel is on :app",
+    "أو افحص من تيليجرام: أرسل رابط القناة لبوت :bot": "Or check from Telegram: send the channel link to :bot"
 }

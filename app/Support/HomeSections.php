@@ -14,6 +14,7 @@ class HomeSections
     /** key => [admin label, default title (null: the section has none), default limit (null: none)] */
     public const SECTIONS = [
         'categories' => ['التصنيفات', null, null],
+        'channel_check' => ['أداة "افحص قناة توصيات"', null, null],
         'picks' => ['اختيارات الفريق', 'اختيارات فريق PipScopes', null],
         'account_check' => ['أداة "هل هذا الحساب حقيقي؟"', null, null],
         'top_rated' => ['الأعلى تقييماً', 'الأعلى تقييماً', 8],

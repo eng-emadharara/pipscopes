@@ -57,6 +57,18 @@ class ChannelCheckTest extends TestCase
         $this->get('/')->assertSee(route('channel-check'));
     }
 
+    public function test_the_homepage_has_the_check_right_under_the_categories_and_admins_can_switch_it_off(): void
+    {
+        $this->get('/')->assertOk()
+            ->assertSee('data-home-channel-check', false)
+            ->assertSee('action="'.route('channel-check').'"', false);
+
+        $this->assertSame('channel_check', \App\Support\HomeSections::layout()[1]['key']);
+
+        \App\Models\Setting::put(['home_layout' => [['key' => 'channel_check', 'enabled' => false]]]);
+        $this->get('/')->assertDontSee('data-home-channel-check', false);
+    }
+
     public function test_an_unlisted_channel_gets_the_instant_report_and_the_monitoring_offer(): void
     {
         // 20 000 subscribers, ~300 views a post: 1.5% engagement; 4 of 20 posts edited

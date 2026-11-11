@@ -35,6 +35,11 @@ class TelegramAppLogin
             && SocialLogin::isEnabled('telegram');
     }
 
+    public static function botUsername(): ?string
+    {
+        return data_get(Setting::get(self::SETTING), 'bot_username') ?: null;
+    }
+
     public static function deepLink(): string
     {
         $token = session(self::SESSION_KEY);
@@ -69,7 +74,7 @@ class TelegramAppLogin
         return hash_hmac('sha256', 'telegram-webhook', (string) config('app.key'));
     }
 
-    protected static function api(string $method, array $params = []): array
+    public static function api(string $method, array $params = []): array
     {
         $response = Http::timeout(15)->post('https://api.telegram.org/bot'.config('services.telegram.bot_token')."/$method", $params);
 
@@ -145,8 +150,13 @@ class TelegramAppLogin
                     [['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
             ]);
+        } elseif (ChannelCheckBot::handles($chatId, $text)) {
+            // A channel link or @name: the report goes out once Telegram has its answer (ChannelCheckBot)
         } elseif (str_starts_with(trim($text), '/start')) {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => __('أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.', ['site' => config('app.name')])]);
+            self::api('sendMessage', ['chat_id' => $chatId, 'text' => __('أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.', ['site' => config('app.name')])
+                ."\n\n".ChannelCheckBot::help()]);
+        } else {
+            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help()]);
         }
     }
 
