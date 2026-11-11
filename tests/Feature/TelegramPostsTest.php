@@ -167,6 +167,25 @@ class TelegramPostsTest extends TestCase
         $this->assertSame(['activity'], array_keys(TelegramInsights::for($this->channel->fresh())));
     }
 
+    public function test_the_admin_ticks_the_indicators_to_show_all_ticked_by_default(): void
+    {
+        $this->actingAs(\App\Models\User::factory()->create(['is_admin' => true]));
+        $this->channel->categories()->attach(\App\Models\Category::create(['name' => 'Signals', 'slug' => 'signals'])->id);
+        $page = fn () => \Livewire\Livewire::test(\App\Filament\Resources\ProviderResource\Pages\EditProvider::class, ['record' => $this->channel->getRouteKey()]);
+
+        $page()->assertFormSet(['telegram_hidden_insights' => ['engagement', 'deleted', 'activity']])
+            ->fillForm(['telegram_hidden_insights' => ['activity']])
+            ->call('save')->assertHasNoFormErrors();
+
+        // Unticked = hidden
+        $this->assertSame(['engagement', 'deleted'], $this->channel->fresh()->telegram_hidden_insights);
+        $page()->assertFormSet(['telegram_hidden_insights' => ['activity']])
+            ->fillForm(['telegram_hidden_insights' => ['engagement', 'deleted', 'activity']])
+            ->call('save')->assertHasNoFormErrors();
+
+        $this->assertNull($this->channel->fresh()->telegram_hidden_insights);
+    }
+
     public function test_the_cards_show_on_the_channel_page(): void
     {
         $this->follow(days: 20, posts: 12, views: 1500, deleted: 3);
