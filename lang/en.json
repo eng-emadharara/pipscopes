@@ -754,5 +754,19 @@
     "تنشر روابط تسجيل لدى: :brokers، وقد تربح القناة من تسجيلك عبرها.": "It posts sign-up links for: :brokers, and may earn when you sign up through them.",
     "صفقات :s · ادعاءات :c": "Trades :s · claims :c",
     "في آخر :total منشوراً: صفقات منشورة قبل حدوثها بأرقام واضحة (يمكن التحقق منها): :s. إعلانات عن نتائج بعد حدوثها مثل «150 نقطة» (لا يمكن التحقق منها): :c. القناة التي تنشر النتائج فقط قد تختار الرابحة منها.": "In the last :total posts: trades given beforehand with clear numbers (checkable): :s. Results announced afterwards such as \"150 pips\" (not checkable): :c. A channel that only posts results may be picking its winners.",
-    "من بينها صفقات كانت منشورة بأرقام واضحة: :n.": "Trades that had been posted with clear numbers among them: :n."
+    "من بينها صفقات كانت منشورة بأرقام واضحة: :n.": "Trades that had been posted with clear numbers among them: :n.",
+    "أرباح :w · خسائر :l": "Wins :w · losses :l",
+    "الأرباح مقابل الخسائر": "Wins vs losses",
+    "تذكر خساراتها أيضاً": "Mentions its losses too",
+    "لا تذكر أي خسارة": "Never mentions a loss",
+    "في آخر :total منشوراً: إعلانات عن أرباح: :w، وإعلانات عن خسائر مثل «ضرب الستوب»: :l. لا يوجد متداول يربح دائماً، والقناة التي لا تذكر خساراتها أبداً قد تكون تُخفيها.": "In the last :total posts: wins announced: :w, losses announced such as \"stop hit\": :l. No trader always wins, and a channel that never mentions a loss may be hiding them.",
+    "عمر القناة": "Channel age",
+    "قناة حديثة بعدد مشتركين كبير": "A young channel with many subscribers",
+    "قناة قديمة نسبياً": "A fairly old channel",
+    "قناة حديثة": "A young channel",
+    "أقدم منشور ما زال موجوداً على القناة نُشر في :date.": "The oldest post still on the channel was published on :date.",
+    "وصول قناة بهذا العمر إلى :subs مشترك سريع، وقد يكون بسبب إعلانات ممولة أو مشتركين غير حقيقيين.": "Reaching :subs subscribers at this age is fast, and may come from paid ads or fake subscribers.",
+    "فحص قناة": "Channel check",
+    "افحص أي قناة توصيات قبل أن تشترك": "Check any signals channel before you subscribe",
+    "تقرير قناة :name على :app: هل جمهورها حقيقي؟ وهل تنشر صفقاتها قبل حدوثها؟": ":name report on :app: is its audience real? Does it post its trades before they happen?"
 }

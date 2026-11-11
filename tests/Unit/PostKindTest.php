@@ -27,6 +27,12 @@ class PostKindTest extends TestCase
             ['الف نقطة بستوب 1$ 👑👑🔥', PostKind::CLAIM],
             ['مرسي صفر انعكاس', PostKind::CLAIM],
 
+            // Losses owned up to
+            ['للأسف ضرب الستوب في صفقة الذهب', PostKind::LOSS],
+            ['SL hit ❌ -30 pips', PostKind::LOSS],
+            ['سكرنا الصفقة على خسارة بسيطة', PostKind::LOSS],
+            ['خسرنا اليوم بس بنعوضها', PostKind::LOSS],
+
             // Selling something
             ['الي حابين يتداولوا بنفس البروكر الي بتداول في https://one.justmarkets.link/a/7zkl804aw7', PostKind::AD],
             ['🔥 عرض حصري لمتابعيني 🔥 👑 انضم إلى وكالتي واستفد من أقوى المميزات', PostKind::AD],

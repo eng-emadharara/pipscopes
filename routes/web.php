@@ -57,6 +57,8 @@ Route::prefix('/share-images/{locale}')->whereIn('locale', array_keys(config('tr
         Route::get('/site.png', [ShareImageController::class, 'site'])->name('share-images.site');
         Route::get('/providers/{provider}.png', [ShareImageController::class, 'provider'])->name('share-images.provider');
         Route::get('/reviews/{review}.png', [ShareImageController::class, 'review'])->name('share-images.review');
+        Route::get('/checks/{username}.png', [ShareImageController::class, 'check'])
+            ->where('username', '[A-Za-z][A-Za-z0-9_]{3,31}')->name('share-images.check');
     });
 
 // Open to guests too; one vote/report per account or IP (see Review::voterKey)

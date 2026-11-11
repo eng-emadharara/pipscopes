@@ -14,7 +14,12 @@ use Illuminate\Support\Collection;
  */
 class TelegramInsights
 {
-    public const KEYS = ['engagement', 'verifiability', 'deleted', 'activity', 'promotion'];
+    public const KEYS = ['engagement', 'verifiability', 'losses', 'deleted', 'activity', 'age', 'promotion'];
+
+    /** A channel this young with this many subscribers grew unusually fast */
+    public const YOUNG_MONTHS = 6;
+
+    public const YOUNG_BIG_SUBSCRIBERS = 20000;
 
     public const WINDOW_DAYS = 30;
 
@@ -46,8 +51,11 @@ class TelegramInsights
             // Deleted ones count too: a trade given and then removed was still given
             'verifiability' => $show('verifiability')
                 ? self::verifiabilityCard($kinds[PostKind::SIGNAL] ?? 0, $kinds[PostKind::CLAIM] ?? 0, $posts->count()) : null,
+            'losses' => $show('losses') ? self::lossesCard($kinds[PostKind::CLAIM] ?? 0, $kinds[PostKind::LOSS] ?? 0, $posts->count()) : null,
             'deleted' => $show('deleted') ? self::deleted($provider) : null,
             'activity' => $show('activity') ? self::activity($provider, $posts) : null,
+            'age' => $show('age') && ($first = $provider->telegram_data['first_post_at'] ?? null)
+                ? self::ageCard(Carbon::parse($first), $provider->telegram_members) : null,
             'promotion' => $show('promotion') ? self::promotionCard($kinds[PostKind::AD] ?? 0, $posts->count(),
                 $posts->pluck('brokers')->filter()->flatMap(fn ($b) => explode(',', $b))->unique()->values()->all()) : null,
         ]);
@@ -163,6 +171,45 @@ class TelegramInsights
             'status' => ['good' => __('تنشر صفقاتها مسبقاً'), 'warn' => __('ادعاءات أكثر من الصفقات'), 'bad' => __('تنشر نتائج دون صفقات مسبقة')][$level],
             'note' => __('في آخر :total منشوراً: صفقات منشورة قبل حدوثها بأرقام واضحة (يمكن التحقق منها): :s. إعلانات عن نتائج بعد حدوثها مثل «150 نقطة» (لا يمكن التحقق منها): :c. القناة التي تنشر النتائج فقط قد تختار الرابحة منها.',
                 ['total' => $total, 's' => $signals, 'c' => $claims]),
+        ];
+    }
+
+    /** Results announced as wins against losses owned up to. No trader always wins. */
+    public static function lossesCard(int $wins, int $losses, int $total): ?array
+    {
+        if ($wins + $losses < 3) {
+            return null;
+        }
+
+        $level = $losses === 0 ? 'warn' : 'good';
+
+        return [
+            'key' => 'losses',
+            'level' => $level,
+            'value' => __('أرباح :w · خسائر :l', ['w' => $wins, 'l' => $losses]),
+            'label' => __('الأرباح مقابل الخسائر'),
+            'status' => $level === 'good' ? __('تذكر خساراتها أيضاً') : __('لا تذكر أي خسارة'),
+            'note' => __('في آخر :total منشوراً: إعلانات عن أرباح: :w، وإعلانات عن خسائر مثل «ضرب الستوب»: :l. لا يوجد متداول يربح دائماً، والقناة التي لا تذكر خساراتها أبداً قد تكون تُخفيها.',
+                ['total' => $total, 'w' => $wins, 'l' => $losses]),
+        ];
+    }
+
+    /** How old the channel is, from its oldest post still there; fast growth for its age is pointed out */
+    public static function ageCard(Carbon $first, ?int $subscribers): array
+    {
+        $months = (int) $first->diffInMonths(now());
+        $fast = $months < self::YOUNG_MONTHS && $subscribers >= self::YOUNG_BIG_SUBSCRIBERS;
+        $age = $first->copy()->locale(app()->getLocale())
+            ->diffForHumans(now(), ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE, 'parts' => 1]);
+
+        return [
+            'key' => 'age',
+            'level' => $fast ? 'warn' : 'good',
+            'value' => $age,
+            'label' => __('عمر القناة'),
+            'status' => $fast ? __('قناة حديثة بعدد مشتركين كبير') : ($months >= 12 ? __('قناة قديمة نسبياً') : __('قناة حديثة')),
+            'note' => __('أقدم منشور ما زال موجوداً على القناة نُشر في :date.', ['date' => $first->copy()->setTimezone(config('app.timezone'))->translatedFormat('j F Y')])
+                .($fast ? ' '.__('وصول قناة بهذا العمر إلى :subs مشترك سريع، وقد يكون بسبب إعلانات ممولة أو مشتركين غير حقيقيين.', ['subs' => number_format($subscribers)]) : ''),
         ];
     }
 

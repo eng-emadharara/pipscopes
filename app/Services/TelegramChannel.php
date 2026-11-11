@@ -155,6 +155,8 @@ class TelegramChannel
 
         return [
             'items' => $items,
+            // The oldest post still there: how old the channel is (read once a month, it doesn't move)
+            'first_post_at' => $items ? self::firstPostAt($username) : null,
             'preview_enabled' => true,
             'photos' => $counters['photo'] ?? null,
             'videos' => $counters['video'] ?? null,
@@ -197,6 +199,22 @@ class TelegramChannel
         }
 
         return array_values($items);
+    }
+
+    /** Date of the oldest post still on the channel (the preview's first page after post 1) */
+    public static function firstPostAt(string $username): ?string
+    {
+        return Cache::remember('tg-first-post:'.Str::lower($username), now()->addDays(30), function () use ($username) {
+            try {
+                $html = Http::timeout(8)->withHeaders(['Accept-Language' => 'en'])->get('https://t.me/s/'.$username, ['after' => 1])->body();
+            } catch (\Throwable) {
+                return null;
+            }
+
+            $dates = array_filter(array_column(self::postItems($html, $username), 'posted_at'));
+
+            return $dates ? min($dates) : null;
+        });
     }
 
     /** A post's HTML as one line of text, each link followed by its address (so broker links show) */

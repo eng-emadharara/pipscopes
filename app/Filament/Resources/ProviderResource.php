@@ -81,7 +81,8 @@ class ProviderResource extends Resource
                         ->content(fn (Provider $record) => static::telegramSyncStatus($record)),
                     // Ticked = shown. Stored the other way round (telegram_hidden_insights), so every channel shows all of them by default
                     Forms\Components\CheckboxList::make('telegram_hidden_insights')->label('مؤشرات تيليجرام الظاهرة بصفحة القناة')
-                        ->options(['engagement' => 'نسبة التفاعل', 'verifiability' => 'قابلية التحقق', 'deleted' => 'المنشورات المحذوفة', 'activity' => 'آخر منشور', 'promotion' => 'منشورات ترويجية'])
+                        ->options(['engagement' => 'نسبة التفاعل', 'verifiability' => 'قابلية التحقق', 'losses' => 'الأرباح مقابل الخسائر', 'deleted' => 'المنشورات المحذوفة',
+                            'activity' => 'آخر منشور', 'age' => 'عمر القناة', 'promotion' => 'منشورات ترويجية'])
                         ->formatStateUsing(fn ($state) => array_values(array_diff(TelegramInsights::KEYS, (array) $state)))
                         ->dehydrateStateUsing(fn ($state) => array_values(array_diff(TelegramInsights::KEYS, (array) $state)) ?: null)
                         ->helperText('مفعّلة تلقائياً لكل القنوات، ولا تحتاج تفعيلاً. أزل العلامة لإخفاء مؤشر عند خطأ تقني أو سبب واضح (مثلاً قناة تحذف إعلاناتها القديمة فقط). لا تظهر المؤشرات أصلاً إذا أغلق صاحب القناة معاينة المنشورات على تيليجرام.')

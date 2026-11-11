@@ -50,7 +50,7 @@ class ChannelReport
             'url' => $channel['url'],
             'channel' => $channel,
             'preview' => (bool) ($stats['preview_enabled'] ?? false),
-            'cards' => self::cards($stats['items'] ?? [], $channel['subscribers']),
+            'cards' => self::cards($stats['items'] ?? [], $channel['subscribers'], $stats['first_post_at'] ?? null),
             'provider' => $listed ? $provider : null,
             // Our own indicators, when we've been following it (deletions and the rest)
             'followed' => $listed ? TelegramInsights::for($provider) : [],
@@ -64,7 +64,7 @@ class ChannelReport
      * @param  list<array{msg_id: int, posted_at: ?string, views: ?int, edited: bool}>  $items
      * @return array<string, array>
      */
-    public static function cards(array $items, ?int $subscribers): array
+    public static function cards(array $items, ?int $subscribers, ?string $firstPostAt = null): array
     {
         $posts = collect($items)->filter(fn ($p) => $p['posted_at'])
             ->map(fn ($p) => $p + ['at' => Carbon::parse($p['posted_at'])]);
@@ -86,6 +86,9 @@ class ChannelReport
         if ($verifiability) {
             $cards['verifiability'] = $verifiability;
         }
+        if ($losses = TelegramInsights::lossesCard($kinds[PostKind::CLAIM] ?? 0, $kinds[PostKind::LOSS] ?? 0, count($items))) {
+            $cards['losses'] = $losses;
+        }
 
         // How often, over the stretch the latest posts cover
         $first = $posts->min('at');
@@ -95,6 +98,10 @@ class ChannelReport
         if ($perWeek !== null) {
             $cards['activity']['note'] = __('نشرت :count منشوراً خلال آخر :days يوماً، أي بمعدل :n منشورات أسبوعياً تقريباً.',
                 ['count' => $posts->count(), 'days' => (int) ceil($days), 'n' => $perWeek]);
+        }
+
+        if ($firstPostAt) {
+            $cards['age'] = TelegramInsights::ageCard(Carbon::parse($firstPostAt), $subscribers);
         }
 
         // Edits after posting (a signal moved after the trade did is a known trick; we can't see what changed)

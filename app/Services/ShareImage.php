@@ -57,6 +57,31 @@ class ShareImage
         return $this->cached('review', $key, fn () => $this->drawReview($review));
     }
 
+    /**
+     * A channel check (App\Support\ChannelReport, status "report"): the channel and its most telling indicators.
+     * Cached per day and per result, so a shared link shows what the page shows.
+     */
+    public function check(array $report): string
+    {
+        $cards = self::checkHighlights($report['cards'] ?? []);
+        $key = implode('|', [$report['channel']['username'], $report['channel']['subscribers'], now()->toDateString(),
+            ...array_map(fn ($c) => $c['key'].':'.$c['level'].':'.$c['value'], $cards)]);
+
+        return $this->cached('check', $key, fn () => $this->drawCheck($report['channel'], $cards));
+    }
+
+    /**
+     * Up to four indicators for the image, the ones a trader wants first.
+     *
+     * @return list<array>
+     */
+    public static function checkHighlights(array $cards): array
+    {
+        $order = ['engagement', 'verifiability', 'losses', 'age', 'promotion', 'activity', 'edited', 'steady_views'];
+
+        return array_values(array_slice(array_filter(array_map(fn ($key) => $cards[$key] ?? null, $order)), 0, 4));
+    }
+
     /** Generic card for pages without a specific image (home, content pages). */
     public function site(): string
     {
@@ -138,6 +163,39 @@ class ShareImage
         foreach ($this->wrap(Str::squish($review->body), 'regular', 30, $width, 3) as $line) {
             $this->text($line, 'regular', 30, $y + 6, 'muted');
             $y += 46;
+        }
+
+        $this->footer();
+    }
+
+    /** @param  list<array>  $cards */
+    protected function drawCheck(array $channel, array $cards): void
+    {
+        $this->header(__('فحص قناة'));
+
+        $width = self::WIDTH - 2 * self::PADDING;
+        $this->text($this->fit($channel['title'], 'bold', 52, $width), 'bold', 52, 196, 'white');
+        $meta = '@'.$channel['username'].($channel['subscribers'] ? '  ·  '.trans_choice(':count مشترك', $channel['subscribers'], ['count' => number_format($channel['subscribers'])]) : '');
+        $this->text($meta, 'regular', 28, 248, 'sky');
+
+        if (! $cards) {
+            $this->text(__('افحص أي قناة توصيات قبل أن تشترك'), 'semibold', 34, 380, 'muted');
+            $this->footer();
+
+            return;
+        }
+
+        // Two columns of indicators: a coloured square, the value, and what it measures under it
+        $dots = ['good' => 'brand', 'warn' => 'average', 'bad' => 'bad', 'pending' => 'empty'];
+        $colWidth = intdiv($width, 2);
+        foreach ($cards as $i => $card) {
+            $offset = self::PADDING + ($i % 2) * $colWidth;
+            $top = 310 + intdiv($i, 2) * 120;
+            $dotX = $this->rtl ? self::WIDTH - $offset - 22 : $offset;
+            imagefilledrectangle($this->img, $dotX, $top + 14, $dotX + 22, $top + 36, $this->colors[$dots[$card['level']]]);
+
+            $this->text($this->fit($card['value'], 'bold', 38, $colWidth - 60), 'bold', 38, $top + 40, 'white', $offset + 40);
+            $this->text($this->fit($card['label'].' · '.$card['status'], 'regular', 24, $colWidth - 60), 'regular', 24, $top + 84, 'muted', $offset + 40);
         }
 
         $this->footer();

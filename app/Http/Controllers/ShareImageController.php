@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Provider;
 use App\Models\Review;
 use App\Services\ShareImage;
+use App\Support\ChannelReport;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -25,6 +26,16 @@ class ShareImageController extends Controller
         abort_unless($review->status === Review::STATUS_APPROVED && $review->provider?->is_active, 404);
 
         return $this->png($locale, fn (ShareImage $images) => $images->review($review));
+    }
+
+    /** The image of a channel check, for links to /check-channel?channel=@name */
+    public function check(string $locale, string $username): BinaryFileResponse
+    {
+        app()->setLocale($locale);
+        $report = ChannelReport::for('@'.$username);
+        abort_unless($report['status'] === 'report', 404);
+
+        return $this->png($locale, fn (ShareImage $images) => $images->check($report));
     }
 
     public function site(string $locale): BinaryFileResponse

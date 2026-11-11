@@ -6,6 +6,7 @@ namespace App\Support;
  * Sorts a channel post by what it is, from its text (rules only, Arabic and English):
  *   signal: a trade given before it plays out (direction + target/stop + prices), so it can be checked
  *   claim:  a result announced afterwards ("150 pips done", "اتحقق", screenshots of profits with a caption)
+ *   loss:   a loss owned up to ("ضرب الستوب", "SL hit")
  *   ad:     selling something (broker sign-up links, VIP / private channel, courses, bonuses)
  *   other:  everything else (news, greetings, links to videos, photos without a caption)
  * A claim can't be checked; a signal can. That gap is what the channel report shows.
@@ -17,6 +18,9 @@ class PostKind
     public const CLAIM = 'claim';
 
     public const AD = 'ad';
+
+    /** A loss owned up to ("ضرب الستوب", "SL hit") */
+    public const LOSS = 'loss';
 
     public const OTHER = 'other';
 
@@ -40,6 +44,7 @@ class PostKind
         return match (true) {
             self::isSignal($t) => self::SIGNAL,
             self::isAd($t) => self::AD,
+            self::isLoss($t) => self::LOSS,
             self::isClaim($t) => self::CLAIM,
             default => self::OTHER,
         };
@@ -67,6 +72,17 @@ class PostKind
         }
 
         return (bool) preg_match('/\b(vip|bonus|cashback|masterclass|course|discount|promo)\b|بروكر|وكال(ه|تي)|بونص|كاش باك|كورس|الدوره|دوره|دورتي|الخاصه|خاصتي|للاشتراك|الاشتراك|اشترك|عرض حصري|عرض خاص|خصم|رابط التسجيل|التسجيل|سجل معي|سجلوا|الرقم المرجعي/u', $t);
+    }
+
+    /** The stop was hit, a trade lost, a loss taken */
+    protected static function isLoss(string $t): bool
+    {
+        return (bool) preg_match(
+            '/\b(sl|stop ?loss|stop)\s*(hit|hitted|hunted|touched)\b|\bhit\s*(sl|stop)\b|\bstopped out\b|\b(took|small|minor) (a )?loss\b'
+            .'|ضرب(ت)? (ال)?(ستوب|وقف|sl)|(ال)?ستوب (ضرب|انضرب|تفعل)|انضرب (ال)?(ستوب|وقف)|تفعل (ال)?ستوب'
+            .'|خسرنا|خسرت|صفقه خاسره|خساره (اليوم|الصفقه|بسيطه|صغيره)|(اغلاق|اغلقنا|سكرنا|سكرت|خرجنا)[^.\n]{0,20}خساره/u',
+            $t
+        );
     }
 
     /** Pips or points won, a target "hit", "it came true", profits announced */

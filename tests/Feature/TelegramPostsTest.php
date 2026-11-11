@@ -178,7 +178,7 @@ class TelegramPostsTest extends TestCase
             ->call('save')->assertHasNoFormErrors();
 
         // Unticked = hidden
-        $this->assertSame(['engagement', 'verifiability', 'deleted', 'promotion'], $this->channel->fresh()->telegram_hidden_insights);
+        $this->assertSame(array_values(array_diff(TelegramInsights::KEYS, ['activity'])), $this->channel->fresh()->telegram_hidden_insights);
         $page()->assertFormSet(['telegram_hidden_insights' => ['activity']])
             ->fillForm(['telegram_hidden_insights' => TelegramInsights::KEYS])
             ->call('save')->assertHasNoFormErrors();

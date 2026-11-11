@@ -4,9 +4,12 @@
     $provider = $report['provider'] ?? null;
     // Our long-term indicators (deletions) join the instant ones when we already follow the channel
     $cards = ($report['cards'] ?? []) + array_intersect_key($report['followed'] ?? [], ['deleted' => true]);
+    // One shareable link per channel, whatever was pasted; its preview image shows the result
+    $shareUrl = $channel ? route('channel-check', ['channel' => '@'.$channel['username']]) : null;
 @endphp
 <x-layouts.app :title="$channel ? __('فحص قناة :name', ['name' => $channel['title']]) : __('افحص قناة توصيات قبل أن تشترك')"
-               :description="__('الصق رابط أي قناة توصيات على تيليجرام واحصل فوراً على تقرير مجاني: نسبة التفاعل الحقيقية، النشاط، والمنشورات المعدّلة.')">
+               :description="__('الصق رابط أي قناة توصيات على تيليجرام واحصل فوراً على تقرير مجاني: نسبة التفاعل الحقيقية، النشاط، والمنشورات المعدّلة.')"
+               :og-image="$channel ? route('share-images.check', [app()->getLocale(), $channel['username']]) : null">
     <section class="bg-ink text-white">
         <div class="mx-auto max-w-2xl px-4 py-10 text-center md:py-14">
             <h1 class="text-2xl font-bold md:text-4xl">{{ __('افحص قناة توصيات قبل أن تشترك') }}</h1>
@@ -72,10 +75,10 @@
                                 <p class="mt-1 text-sm text-gray-600">{{ trans_choice(':count مشترك', $channel['subscribers'], ['count' => number_format($channel['subscribers'])]) }}</p>
                             @endif
                         </div>
+                        <x-share-buttons :url="$shareUrl" class="shrink-0" data-report-share
+                                         :text="__('تقرير قناة :name على :app: هل جمهورها حقيقي؟ وهل تنشر صفقاتها قبل حدوثها؟', ['name' => $channel['title'], 'app' => config('app.name')])" />
                     </div>
-                    @if ($channel['description'])
-                        <p class="mt-4 line-clamp-3 text-sm leading-relaxed text-gray-600" dir="auto">{{ $channel['description'] }}</p>
-                    @endif
+                    {{-- No channel description: its own claims ("أقوى قناة"، "نسبة نجاح 95%") could read as our findings --}}
                 </section>
 
                 {{-- The next step: follow it on PipScopes (listed) or add it for monitoring --}}

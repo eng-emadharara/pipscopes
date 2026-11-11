@@ -71,6 +71,8 @@ class ChannelCheckTest extends TestCase
             ->assertSee('data-report-monitoring', false)
             ->assertSee(__('أضف القناة للمراقبة'))
             ->assertSee('value="https://t.me/lowviews"', false)
+            // The channel's own description could read as our finding, so it isn't shown
+            ->assertDontSee('Daily gold signals')
             // The next step comes right after the channel, before the numbers (on phones it's not buried)
             ->assertSeeInOrder(['data-report-monitoring', 'data-report-cards'], false);
 
@@ -101,6 +103,44 @@ class ChannelCheckTest extends TestCase
         $this->assertSame(__('صفقات :s · ادعاءات :c', ['s' => 0, 'c' => 6]), $cards['verifiability']['value']);
         $this->assertSame(['warn', '33%'], [$cards['promotion']['level'], $cards['promotion']['value']]);
         $this->assertStringContainsString('JustMarkets', $cards['promotion']['note']);
+    }
+
+    public function test_a_report_can_be_shared_with_its_own_preview_image(): void
+    {
+        $this->fakeChannel('lowviews', 20000, $this->posts(20, fn ($i) => 280 + $i * 3));
+        $image = route('share-images.check', ['ar', 'lowviews']);
+
+        // Whatever was pasted, the shared link is the channel's one, and the preview is the result
+        $this->get(route('channel-check', ['channel' => 'https://t.me/lowviews']))
+            ->assertSee('data-report-share', false)
+            ->assertSee(rawurlencode(route('channel-check', ['channel' => '@lowviews'])), false)
+            ->assertSee('<meta property="og:image" content="'.$image.'">', false);
+
+        $response = $this->get($image)->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->assertSame([1200, 630], array_slice(getimagesize($response->baseResponse->getFile()->getPathname()), 0, 2));
+
+        $this->get(route('share-images.check', ['ar', 'nosuchchannel']))->assertNotFound();
+    }
+
+    public function test_wins_without_any_loss_and_a_young_big_channel_are_pointed_out(): void
+    {
+        $posts = $this->posts(10, fn ($i) => 2000);
+        foreach ($posts as $i => &$post) {
+            $post['text'] = $i < 6 ? '150pips✔️ done' : 'صباح الخير';
+            $post['photo'] = false;
+        }
+        unset($post);
+
+        $cards = ChannelReport::cards($posts, 60000, now()->subMonths(3)->toIso8601String());
+        $this->assertSame(['warn', __('أرباح :w · خسائر :l', ['w' => 6, 'l' => 0])], [$cards['losses']['level'], $cards['losses']['value']]);
+        $this->assertSame('warn', $cards['age']['level']);
+        $this->assertStringContainsString('60,000', $cards['age']['note']);
+
+        // Owning up to a loss, and an older channel
+        $posts[7]['text'] = 'للأسف ضرب الستوب';
+        $cards = ChannelReport::cards($posts, 60000, now()->subYears(2)->toIso8601String());
+        $this->assertSame('good', $cards['losses']['level']);
+        $this->assertSame(['good', __('قناة قديمة نسبياً')], [$cards['age']['level'], $cards['age']['status']]);
     }
 
     public function test_near_identical_views_are_pointed_out_and_normal_ones_are_not(): void
@@ -154,7 +194,9 @@ class ChannelCheckTest extends TestCase
         $this->fakeChannel('lowviews', 20000, $this->posts(20, fn ($i) => 280 + $i * 3));
 
         $this->get(route('channel-check', ['channel' => '@lowviews']))
-            ->assertDontSee('<details', false)
+            // Rows laid out in full, not cards that open on a tap
+            ->assertSee('<li class="flex gap-3 p-4" data-insight="engagement"', false)
+            ->assertDontSee('<details class="group rounded-xl', false)
             ->assertSee(__('تفاعل منخفض جداً مقارنة بعدد المشتركين'))
             ->assertSee('من كل 100 مشترك يشاهد المنشورَ');
     }
