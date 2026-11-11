@@ -84,6 +84,8 @@ class ReviewController extends Controller
 
         if ($review->wasRecentlyCreated) {
             AdminAlerts::review($review);
+            // The channel's followers on Telegram, when it's published (ChannelWatching)
+            \App\Support\ChannelWatching::review($review);
         }
 
         // What's published without an admin's eye gets watched

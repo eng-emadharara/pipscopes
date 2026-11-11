@@ -44,6 +44,15 @@ Route::get('/providers', [ProviderController::class, 'index'])->name('providers.
 Route::get('/check-account', AccountCheckController::class)->middleware('throttle:30,1')->name('account-check');
 // Each check of a channel not read lately asks Telegram for up to 3 pages, hence the tighter limit
 Route::get('/check-channel', \App\Http\Controllers\ChannelCheckController::class)->middleware('throttle:15,1')->name('channel-check');
+// Two checks at once
+Route::get('/compare-channels', \App\Http\Controllers\ChannelCompareController::class)->middleware('throttle:8,1')->name('channel-compare');
+
+// Free trader calculators (resources/js/calculators.js); open before the launch too
+Route::view('/tools', 'tools.index')->name('tools.index');
+Route::view('/tools/money-management', 'tools.money-management')->name('tools.money-management');
+Route::view('/tools/lot-size', 'tools.lot-size')->name('tools.lot-size');
+Route::view('/tools/pip-value', 'tools.pip-value')->name('tools.pip-value');
+Route::view('/tools/profit', 'tools.profit')->name('tools.profit');
 Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1')->name('search.suggest');
 Route::get('/category/{category}', [ProviderController::class, 'index'])->name('categories.show');
 Route::get('/p/{provider}', [ProviderController::class, 'show'])->name('providers.show');

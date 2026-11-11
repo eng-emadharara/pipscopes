@@ -12,14 +12,16 @@ use App\Models\Setting;
 class HomeSections
 {
     /** key => [admin label, default title (null: the section has none), default limit (null: none)] */
+    // Default order: the free checks first, then trust (top rated), browsing, warnings, reviews, tools
     public const SECTIONS = [
-        'categories' => ['التصنيفات', null, null],
-        'channel_check' => ['أداة "افحص قناة توصيات"', null, null],
-        'picks' => ['اختيارات الفريق', 'اختيارات فريق PipScopes', null],
-        'account_check' => ['أداة "هل هذا الحساب حقيقي؟"', null, null],
+        'channel_check' => ['أداتا "افحص قناة" و"قارن بين قناتين" (جنباً إلى جنب)', null, null],
         'top_rated' => ['الأعلى تقييماً', 'الأعلى تقييماً', 8],
+        'categories' => ['التصنيفات', null, null],
+        'picks' => ['اختيارات الفريق', 'اختيارات فريق PipScopes', null],
         'alerts' => ['تنبيهات (حسابات منتحلة وقنوات عليها مؤشرات خطيرة)', 'تنبيهات', null],
         'latest_reviews' => ['أحدث التقييمات', 'أحدث التقييمات', 6],
+        'tools' => ['أدوات المتداول المجانية', 'أدوات المتداول المجانية', null],
+        'account_check' => ['أداة "هل هذا الحساب حقيقي؟" (بطاقة في قسم الأدوات)', null, null],
         'trust' => ['كيف نضمن المصداقية', 'كيف نضمن المصداقية', null],
         'telegram_join' => ['دعوة للانضمام لقناة تيليجرام', null, null],
         'cta' => ['دعوة أصحاب الخدمات لإضافة قنواتهم', null, null],

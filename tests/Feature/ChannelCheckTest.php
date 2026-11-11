@@ -57,6 +57,33 @@ class ChannelCheckTest extends TestCase
         $this->get('/')->assertSee(route('channel-check'));
     }
 
+    public function test_two_channels_are_compared_indicator_by_indicator(): void
+    {
+        $page = fn (string $u, int $views) => collect(range(1, 12))->map(fn ($i) => '<div class="tgme_widget_message" data-post="'.$u.'/'.(100 + $i).'">'
+            .'<div class="tgme_widget_message_text js-message_text">150pips✔️ done</div><span class="tgme_widget_message_views">'.$views.'</span>'
+            .'<span class="tgme_widget_message_meta"><a class="tgme_widget_message_date" href="#"><time datetime="'.now()->subDays(14 - $i)->toIso8601String().'"></time></a></span></div>')->join('');
+        $about = fn (string $title) => '<meta property="og:title" content="'.$title.'"><div class="tgme_page_title"></div><div class="tgme_page_extra">10 000 subscribers</div>';
+        Http::fake([
+            't.me/s/alpha?*' => Http::response(''), 't.me/s/alpha' => Http::response($page('alpha', 3000)), 't.me/alpha' => Http::response($about('Alpha Forex')),
+            't.me/s/beta?*' => Http::response(''), 't.me/s/beta' => Http::response($page('beta', 90)), 't.me/beta' => Http::response($about('Beta Signals')),
+            '*' => Http::response(''),
+        ]);
+
+        $this->get(route('channel-compare'))->assertOk()->assertSee('name="a"', false)->assertDontSee('data-compare-result', false);
+
+        $response = $this->get(route('channel-compare', ['a' => '@alpha', 'b' => 't.me/beta']))->assertOk()
+            ->assertSee('data-compare-result', false)
+            ->assertSeeInOrder(['Alpha Forex', 'Beta Signals'])
+            ->assertSee('data-compare-row="engagement"', false)
+            ->assertSee(__(':a أم :b؟ مقارنة القناتين', ['a' => 'Alpha Forex', 'b' => 'Beta Signals']), false);
+        // 30% engagement against 0.9%
+        $response->assertSeeInOrder(['data-compare-row="engagement"', '30%', '0.9%'], false);
+
+        // From a report, the comparison starts with that channel
+        $this->get(route('channel-check', ['channel' => '@alpha']))
+            ->assertSee(e(route('channel-compare', ['a' => '@alpha'])), false);
+    }
+
     public function test_check_forms_show_the_steps_while_the_report_loads(): void
     {
         foreach ([route('channel-check'), route('home')] as $page) {
@@ -82,13 +109,13 @@ class ChannelCheckTest extends TestCase
         $this->get(route('providers.index', ['q' => '@goldpro']))->assertOk();
     }
 
-    public function test_the_homepage_has_the_check_right_under_the_categories_and_admins_can_switch_it_off(): void
+    public function test_the_homepage_opens_with_the_check_and_admins_can_switch_it_off(): void
     {
         $this->get('/')->assertOk()
             ->assertSee('data-home-channel-check', false)
             ->assertSee('action="'.route('channel-check').'"', false);
 
-        $this->assertSame('channel_check', \App\Support\HomeSections::layout()[1]['key']);
+        $this->assertSame('channel_check', \App\Support\HomeSections::layout()[0]['key']);
 
         \App\Models\Setting::put(['home_layout' => [['key' => 'channel_check', 'enabled' => false]]]);
         $this->get('/')->assertDontSee('data-home-channel-check', false);

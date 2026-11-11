@@ -12,6 +12,7 @@ import './ui';
 import './mobile-chrome';
 import './review-invite';
 import './channel-check';
+import './calculators';
 import './page-loader';
 import './profile';
 

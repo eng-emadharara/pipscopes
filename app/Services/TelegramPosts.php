@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Provider;
 use App\Models\TelegramPost;
+use App\Support\ChannelWatching;
 use App\Support\PostKind;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -56,11 +57,15 @@ class TelegramPosts
             }
 
             // Seen before, inside the stretch the page covers now, and no longer on it
-            $provider->telegramPosts()
+            $gone = $provider->telegramPosts()
                 ->whereNull('deleted_at')
                 ->whereBetween('msg_id', [min($ids), max($ids)])
-                ->whereNotIn('msg_id', $ids)
-                ->update(['deleted_at' => $now]);
+                ->whereNotIn('msg_id', $ids);
+            $deleted = (clone $gone)->pluck('kind');
+            $gone->update(['deleted_at' => $now]);
+
+            // Followers hear about it (ChannelWatching)
+            ChannelWatching::deleted($provider, $deleted->count(), $deleted->filter(fn ($kind) => $kind === PostKind::SIGNAL)->count());
         });
 
         if (! $provider->telegram_posts_since) {

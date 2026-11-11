@@ -157,6 +157,14 @@
                         <span class="max-md:hidden">{{ __('قناة التيليجرام') }}</span>
                     </a>
                 @endif
+                {{-- Alerts about this channel in the bot (App\Support\ChannelWatching); a bell alone on phones, where the row is full --}}
+                @if ($watchLink = \App\Support\ChannelWatching::startLink($provider))
+                    <a href="{{ $watchLink }}" target="_blank" rel="noopener" data-watch-link aria-label="{{ __('تابع تنبيهات القناة على تيليجرام') }}"
+                       data-track="watch_click" data-track-params='{"location":"channel_page"}'
+                       class="btn-outline shrink-0 whitespace-nowrap max-md:h-11 max-md:w-11 max-md:px-0">
+                        <span aria-hidden="true">🔔</span> <span class="max-md:hidden">{{ __('تنبيهات') }}</span>
+                    </a>
+                @endif
                 <x-share-buttons :url="$provider->shareUrl()" :text="$provider->shareText()" class="shrink-0" />
             </div>
         </div>

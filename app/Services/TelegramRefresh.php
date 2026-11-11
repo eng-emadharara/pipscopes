@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Provider;
 use App\Models\TelegramSnapshot;
+use App\Support\ChannelWatching;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -55,7 +56,12 @@ class TelegramRefresh
         // The posts go to their own table (TelegramPosts), not into telegram_data
         $items = $stats['items'] ?? [];
         unset($stats['items']);
+        // Followers hear about a new name or a sudden jump in subscribers (ChannelWatching)
+        ChannelWatching::renamed($provider, (string) ($provider->telegram_data['title'] ?? ''), $channel['title']);
+        ChannelWatching::subscribers($provider, $provider->telegram_members, $channel['subscribers']);
+
         $data = [
+            'title' => $channel['title'],
             'username' => $channel['username'],
             'subscribers' => $channel['subscribers'],
             'verified' => $channel['verified'],

@@ -103,6 +103,10 @@
                             <div class="space-y-2 p-5">
                                 <a href="{{ route('providers.show', $provider) }}" class="btn-primary w-full">{{ __('صفحة القناة والتقييمات') }}</a>
                                 <a href="{{ route('reviews.create', $provider) }}" class="btn-outline w-full">{{ __('اكتب تجربتك') }}</a>
+                                @if ($watchLink = \App\Support\ChannelWatching::startLink($provider))
+                                    <a href="{{ $watchLink }}" target="_blank" rel="noopener" class="btn-outline w-full" data-watch-link
+                                       data-track="watch_click" data-track-params='{"location":"channel_check"}'>🔔 {{ __('تابع تنبيهاتها على تيليجرام') }}</a>
+                                @endif
                             </div>
                             {{-- Followed, but the deletions aren't counted yet: when to come back --}}
                             @if ($readyAt)
@@ -162,7 +166,11 @@
                 {{-- What the numbers say --}}
                 @if ($cards || ! $report['preview'])
                     <section class="lg:col-start-1">
-                        <h2 class="mb-3 font-bold">{{ __('ماذا تقول أرقامها؟') }}</h2>
+                        <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                            <h2 class="font-bold">{{ __('ماذا تقول أرقامها؟') }}</h2>
+                            <a href="{{ route('channel-compare', ['a' => '@'.$channel['username']]) }}" class="text-sm font-semibold text-brand-700 hover:underline" data-compare-link
+                               data-track="compare_click" data-track-params='{"location":"channel_check"}'>⚖️ {{ __('قارنها بقناة أخرى') }}</a>
+                        </div>
                         @unless ($report['preview'])
                             <p class="mb-3 rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600" data-report-no-preview>
                                 {{ __('صاحب القناة أغلق معاينة المنشورات للعامة، لذلك لا يمكن قياس التفاعل والنشاط. نعرض بيانات القناة الأساسية فقط.') }}

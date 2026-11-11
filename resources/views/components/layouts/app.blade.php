@@ -167,6 +167,7 @@
             [route('home'), __('الرئيسية'), request()->routeIs('home')],
             $prelaunch ? null : [route('providers.index'), __('تصفح مقدمي الخدمة'), request()->routeIs('providers.index', 'categories.show')],
             $prelaunch ? null : [route('channel-check'), __('افحص قناة'), request()->routeIs('channel-check')],
+            [route('tools.index'), __('أدوات المتداول'), request()->routeIs('tools.*')],
             [route('submissions.create'), __('أضف مقدم خدمة'), request()->routeIs('submissions.*')],
             ...$navPages->where('show_in_header', true)->map(fn ($p) => [$p->url(), $p->tr('title'), url()->current() === $p->url()])->all(),
         ]);
@@ -323,7 +324,9 @@
                     @unless ($prelaunch)
                         <li><a href="{{ route('providers.index') }}" class="hover:text-white">{{ __('تصفح مقدمي الخدمة') }}</a></li>
                         <li><a href="{{ route('channel-check') }}" class="hover:text-white">{{ __('افحص قناة توصيات') }}</a></li>
+                        <li><a href="{{ route('channel-compare') }}" class="hover:text-white">{{ __('قارن بين قناتين') }}</a></li>
                     @endunless
+                    <li><a href="{{ route('tools.index') }}" class="hover:text-white">{{ __('أدوات المتداول') }}</a></li>
                     <li><a href="{{ route('submissions.create') }}" class="hover:text-white">{{ __('أرسل بيانات مقدم خدمة') }}</a></li>
                     @if (\App\Models\Setting::get('owner_portal_enabled', false))
                         <li><a href="{{ route('owner.login') }}" class="hover:text-white">{{ __('دخول أصحاب القنوات') }}</a></li>

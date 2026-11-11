@@ -18,7 +18,7 @@ class PrelaunchGate
 {
     /** Public routes closed until launch */
     protected const CLOSED_ROUTES = [
-        'providers.index', 'categories.show', 'providers.show', 'search.suggest', 'account-check', 'channel-check', 'share-images.check',
+        'providers.index', 'categories.show', 'providers.show', 'search.suggest', 'account-check', 'channel-check', 'channel-compare', 'share-images.check',
         'reviews.create', 'reviews.store', 'reviews.thanks', 'reviews.details', 'reviews.destroy',
         'reviews.helpful', 'reviews.report', 'impersonators.report',
         'reviews.show', 'share-images.provider', 'share-images.review',

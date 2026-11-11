@@ -85,7 +85,7 @@
                     <dt class="text-xs leading-snug text-balance text-gray-400 md:text-sm">
                         <x-ui-icon name="shield" class="-mt-0.5 me-0.5 inline h-3.5 w-3.5 text-amber-400" />
                         @if ($checker)
-                            <a href="#account-check" class="underline decoration-white/20 underline-offset-4 hover:text-white hover:decoration-white">{{ __('حساب منتحل تم كشفه') }}</a>
+                            <a href="{{ route('account-check') }}" class="underline decoration-white/20 underline-offset-4 hover:text-white hover:decoration-white">{{ __('حساب منتحل تم كشفه') }}</a>
                         @else
                             {{ __('حساب منتحل تم كشفه') }}
                         @endif
@@ -107,13 +107,14 @@
             @case('channel_check')
                 @include('home._channel-check')
                 @break
+            @case('tools')
+                @include('home._tools')
+                @break
             @case('picks')
                 @include('home._picks')
                 @break
             @case('account_check')
-                <section class="mx-auto mt-10 max-w-6xl px-4">
-                    @include('home._account-check')
-                </section>
+                {{-- Shown as a card in the tools section; this switch only turns the checker on or off --}}
                 @break
             @case('top_rated')
                 @include('home._top-rated')

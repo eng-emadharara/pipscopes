@@ -150,6 +150,8 @@ class TelegramAppLogin
                     [['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
             ]);
+        } elseif (ChannelWatching::handlesStart($chatId, $text)) {
+            // Following a channel from the site's link (ChannelWatching)
         } elseif (ChannelCheckBot::handles($chatId, $text)) {
             // A channel link or @name: the report goes out once Telegram has its answer (ChannelCheckBot)
         } elseif (str_starts_with(trim($text), '/start')) {
@@ -174,6 +176,11 @@ class TelegramAppLogin
     protected static function handleCallback(array $callback): void
     {
         self::useArabic();
+
+        // Follow / stop following a channel (ChannelWatching)
+        if (ChannelWatching::handlesCallback($callback)) {
+            return;
+        }
 
         if (! preg_match('/^tgl:(ok|no):([A-Za-z0-9]{40})$/', (string) ($callback['data'] ?? ''), $m)) {
             return;

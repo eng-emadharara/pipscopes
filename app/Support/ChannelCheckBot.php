@@ -21,7 +21,7 @@ class ChannelCheckBot
     protected const DOTS = ['good' => '🟢', 'warn' => '🟡', 'bad' => '🔴', 'pending' => '⚪'];
 
     /** The order the indicators are listed in (the image shows the first four) */
-    protected const ORDER = ['engagement', 'reactions', 'verifiability', 'losses', 'age', 'comments', 'promotion', 'activity', 'edited', 'steady_views', 'deleted'];
+    protected const ORDER = ChannelReport::ORDER;
 
     /** True when the message was a channel to check (then it's been answered) */
     public static function handles(int $chatId, string $text): bool
@@ -94,7 +94,9 @@ class ChannelCheckBot
             default => [['📄 '.__('التقرير الكامل وإضافتها للمراقبة'), $url]],
         };
 
-        self::send($chatId, self::caption($report), $buttons, route('share-images.check', ['ar', $channel['username']]));
+        self::send($chatId, self::caption($report), $buttons, route('share-images.check', ['ar', $channel['username']]),
+            // A channel on the platform can be followed right here (ChannelWatching)
+            $report['provider'] ? ['🔔 '.__('تابع تنبيهات هذه القناة'), 'w:on:'.$report['provider']->id] : null);
     }
 
     /** The report as text, the indicators one per line (under Telegram's 1024-character caption limit) */
@@ -139,14 +141,20 @@ class ChannelCheckBot
      *
      * @param  list<array{0: string, 1: string}>  $buttons  [label, url]
      */
-    protected static function send(int $chatId, string $text, array $buttons = [], ?string $photo = null): void
+    protected static function send(int $chatId, string $text, array $buttons = [], ?string $photo = null, ?array $callbackButton = null): void
     {
-        $markup = $buttons ? ['reply_markup' => ['inline_keyboard' => array_map(fn ($b) => [['text' => $b[0], 'url' => $b[1]]], $buttons)]] : [];
+        $rows = array_map(fn ($b) => [['text' => $b[0], 'url' => $b[1]]], $buttons);
+        if ($callbackButton) {
+            $rows[] = [['text' => $callbackButton[0], 'callback_data' => $callbackButton[1]]];
+        }
+        $markup = $rows ? ['reply_markup' => ['inline_keyboard' => $rows]] : [];
+        // A button Telegram might refuse is a link; the one that runs in the bot always works
+        $plain = $callbackButton ? ['reply_markup' => ['inline_keyboard' => [[['text' => $callbackButton[0], 'callback_data' => $callbackButton[1]]]]]] : [];
 
         $attempts = array_filter([
             $photo ? ['sendPhoto', ['chat_id' => $chatId, 'photo' => $photo, 'caption' => $text] + $markup] : null,
             ['sendMessage', ['chat_id' => $chatId, 'text' => $text] + $markup],
-            ['sendMessage', ['chat_id' => $chatId, 'text' => $text]],
+            ['sendMessage', ['chat_id' => $chatId, 'text' => $text] + $plain],
         ]);
 
         foreach ($attempts as [$method, $params]) {

@@ -29,6 +29,13 @@ class Impersonator extends Model
                 $impersonator->account_key = $parsed['key'];
             }
         });
+
+        // Confirmed (created that way or approved later): the channel's followers are warned (ChannelWatching)
+        static::saved(function (Impersonator $impersonator) {
+            if ($impersonator->status === 'confirmed' && ($impersonator->wasRecentlyCreated || $impersonator->wasChanged('status'))) {
+                \App\Support\ChannelWatching::impersonator($impersonator);
+            }
+        });
     }
 
     public function provider(): BelongsTo

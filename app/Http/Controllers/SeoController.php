@@ -21,6 +21,8 @@ class SeoController extends Controller
             // Before launch only the pages visitors can open are listed
             if (! Launch::isPrelaunch()) {
                 $urls[] = ['loc' => route('providers.index'), 'priority' => '0.9', 'changefreq' => 'daily'];
+                $urls[] = ['loc' => route('channel-check'), 'priority' => '0.9', 'changefreq' => 'weekly'];
+                $urls[] = ['loc' => route('channel-compare'), 'priority' => '0.6', 'changefreq' => 'monthly'];
 
                 foreach (Category::where('is_active', true)->orderBy('sort_order')->get(['slug', 'updated_at']) as $category) {
                     $urls[] = ['loc' => route('categories.show', $category), 'priority' => '0.7', 'changefreq' => 'weekly'];
@@ -49,6 +51,10 @@ class SeoController extends Controller
             }
 
             $urls[] = ['loc' => route('submissions.create'), 'priority' => '0.5', 'changefreq' => 'monthly'];
+            // The calculators bring traders in from search
+            foreach (['tools.index', 'tools.money-management', 'tools.lot-size', 'tools.pip-value', 'tools.profit'] as $tool) {
+                $urls[] = ['loc' => route($tool), 'priority' => '0.7', 'changefreq' => 'monthly'];
+            }
             foreach (Page::published()->get() as $page) {
                 $urls[] = ['loc' => $page->url(), 'lastmod' => $page->updated_at, 'priority' => '0.4', 'changefreq' => 'monthly'];
             }

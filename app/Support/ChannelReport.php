@@ -14,6 +14,9 @@ use Illuminate\Support\Carbon;
  */
 class ChannelReport
 {
+    /** The order indicators are listed in wherever they're laid out in full (bot, comparison) */
+    public const ORDER = ['engagement', 'reactions', 'verifiability', 'losses', 'age', 'comments', 'promotion', 'activity', 'edited', 'steady_views', 'deleted'];
+
     /** Indicators that only make sense for a trading channel (dropped when it isn't one) */
     public const TRADING_ONLY = ['verifiability', 'losses', 'promotion', 'edited'];
 
