@@ -87,7 +87,7 @@ class SubmissionController extends Controller
                 'username' => $channel['username'],
                 'subscribers' => $channel['subscribers'],
                 'verified' => $channel['verified'],
-                ...$channel['stats'],
+                ...\Illuminate\Support\Arr::except($channel['stats'], 'items'),
             ],
             'status' => 'new',
         ]);

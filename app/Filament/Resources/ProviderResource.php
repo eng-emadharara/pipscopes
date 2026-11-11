@@ -78,6 +78,11 @@ class ProviderResource extends Resource
                     Forms\Components\Placeholder::make('telegram_sync')->label('التحديث التلقائي من تيليجرام')->columnSpanFull()
                         ->visible(fn (?Provider $record) => filled($record?->telegram_url))
                         ->content(fn (Provider $record) => static::telegramSyncStatus($record)),
+                    Forms\Components\CheckboxList::make('telegram_hidden_insights')->label('إخفاء مؤشرات تيليجرام من صفحة القناة')
+                        ->options(['engagement' => 'نسبة التفاعل', 'deleted' => 'المنشورات المحذوفة', 'activity' => 'آخر منشور'])
+                        ->helperText('تُحسب تلقائياً من صفحة القناة العامة. أخفِ أي مؤشر عند خطأ تقني أو سبب واضح (مثلاً قناة تحذف إعلاناتها القديمة فقط).')
+                        ->visible(fn (?Provider $record) => filled($record?->telegram_url))
+                        ->columns(3)->columnSpanFull(),
                     Forms\Components\TextInput::make('website_url')->label('الموقع')->url(),
                     Forms\Components\TextInput::make('twitter_url')->label('X / تويتر')->url(),
                     Forms\Components\TextInput::make('instagram_url')->label('إنستغرام')->url(),

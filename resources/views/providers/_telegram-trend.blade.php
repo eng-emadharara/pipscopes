@@ -11,6 +11,30 @@
         <span class="text-xs text-gray-500">{{ __('آخر 7 أيام') }}</span>
     </div>
 
+    {{-- What the channel's posts show (App\Support\TelegramInsights); each opens to explain itself --}}
+    @php($insights = \App\Support\TelegramInsights::for($provider))
+    @if ($insights)
+        @php($dots = ['good' => 'bg-brand-500', 'warn' => 'bg-amber-400', 'bad' => 'bg-red-500', 'pending' => 'bg-gray-300'])
+        <div @class(['mb-6 grid gap-2', 'grid-cols-3' => count($insights) === 3, 'grid-cols-2' => count($insights) === 2]) data-telegram-insights>
+            @foreach ($insights as $card)
+                <details class="group rounded-xl border border-gray-200 p-3 open:col-span-full open:bg-gray-50" data-insight="{{ $card['key'] }}" data-level="{{ $card['level'] }}"
+                         data-track="telegram_insight_open" data-track-params='@json(['insight' => $card['key']])'>
+                    <summary class="flex cursor-pointer list-none flex-col items-center gap-1 text-center [&::-webkit-details-marker]:hidden">
+                        <span class="flex items-center gap-1.5 text-lg font-bold tabular-nums md:text-xl">
+                            <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $dots[$card['level']] }}" aria-hidden="true"></span>
+                            <span dir="auto">{{ $card['value'] }}</span>
+                        </span>
+                        <span class="text-xs leading-snug text-gray-500">{{ $card['label'] }}</span>
+                    </summary>
+                    <div class="mt-3 border-t border-gray-200 pt-3 text-start text-xs leading-relaxed text-gray-600">
+                        <p class="font-semibold text-ink">{{ $card['status'] }}</p>
+                        <p class="mt-1">{{ $card['note'] }}</p>
+                    </div>
+                </details>
+            @endforeach
+        </div>
+    @endif
+
     <div class="grid gap-6 sm:grid-cols-3">
         <x-trend-line :title="__('المشتركون')" :points="$series('subscribers')" />
         <x-trend-line :title="__('متوسط المشاهدات')" :points="$series('avg_views')" />
@@ -18,6 +42,9 @@
     </div>
 
     <p class="mt-3 text-xs leading-relaxed text-gray-500">{{ __('نسبة المشاهدات للمشتركين تقيس تفاعل الجمهور: القنوات النشطة غالباً بين 10% و40%، والنسبة المنخفضة جداً قد تعني مشتركين غير نشطين أو غير حقيقيين.') }}</p>
+    @if ($insights)
+        <p class="mt-1 text-xs text-gray-400">{{ __('محسوبة تلقائياً من صفحة القناة العامة على تيليجرام، وتتحدّث يومياً.') }}</p>
+    @endif
 
     {{-- The same numbers as a table, for screen readers and for reading exact values --}}
     <details class="mt-3 text-sm">

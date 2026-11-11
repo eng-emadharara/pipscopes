@@ -141,7 +141,20 @@ class TelegramChannel
         preg_match_all('/<time datetime="([^"]+)"/', $html, $dates);
         $viewCounts = array_filter(array_map(fn ($v) => self::number($v), $views[1]));
 
+        // Each post on the page, plus the page before it, so a deletion among the last ~40 posts shows
+        $items = self::postItems($html, $username);
+        if ($items) {
+            try {
+                $before = Http::timeout(8)->withHeaders(['Accept-Language' => 'en'])
+                    ->get('https://t.me/s/'.$username, ['before' => min(array_column($items, 'msg_id'))])->body();
+                $items = [...self::postItems($before, $username), ...$items];
+            } catch (\Throwable) {
+                // The first page alone still counts
+            }
+        }
+
         return [
+            'items' => $items,
             'preview_enabled' => true,
             'photos' => $counters['photo'] ?? null,
             'videos' => $counters['video'] ?? null,
@@ -152,6 +165,34 @@ class TelegramChannel
             'avg_views' => $viewCounts ? (int) round(array_sum($viewCounts) / count($viewCounts)) : null,
             'fetched_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * The posts on a preview page, by number: when, how many views, whether it was edited.
+     * Telegram numbers a channel's posts in order, so a number that's gone was deleted.
+     *
+     * @return list<array{msg_id: int, posted_at: ?string, views: ?int, edited: bool}>
+     */
+    public static function postItems(string $html, string $username): array
+    {
+        $parts = preg_split('/(?=data-post="'.preg_quote($username, '/').'\/\d+")/i', $html);
+        $items = [];
+
+        foreach ($parts as $part) {
+            if (! preg_match('/^data-post="[^\/"]+\/(\d+)"/', $part, $id)) {
+                continue;
+            }
+
+            $items[(int) $id[1]] = [
+                'msg_id' => (int) $id[1],
+                'posted_at' => preg_match('/tgme_widget_message_date"[^>]*><time datetime="([^"]+)"/', $part, $m) ? $m[1] : null,
+                'views' => preg_match('/tgme_widget_message_views">([^<]+)</', $part, $m) ? self::number($m[1]) : null,
+                // The meta line reads "edited" right before the post's date link
+                'edited' => (bool) preg_match('/edited\s*(?:&nbsp;)?\s*<a class="tgme_widget_message_date"/', $part),
+            ];
+        }
+
+        return array_values($items);
     }
 
     /**

@@ -22,7 +22,7 @@ class Provider extends Model
 
     protected $fillable = [
         'name', 'slug', 'service_type', 'pricing', 'bio', 'avatar',
-        'telegram_url', 'telegram_members', 'telegram_data', 'telegram_checked_at', 'telegram_status', 'telegram_failures', 'website_url', 'twitter_url', 'instagram_url',
+        'telegram_url', 'telegram_members', 'telegram_data', 'telegram_checked_at', 'telegram_status', 'telegram_failures', 'telegram_hidden_insights', 'website_url', 'twitter_url', 'instagram_url',
         'youtube_url', 'tiktok_url', 'facebook_url', 'whatsapp', 'extra_links',
         'is_verified', 'is_featured', 'is_active', 'is_early_open',
     ];
@@ -31,6 +31,8 @@ class Provider extends Model
         'extra_links' => 'array',
         'telegram_data' => 'array',
         'telegram_checked_at' => 'datetime',
+        'telegram_posts_since' => 'datetime',
+        'telegram_hidden_insights' => 'array',
         'is_verified' => 'boolean',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
@@ -201,6 +203,11 @@ class Provider extends Model
     public function telegramSnapshots(): HasMany
     {
         return $this->hasMany(TelegramSnapshot::class);
+    }
+
+    public function telegramPosts(): HasMany
+    {
+        return $this->hasMany(TelegramPost::class);
     }
 
     public function approvedReviews(): HasMany

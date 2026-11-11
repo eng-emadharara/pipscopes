@@ -8,11 +8,13 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Telegram numbers: a small batch every hour reads each channel about once a day,
-// and the history is compacted monthly (see the commands for details).
+// Telegram numbers: a small batch every hour reads each channel about once a day (every 4 hours
+// for channels posting lately), the history is compacted monthly, and each day's post counts are
+// summarized before posts older than 45 days go (see the commands for details).
 // Needs the server cron: * * * * * php artisan schedule:run
 Schedule::command('telegram:refresh')->hourly()->withoutOverlapping();
 Schedule::command('telegram:compact')->monthlyOn(1, '03:30');
+Schedule::command('telegram:posts-daily')->dailyAt('00:20');
 
 // Announcements scheduled from Admin → الإعلانات go out at their time
 Artisan::command('announcements:send-due', function () {

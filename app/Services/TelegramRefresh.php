@@ -18,6 +18,7 @@ class TelegramRefresh
     /**
      * Channels due a refresh, oldest first: not read for a day, or for a week once they keep
      * failing (gone private, deleted, renamed) so they don't take every run's slots.
+     * Channels that posted in the last few days are read every 4 hours, to catch deleted posts.
      */
     public static function due(): Builder
     {
@@ -25,6 +26,9 @@ class TelegramRefresh
             ->whereNotNull('telegram_url')
             ->where(fn ($q) => $q->whereNull('telegram_checked_at')
                 ->orWhere(fn ($q) => $q->where('telegram_failures', '<', self::GIVE_UP_AFTER)->where('telegram_checked_at', '<=', now()->subHours(23)))
+                ->orWhere(fn ($q) => $q->where('telegram_failures', 0)
+                    ->where('telegram_checked_at', '<=', now()->subHours(TelegramPosts::ACTIVE_EVERY_HOURS))
+                    ->whereHas('telegramPosts', fn ($q) => $q->where('posted_at', '>=', now()->subDays(TelegramPosts::ACTIVE_DAYS))))
                 ->orWhere(fn ($q) => $q->where('telegram_failures', '>=', self::GIVE_UP_AFTER)->where('telegram_checked_at', '<=', now()->subDays(7))))
             ->orderByRaw('telegram_checked_at IS NOT NULL')
             ->orderBy('telegram_checked_at');
@@ -48,6 +52,9 @@ class TelegramRefresh
         }
 
         $stats = $channel['stats'];
+        // The posts go to their own table (TelegramPosts), not into telegram_data
+        $items = $stats['items'] ?? [];
+        unset($stats['items']);
         $data = [
             'username' => $channel['username'],
             'subscribers' => $channel['subscribers'],
@@ -68,6 +75,7 @@ class TelegramRefresh
         ])->saveQuietly();
 
         self::record($provider, $channel['subscribers'], $stats['avg_views'] ?? null);
+        TelegramPosts::record($provider, $items);
 
         return $status;
     }
