@@ -122,8 +122,14 @@ class ChannelReport
         $perWeek = $posts->count() >= 3 ? (int) round($posts->count() / $days * 7) : null;
         $cards['activity'] = TelegramInsights::activityCard($posts->max('at'), null);
         if ($perWeek !== null) {
-            $cards['activity']['note'] = __('نشرت :count منشوراً خلال آخر :days يوماً، أي بمعدل :n منشورات أسبوعياً تقريباً.',
-                ['count' => $posts->count(), 'days' => (int) ceil($days), 'n' => $perWeek]);
+            // "40 posts in the last 1 days, 280 posts a week" read badly: a single day is said as such, and
+            // the weekly rate is a number with no noun to agree with (or "less than one" when it rounds to 0)
+            $cards['activity']['note'] = ($days <= 1
+                ? __('نشرت :count منشوراً خلال آخر يوم.', ['count' => $posts->count()])
+                : __('نشرت :count منشوراً خلال آخر :days يوماً.', ['count' => $posts->count(), 'days' => (int) ceil($days)]))
+                .' '.($perWeek >= 1
+                    ? __('المعدل: :n في الأسبوع تقريباً.', ['n' => $perWeek])
+                    : __('المعدل: أقل من منشور واحد في الأسبوع.'));
         }
 
         if ($firstPostAt) {

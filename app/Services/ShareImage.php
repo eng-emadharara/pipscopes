@@ -23,7 +23,7 @@ class ShareImage
     public const HEIGHT = 630;
 
     /** Bump to regenerate every cached image after a design change */
-    protected const DESIGN_VERSION = 5;
+    protected const DESIGN_VERSION = 6;
 
     protected const PADDING = 64;
 
@@ -387,7 +387,7 @@ class ShareImage
      */
     protected function text(string $text, string $weight, int $size, int $baseline, string $color, ?int $startOffset = null, bool $alignEnd = false): void
     {
-        $drawn = ArabicShaper::forImage($text);
+        $drawn = ArabicShaper::forImage(self::drawable($text));
         $font = $this->font($weight);
         $box = imagettfbbox($size, 0, $font, $drawn);
         $width = $box[2] - $box[0];
@@ -456,9 +456,19 @@ class ShareImage
 
     protected function width(string $text, string $weight, int $size): int
     {
-        $box = imagettfbbox($size, 0, $this->font($weight), ArabicShaper::forImage($text));
+        $box = imagettfbbox($size, 0, $this->font($weight), ArabicShaper::forImage(self::drawable($text)));
 
         return $box[2] - $box[0];
+    }
+
+    /**
+     * Drops what GD and the font can't draw: emoji and other characters past U+FFFF (GD reads their
+     * 4-byte UTF-8 as Latin-1, so "💧SEA" came out as "ð§SEA"), plus emoji symbols, variation
+     * selectors, joiners and keycaps. Channel names are full of them; the image shows the name without.
+     */
+    public static function drawable(string $text): string
+    {
+        return trim(preg_replace('/[\x{10000}-\x{10FFFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE00}-\x{FE0F}\x{200D}\x{20E3}]/u', '', $text) ?? $text);
     }
 
     protected function font(string $weight): string

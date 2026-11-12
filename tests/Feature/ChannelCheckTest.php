@@ -262,6 +262,39 @@ class ChannelCheckTest extends TestCase
         $this->assertSame('good', $normal['engagement']['level']);
     }
 
+    public function test_more_views_than_subscribers_is_flagged_not_called_normal(): void
+    {
+        // 4 000 subscribers, ~60 000 views a post (1 500%): forwards or bought views, never "normal"
+        $cards = ChannelReport::cards($this->posts(15, fn ($i) => 60000 + $i * 900), 4000);
+        $this->assertSame('warn', $cards['engagement']['level']);
+        $this->assertSame(__('مشاهدات أكثر من عدد المشتركين'), $cards['engagement']['status']);
+
+        // Right at the subscriber count it's still the usual scale
+        $this->assertSame('good', \App\Support\TelegramInsights::engagementCard(100)['level']);
+    }
+
+    public function test_the_posting_rate_reads_well_for_a_single_day_and_for_a_rare_poster(): void
+    {
+        // 30 posts all within the last day
+        $busy = array_map(fn ($i) => ['msg_id' => $i, 'posted_at' => now()->subMinutes(30 * $i)->toIso8601String(), 'views' => 100, 'edited' => false], range(1, 30));
+        $note = ChannelReport::cards($busy, 1000)['activity']['note'];
+        $this->assertStringContainsString(__('نشرت :count منشوراً خلال آخر يوم.', ['count' => 30]), $note);
+        $this->assertStringNotContainsString('آخر 1 يوماً', $note);
+
+        // 5 posts over about two years: under one a week, said so instead of "0"
+        $rare = array_map(fn ($i) => ['msg_id' => $i, 'posted_at' => now()->subDays(150 * $i)->toIso8601String(), 'views' => 100, 'edited' => false], range(1, 5));
+        $this->assertStringContainsString(__('المعدل: أقل من منشور واحد في الأسبوع.'), ChannelReport::cards($rare, 1000)['activity']['note']);
+    }
+
+    public function test_the_share_image_leaves_out_emoji_it_cannot_draw(): void
+    {
+        // GD draws 4-byte UTF-8 as Latin-1 ("💧SEA" became "ð§SEA"); the name is drawn without them
+        $this->assertSame('SEA FOREX / FREE', \App\Services\ShareImage::drawable('💧SEA💧 FOREX / FREE 🔥💰'));
+        $this->assertSame('Qamar Alali - Richmama', \App\Services\ShareImage::drawable('Qamar Alali - Richmama🌗'));
+        $this->assertSame('قناة الذهب', \App\Services\ShareImage::drawable('قناة الذهب ✅'));
+        $this->assertSame('@chan  ·  5 مشترك', \App\Services\ShareImage::drawable('@chan  ·  5 مشترك'));
+    }
+
     public function test_a_channel_that_isnt_about_trading_gets_audience_indicators_only_and_no_monitoring(): void
     {
         $posts = collect(range(1, 12))->map(fn ($i) => '<div class="tgme_widget_message" data-post="footnews/'.(100 + $i).'">'

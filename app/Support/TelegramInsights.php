@@ -30,6 +30,9 @@ class TelegramInsights
 
     public const ENGAGEMENT_MIN_POSTS = 10;
 
+    /** Views per post above this share of the subscribers (in %) are flagged rather than called normal */
+    public const ENGAGEMENT_ABOVE_SUBSCRIBERS = 100;
+
     /**
      * @return array<string, array{key: string, level: string, value: string, label: string, status: string, note: string}>
      *         level: good | warn | bad | pending
@@ -86,8 +89,21 @@ class TelegramInsights
     /** The engagement card for a views ÷ subscribers percentage (also used by the channel check) */
     public static function engagementCard(float $ratio): array
     {
-        $level = $ratio >= 8 ? 'good' : ($ratio >= 3 ? 'warn' : 'bad');
         $shown = $ratio >= 10 ? (string) round($ratio) : rtrim(rtrim(number_format($ratio, 1), '0'), '.');
+
+        // More views than subscribers: forwards can do it, so can bought views. Unusual either way, not "normal"
+        if ($ratio > self::ENGAGEMENT_ABOVE_SUBSCRIBERS) {
+            return [
+                'key' => 'engagement',
+                'level' => 'warn',
+                'value' => $shown.'%',
+                'label' => __('نسبة التفاعل'),
+                'status' => __('مشاهدات أكثر من عدد المشتركين'),
+                'note' => __('متوسط مشاهدات المنشور أكبر من عدد مشتركي القناة. قد يحدث هذا عندما تنتشر منشوراتها خارجها بإعادة التوجيه، وقد يعني مشاهدات غير حقيقية.'),
+            ];
+        }
+
+        $level = $ratio >= 8 ? 'good' : ($ratio >= 3 ? 'warn' : 'bad');
 
         return [
             'key' => 'engagement',
