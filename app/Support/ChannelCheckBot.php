@@ -50,7 +50,8 @@ class ChannelCheckBot
 
     public static function help(): string
     {
-        return '🔎 '.__('افحص أي قناة توصيات قبل أن تشترك: أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك تقريراً مجانياً عنها.');
+        return '🔎 '.__('افحص أي قناة توصيات قبل أن تشترك: أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك تقريراً مجانياً عنها.')
+            ."\n\n🔔 ".__('القنوات التي تتابعها: /channels');
     }
 
     /** The channel named in a message: a t.me link, an @name, or the site's "check from Telegram" link (/start check_name) */

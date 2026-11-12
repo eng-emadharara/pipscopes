@@ -103,6 +103,12 @@ class TelegramAppLogin
         ]);
 
         Setting::put([self::SETTING => ['enabled' => true, 'bot_username' => $username]]);
+
+        // The bot's menu (the "/" button in Telegram): what it can do
+        rescue(fn () => self::api('setMyCommands', ['commands' => [
+            ['command' => 'channels', 'description' => 'القنوات التي أتابعها'],
+            ['command' => 'start', 'description' => 'كيف أفحص قناة توصيات'],
+        ]]), report: false);
     }
 
     public static function disable(): void
@@ -150,6 +156,8 @@ class TelegramAppLogin
                     [['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
             ]);
+        } elseif (ChannelWatching::handlesList($chatId, $text)) {
+            // "/channels": what this chat follows (ChannelWatching)
         } elseif (ChannelWatching::handlesStart($chatId, $text)) {
             // Following a channel from the site's link (ChannelWatching)
         } elseif (ChannelCheckBot::handles($chatId, $text)) {

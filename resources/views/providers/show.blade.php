@@ -157,16 +157,22 @@
                         <span class="max-md:hidden">{{ __('قناة التيليجرام') }}</span>
                     </a>
                 @endif
-                {{-- Alerts about this channel in the bot (App\Support\ChannelWatching); a bell alone on phones, where the row is full --}}
-                @if ($watchLink = \App\Support\ChannelWatching::startLink($provider))
-                    <a href="{{ $watchLink }}" target="_blank" rel="noopener" data-watch-link aria-label="{{ __('تابع تنبيهات القناة على تيليجرام') }}"
-                       data-track="watch_click" data-track-params='{"location":"channel_page"}'
-                       class="btn-outline shrink-0 whitespace-nowrap max-md:h-11 max-md:w-11 max-md:px-0">
-                        <span aria-hidden="true">🔔</span> <span class="max-md:hidden">{{ __('تنبيهات') }}</span>
-                    </a>
-                @endif
                 <x-share-buttons :url="$provider->shareUrl()" :text="$provider->shareText()" class="shrink-0" />
             </div>
+
+            {{-- Follow the channel in the bot (App\Support\ChannelWatching): a row of its own, saying what it does --}}
+            @if ($watchLink = \App\Support\ChannelWatching::startLink($provider))
+                <a href="{{ $watchLink }}" target="_blank" rel="noopener" data-watch-link
+                   data-track="watch_click" data-track-params='{"location":"channel_page"}'
+                   class="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sky-900 transition hover:border-sky-400 md:col-start-1 md:row-start-3 md:ms-28 md:max-w-xl">
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-lg shadow-sm" aria-hidden="true">🔔</span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-bold">{{ __('تابع القناة') }}</span>
+                        <span class="block text-xs leading-relaxed text-sky-800">{{ __('تنبيه على تيليجرام إذا حذفت صفقات أو انكشف منتحل باسمها') }}</span>
+                    </span>
+                    <x-ui-icon name="telegram" class="h-5 w-5 shrink-0 text-sky-500" />
+                </a>
+            @endif
         </div>
     </section>
 

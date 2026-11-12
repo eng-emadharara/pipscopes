@@ -37,6 +37,38 @@ class ChannelWatching
         return true;
     }
 
+    /** "/channels" (or "قنواتي"): the channels this chat follows, each with its stop button. True when the message was one. */
+    public static function handlesList(int $chatId, string $text): bool
+    {
+        if (! preg_match('/^(\/channels(@\w+)?|قنواتي)$/u', trim($text))) {
+            return false;
+        }
+
+        // Newest follow first
+        $watches = ChannelWatch::where('chat_id', $chatId)->with('provider')->orderByDesc('id')->get()->filter(fn ($w) => $w->provider)->values();
+
+        if ($watches->isEmpty()) {
+            TelegramAppLogin::api('sendMessage', ['chat_id' => $chatId, 'text' => '🔕 '.__('لا تتابع أي قناة بعد.')."\n\n"
+                .__('لمتابعة قناة: افتح صفحتها على الموقع واضغط «تابع القناة»، أو أرسل لي رابطها لأفحصها ثم اضغط «تابع».')]);
+
+            return true;
+        }
+
+        TelegramAppLogin::api('sendMessage', [
+            'chat_id' => $chatId,
+            'text' => '🔔 '.trans_choice('تتابع :count قناة:', $watches->count(), ['count' => $watches->count()])."\n\n"
+                .$watches->map(fn ($w) => '• '.$w->provider->name)->join("\n")
+                ."\n\n".__('اضغط على اسم القناة لفتح صفحتها، أو على «إيقاف» لإيقاف تنبيهاتها.'),
+            // One row per channel: its page, and stop (a channel's own name could be long, so stop stays short)
+            'reply_markup' => ['inline_keyboard' => $watches->take(50)->map(fn ($w) => [
+                ['text' => mb_strimwidth($w->provider->name, 0, 40, '…'), 'url' => route('providers.show', $w->provider)],
+                ['text' => '🔕 '.__('إيقاف'), 'callback_data' => 'w:off:'.$w->provider_id],
+            ])->values()->all()],
+        ]);
+
+        return true;
+    }
+
     /** The follow / stop buttons (w:on:<id>, w:off:<id>). True when the button was one. */
     public static function handlesCallback(array $callback): bool
     {
@@ -69,7 +101,8 @@ class ChannelWatching
                 .'• '.__('إذا غيّرت اسمها')."\n"
                 .'• '.__('إذا قفز عدد مشتركيها فجأة')."\n"
                 .'• '.__('عند نشر تقييم جديد عنها')."\n"
-                .'• '.__('إذا اكتُشف حساب ينتحل اسمها'),
+                .'• '.__('إذا اكتُشف حساب ينتحل اسمها')
+                ."\n\n".__('لرؤية كل القنوات التي تتابعها أرسل /channels'),
             'reply_markup' => ['inline_keyboard' => [
                 [['text' => '🔕 '.__('إيقاف التنبيهات'), 'callback_data' => 'w:off:'.$provider->id]],
             ]],

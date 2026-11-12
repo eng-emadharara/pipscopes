@@ -84,6 +84,40 @@ class ChannelWatchingTest extends TestCase
         $this->assertSame(__('لم نجد هذه القناة على المنصة.'), $this->lastText());
     }
 
+    public function test_channels_lists_what_the_chat_follows_with_a_stop_button_each(): void
+    {
+        $this->fakeBot();
+
+        $this->message('/channels');
+        $this->assertStringContainsString(__('لا تتابع أي قناة بعد.'), $this->lastText());
+
+        $other = Provider::create(['name' => 'Silver Signals', 'service_type' => 'Signals', 'is_active' => true]);
+        ChannelWatch::create(['chat_id' => 777, 'provider_id' => $this->channel->id]);
+        ChannelWatch::create(['chat_id' => 777, 'provider_id' => $other->id]);
+        ChannelWatch::create(['chat_id' => 888, 'provider_id' => $other->id]);
+
+        $this->message('قنواتي');
+        $sent = collect(Http::recorded())->map(fn ($p) => $p[0])->filter(fn (Request $r) => str_ends_with($r->url(), '/sendMessage'))->last();
+        $this->assertStringContainsString('Gold Pro', $sent['text']);
+        $this->assertStringContainsString('Silver Signals', $sent['text']);
+        $rows = $sent['reply_markup']['inline_keyboard'];
+        $this->assertCount(2, $rows, 'only this chat\'s channels');
+        $this->assertSame('w:off:'.$other->id, $rows[0][1]['callback_data']);
+        $this->assertSame(route('providers.show', $other), $rows[0][0]['url']);
+    }
+
+    public function test_the_channel_page_says_what_following_does(): void
+    {
+        $this->get(route('providers.show', $this->channel))->assertOk()
+            ->assertSee('data-watch-link', false)
+            ->assertSee(__('تابع القناة'))
+            ->assertSee(__('تنبيه على تيليجرام إذا حذفت صفقات أو انكشف منتحل باسمها'));
+
+        // Without the bot connected there's nothing to follow with
+        Setting::put([TelegramAppLogin::SETTING => ['enabled' => false]]);
+        $this->get(route('providers.show', $this->channel))->assertDontSee('data-watch-link', false);
+    }
+
     public function test_deleted_posts_reviews_and_impersonators_alert_followers_only(): void
     {
         $this->fakeBot();

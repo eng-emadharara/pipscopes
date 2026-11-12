@@ -104,8 +104,15 @@
                                 <a href="{{ route('providers.show', $provider) }}" class="btn-primary w-full">{{ __('صفحة القناة والتقييمات') }}</a>
                                 <a href="{{ route('reviews.create', $provider) }}" class="btn-outline w-full">{{ __('اكتب تجربتك') }}</a>
                                 @if ($watchLink = \App\Support\ChannelWatching::startLink($provider))
-                                    <a href="{{ $watchLink }}" target="_blank" rel="noopener" class="btn-outline w-full" data-watch-link
-                                       data-track="watch_click" data-track-params='{"location":"channel_check"}'>🔔 {{ __('تابع تنبيهاتها على تيليجرام') }}</a>
+                                    <a href="{{ $watchLink }}" target="_blank" rel="noopener" data-watch-link
+                                       data-track="watch_click" data-track-params='{"location":"channel_check"}'
+                                       class="flex items-center gap-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-start text-sky-900 hover:border-sky-400">
+                                        <span class="text-lg" aria-hidden="true">🔔</span>
+                                        <span>
+                                            <span class="block text-sm font-bold">{{ __('تابع القناة') }}</span>
+                                            <span class="block text-xs text-sky-800">{{ __('تنبيه على تيليجرام إذا حذفت صفقات أو انكشف منتحل باسمها') }}</span>
+                                        </span>
+                                    </a>
                                 @endif
                             </div>
                             {{-- Followed, but the deletions aren't counted yet: when to come back --}}

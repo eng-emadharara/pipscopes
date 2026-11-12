@@ -948,5 +948,14 @@
     "لا تفتح صفقات كثيرة معاً على نفس الأداة؛ مخاطرتها تتجمع.": "Don't open many trades at once on the same instrument; their risk adds up.",
     "عند الوصول لحد الخسارة اليومي توقف، فالتداول بعد الخسارة بدافع التعويض أسرع طريق لخسارة الحساب.": "When you reach the daily loss limit, stop: trading to win back a loss is the fastest way to lose the account.",
     "القناة التي تطلب منك لوتات كبيرة أو «دبل» بعد الخسارة لا تهتم بحسابك.": "A channel that tells you to use big lots or \"double\" after a loss does not care about your account.",
-    "الخطة تقريبية للتعلم وليست نصيحة مالية، وقيمة النقطة قد تختلف قليلاً حسب الوسيط.": "The plan is approximate, for learning, and isn't financial advice; pip value may differ slightly by broker."
+    "الخطة تقريبية للتعلم وليست نصيحة مالية، وقيمة النقطة قد تختلف قليلاً حسب الوسيط.": "The plan is approximate, for learning, and isn't financial advice; pip value may differ slightly by broker.",
+    "تابع القناة": "Follow the channel",
+    "تنبيه على تيليجرام إذا حذفت صفقات أو انكشف منتحل باسمها": "A Telegram alert if it deletes trades or an impersonator is found",
+    "لا تتابع أي قناة بعد.": "You don't follow any channel yet.",
+    "لمتابعة قناة: افتح صفحتها على الموقع واضغط «تابع القناة»، أو أرسل لي رابطها لأفحصها ثم اضغط «تابع».": "To follow a channel: open its page on the site and tap \"Follow the channel\", or send me its link to check it, then tap \"Follow\".",
+    "تتابع :count قناة:": "You follow :count channels:",
+    "اضغط على اسم القناة لفتح صفحتها، أو على «إيقاف» لإيقاف تنبيهاتها.": "Tap a channel's name to open its page, or \"Stop\" to stop its alerts.",
+    "إيقاف": "Stop",
+    "لرؤية كل القنوات التي تتابعها أرسل /channels": "To see every channel you follow, send /channels",
+    "القنوات التي تتابعها: /channels": "Channels you follow: /channels"
 }
