@@ -66,7 +66,11 @@ class BotMenu
                 'reply_markup' => ['inline_keyboard' => [
                     [['text' => '🛡 '.__('حاسبة إدارة رأس المال'), 'url' => self::url('tools.money-management')]],
                     [['text' => '📏 '.__('حاسبة حجم اللوت'), 'url' => self::url('tools.lot-size')], ['text' => '💲 '.__('قيمة النقطة'), 'url' => self::url('tools.pip-value')]],
-                    [['text' => '⚖️ '.__('قارن بين قناتين'), 'url' => self::url('channel-compare')], ['text' => '🕵️ '.__('هل هذا الحساب حقيقي؟'), 'url' => self::url('account-check')]],
+                    array_values(array_filter([
+                        ['text' => '⚖️ '.__('قارن بين قناتين'), 'url' => self::url('channel-compare')],
+                        // The page answers 404 while its section is off in the admin panel
+                        HomeSections::enabled('account_check') ? ['text' => '🕵️ '.__('هل هذا الحساب حقيقي؟'), 'url' => self::url('account-check')] : null,
+                    ])),
                     [['text' => '🧰 '.__('كل الأدوات'), 'url' => self::url('tools.index')]],
                 ]],
             ]),

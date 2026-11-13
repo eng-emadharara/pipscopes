@@ -149,6 +149,13 @@ class ChannelCheckBotTest extends TestCase
 
         // None of them was taken for a channel to check
         $this->assertCount(0, $this->sent('sendPhoto'));
+
+        // The account check's page is off: no button leading to its 404
+        Setting::put(['home_layout' => [['key' => 'account_check', 'enabled' => false]]]);
+        $this->message($labels['tools']);
+        $urls = collect($this->sent('sendMessage')->last()['reply_markup']['inline_keyboard'])->flatten(1)->pluck('url');
+        $this->assertFalse($urls->contains(fn ($u) => str_starts_with($u, route('account-check'))));
+        $this->assertTrue($urls->contains(fn ($u) => str_starts_with($u, route('channel-compare'))));
     }
 
     public function test_a_worrying_report_offers_to_report_a_scam(): void
