@@ -56,7 +56,13 @@ class ChannelWatching
 
         TelegramAppLogin::api('sendMessage', [
             'chat_id' => $chatId,
-            'text' => '🔔 '.trans_choice('تتابع :count قناة:', $watches->count(), ['count' => $watches->count()])."\n\n"
+            // Arabic counts its nouns by number: one, two, three to ten, more
+            'text' => '🔔 '.match (true) {
+                $watches->count() === 1 => __('تتابع قناة واحدة:'),
+                $watches->count() === 2 => __('تتابع قناتين:'),
+                $watches->count() <= 10 => __('تتابع :count قنوات:', ['count' => $watches->count()]),
+                default => __('تتابع :count قناة:', ['count' => $watches->count()]),
+            }."\n\n"
                 .$watches->map(fn ($w) => '• '.$w->provider->name)->join("\n")
                 ."\n\n".__('اضغط على اسم القناة لفتح صفحتها، أو على «إيقاف» لإيقاف تنبيهاتها.'),
             // One row per channel: its page, and stop (a channel's own name could be long, so stop stays short)
@@ -137,7 +143,13 @@ class ChannelWatching
             return;
         }
 
-        self::alert($provider, '🗑 '.__('قناة «:name» حذفت :n منشوراً.', ['name' => $provider->name, 'n' => $posts])
+        $words = ['name' => $provider->name, 'n' => $posts];
+        self::alert($provider, '🗑 '.match (true) {
+            $posts === 1 => __('قناة «:name» حذفت منشوراً واحداً.', $words),
+            $posts === 2 => __('قناة «:name» حذفت منشورين.', $words),
+            $posts <= 10 => __('قناة «:name» حذفت :n منشورات.', $words),
+            default => __('قناة «:name» حذفت :n منشوراً.', $words),
+        }
             .($trades ? ' '.__('من بينها صفقات كانت منشورة بأرقام واضحة: :n.', ['n' => $trades]) : ''));
     }
 

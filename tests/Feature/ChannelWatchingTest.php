@@ -100,6 +100,7 @@ class ChannelWatchingTest extends TestCase
         $sent = collect(Http::recorded())->map(fn ($p) => $p[0])->filter(fn (Request $r) => str_ends_with($r->url(), '/sendMessage'))->last();
         $this->assertStringContainsString('Gold Pro', $sent['text']);
         $this->assertStringContainsString('Silver Signals', $sent['text']);
+        $this->assertStringContainsString('تتابع قناتين:', $sent['text'], 'two is said as a dual, not "2 قناة"');
         $rows = $sent['reply_markup']['inline_keyboard'];
         $this->assertCount(2, $rows, 'only this chat\'s channels');
         $this->assertSame('w:off:'.$other->id, $rows[0][1]['callback_data']);
@@ -135,7 +136,7 @@ class ChannelWatchingTest extends TestCase
         TelegramPosts::record($this->channel, $items([1, 2, 3]));
         Queue::assertNothingPushed();
         TelegramPosts::record($this->channel, $items([1, 3]));
-        Queue::assertPushed(SendWatchAlert::class, fn ($job) => str_contains($job->text, __('قناة «:name» حذفت :n منشوراً.', ['name' => 'Gold Pro', 'n' => 1]))
+        Queue::assertPushed(SendWatchAlert::class, fn ($job) => str_contains($job->text, 'قناة «Gold Pro» حذفت منشوراً واحداً.')
             && str_contains($job->text, __('من بينها صفقات كانت منشورة بأرقام واضحة: :n.', ['n' => 1])));
 
         Review::create(['provider_id' => $this->channel->id, 'user_id' => User::factory()->create()->id, 'rating' => 2, 'body' => 'x', 'status' => Review::STATUS_APPROVED]);

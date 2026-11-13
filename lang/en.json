@@ -962,5 +962,13 @@
     "اضغط على اسم القناة لفتح صفحتها، أو على «إيقاف» لإيقاف تنبيهاتها.": "Tap a channel's name to open its page, or \"Stop\" to stop its alerts.",
     "إيقاف": "Stop",
     "لرؤية كل القنوات التي تتابعها أرسل /channels": "To see every channel you follow, send /channels",
-    "القنوات التي تتابعها: /channels": "Channels you follow: /channels"
+    "القنوات التي تتابعها: /channels": "Channels you follow: /channels",
+    "تتابع قناة واحدة:": "You follow one channel:",
+    "تتابع قناتين:": "You follow two channels:",
+    "تتابع :count قنوات:": "You follow :count channels:",
+    "قناة «:name» حذفت منشوراً واحداً.": "\":name\" deleted a post.",
+    "قناة «:name» حذفت منشورين.": "\":name\" deleted 2 posts.",
+    "قناة «:name» حذفت :n منشورات.": "\":name\" deleted :n posts.",
+    "افحص أي قناة توصيات قبل أن تشترك: أرسل لي الآن رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك خلال ثوانٍ تقريراً مجانياً: هل جمهورها حقيقي؟ هل تنشر صفقاتها قبل حدوثها؟ هل تذكر خساراتها؟": "Check any signals channel before you subscribe: send me its link or username now, like @channel or t.me/channel, and within seconds I'll send you a free report: is its audience real? Does it post its trades before they happen? Does it mention its losses?",
+    "افحص من الموقع": "Check on the website"
 }

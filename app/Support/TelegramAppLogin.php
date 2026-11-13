@@ -147,13 +147,18 @@ class TelegramAppLogin
                 ]],
             ]);
         } elseif (preg_match('/^\/start\s+ads_([a-z0-9]{1,20})$/', trim($text), $m)) {
-            // Telegram Ads may only link to Telegram, so its ads open this bot; the button carries the ad's name to the site's analytics
+            // Telegram Ads may only link to Telegram, so its ads open this bot; the button carries the ad's name to the site's analytics.
+            // A "check" ad (ads_check…) is answered with the check itself: the visitor sends a link right here (ChannelCheckBot)
+            $check = str_starts_with($m[1], 'check');
             self::api('sendMessage', [
                 'chat_id' => $chatId,
-                'text' => __('👋 أهلاً بك في :site.', ['site' => config('app.name')])."\n\n"
-                    .__('جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.'),
+                'text' => __('👋 أهلاً بك في :site.', ['site' => config('app.name')])."\n\n".($check
+                    ? __('افحص أي قناة توصيات قبل أن تشترك: أرسل لي الآن رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك خلال ثوانٍ تقريراً مجانياً: هل جمهورها حقيقي؟ هل تنشر صفقاتها قبل حدوثها؟ هل تذكر خساراتها؟')
+                    : __('جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.')),
                 'reply_markup' => ['inline_keyboard' => [
-                    [['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
+                    [$check
+                        ? ['text' => '🔍 '.__('افحص من الموقع'), 'url' => self::adUrl($m[1])]
+                        : ['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
             ]);
         } elseif (ChannelWatching::handlesList($chatId, $text)) {
@@ -170,13 +175,15 @@ class TelegramAppLogin
         }
     }
 
-    /** The channel list, tagged with the Telegram ad that brought the visitor (t.me/<bot>?start=ads_<name>) */
+    /** The channel list (the channel check, for a "check" ad), tagged with the Telegram ad that brought the visitor (t.me/<bot>?start=ads_<name>) */
     public static function adUrl(string $ad): string
     {
-        return route('providers.index', [
+        $check = str_starts_with($ad, 'check');
+
+        return route($check ? 'channel-check' : 'providers.index', [
             'utm_source' => 'telegram',
             'utm_medium' => 'paid',
-            'utm_campaign' => 'rate_test',
+            'utm_campaign' => $check ? 'check' : 'rate_test',
             'utm_content' => $ad,
         ]);
     }
