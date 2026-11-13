@@ -48,6 +48,28 @@ class ChannelCheckBot
         return true;
     }
 
+    /**
+     * The first message (Start, from an ad or on its own): how the check works, then what following a
+     * channel brings (ChannelWatching's alerts), ending on what to do now. Plain text, so it reads the same everywhere.
+     */
+    public static function welcome(): string
+    {
+        return '👋 '.__('أهلاً بك في :site.', ['site' => config('app.name')])."\n\n"
+            .'🔎 '.__('افحص أي قناة توصيات قبل أن تشترك')."\n"
+            .__('أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، ويصلك خلال ثوانٍ تقرير مجاني:')."\n"
+            .'• '.__('هل جمهورها حقيقي؟')."\n"
+            .'• '.__('هل تنشر صفقاتها قبل حدوثها، أم تعلن «ربحنا» بعدها فقط؟')."\n"
+            .'• '.__('هل تذكر خساراتها؟')."\n\n"
+            .'🔔 '.__('ثم تابعها، وأنبّهك هنا إذا:')."\n"
+            .'• '.__('حذفت منشورات أو صفقات')."\n"
+            .'• '.__('غيّرت اسمها')."\n"
+            .'• '.__('قفز عدد مشتركيها فجأة')."\n"
+            .'• '.__('نُشر عنها تقييم جديد')."\n"
+            .'• '.__('ظهر حساب ينتحل اسمها')."\n\n"
+            .__('القناة ليست على المنصة بعد؟ أضفها للمراقبة من التقرير، فنبدأ متابعتها يومياً بعد مراجعتها، ثم يمكنك متابعتها هنا.')."\n\n"
+            .'👇 '.__('أرسل رابط القناة الآن.');
+    }
+
     public static function help(): string
     {
         return '🔎 '.__('افحص أي قناة توصيات قبل أن تشترك: أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك تقريراً مجانياً عنها.')

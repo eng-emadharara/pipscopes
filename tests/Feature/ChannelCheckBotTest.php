@@ -118,7 +118,7 @@ class ChannelCheckBotTest extends TestCase
         $this->assertSame(ChannelCheckBot::help(), $this->sent('sendMessage')->last()['text']);
 
         $this->message('/start');
-        $this->assertStringContainsString(ChannelCheckBot::help(), $this->sent('sendMessage')->last()['text']);
+        $this->assertSame(ChannelCheckBot::welcome(), $this->sent('sendMessage')->last()['text']);
         $this->assertCount(0, $this->sent('sendPhoto'));
     }
 

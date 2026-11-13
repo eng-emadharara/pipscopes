@@ -631,7 +631,6 @@
     "🔐 طلب دخول إلى موقع :site": "🔐 Sign-in request for :site",
     "اضغط «تأكيد الدخول» فقط إذا طلبته أنت الآن من جهازك. إذا أرسل لك أحد هذا الرابط فاضغط «إلغاء».": "Press \"Confirm sign-in\" only if you just asked for it on your device. If someone sent you this link, press \"Cancel\".",
     "تأكيد الدخول": "Confirm sign-in",
-    "أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.": "Welcome to :site. Your notifications from the site will arrive here.",
     "👋 أهلاً بك في :site.": "👋 Welcome to :site.",
     "جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.": "Tried a signals channel? Find it and review it for free, and you can hide your name. Your experience could protect a trader before they pay.",
     "قيّم قناة": "Review a channel",
@@ -969,6 +968,16 @@
     "قناة «:name» حذفت منشوراً واحداً.": "\":name\" deleted a post.",
     "قناة «:name» حذفت منشورين.": "\":name\" deleted 2 posts.",
     "قناة «:name» حذفت :n منشورات.": "\":name\" deleted :n posts.",
-    "افحص أي قناة توصيات قبل أن تشترك: أرسل لي الآن رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك خلال ثوانٍ تقريراً مجانياً: هل جمهورها حقيقي؟ هل تنشر صفقاتها قبل حدوثها؟ هل تذكر خساراتها؟": "Check any signals channel before you subscribe: send me its link or username now, like @channel or t.me/channel, and within seconds I'll send you a free report: is its audience real? Does it post its trades before they happen? Does it mention its losses?",
-    "افحص من الموقع": "Check on the website"
+    "افحص من الموقع": "Check on the website",
+    "أهلاً بك في :site.": "Welcome to :site.",
+    "أرسل لي رابطها أو معرّفها، مثل @channel أو t.me/channel، ويصلك خلال ثوانٍ تقرير مجاني:": "Send me its link or username, like @channel or t.me/channel, and within seconds you'll get a free report:",
+    "هل تنشر صفقاتها قبل حدوثها، أم تعلن «ربحنا» بعدها فقط؟": "Does it post its trades before they happen, or only announce \"we won\" afterwards?",
+    "ثم تابعها، وأنبّهك هنا إذا:": "Then follow it, and I'll alert you here if:",
+    "حذفت منشورات أو صفقات": "it deletes posts or trades",
+    "غيّرت اسمها": "it changes its name",
+    "قفز عدد مشتركيها فجأة": "its subscribers jump suddenly",
+    "نُشر عنها تقييم جديد": "a new review of it is posted",
+    "ظهر حساب ينتحل اسمها": "an account impersonating it appears",
+    "القناة ليست على المنصة بعد؟ أضفها للمراقبة من التقرير، فنبدأ متابعتها يومياً بعد مراجعتها، ثم يمكنك متابعتها هنا.": "Channel not on the platform yet? Add it for monitoring from the report: we start following it daily once it's reviewed, and then you can follow it here.",
+    "أرسل رابط القناة الآن.": "Send the channel's link now."
 }

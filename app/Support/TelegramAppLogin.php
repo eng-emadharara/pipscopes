@@ -148,13 +148,14 @@ class TelegramAppLogin
             ]);
         } elseif (preg_match('/^\/start\s+ads_([a-z0-9]{1,20})$/', trim($text), $m)) {
             // Telegram Ads may only link to Telegram, so its ads open this bot; the button carries the ad's name to the site's analytics.
-            // A "check" ad (ads_check…) is answered with the check itself: the visitor sends a link right here (ChannelCheckBot)
+            // A "check" ad (ads_check…) is answered with the check itself: how it works and what following brings (ChannelCheckBot)
             $check = str_starts_with($m[1], 'check');
             self::api('sendMessage', [
                 'chat_id' => $chatId,
-                'text' => __('👋 أهلاً بك في :site.', ['site' => config('app.name')])."\n\n".($check
-                    ? __('افحص أي قناة توصيات قبل أن تشترك: أرسل لي الآن رابطها أو معرّفها، مثل @channel أو t.me/channel، وسأرسل لك خلال ثوانٍ تقريراً مجانياً: هل جمهورها حقيقي؟ هل تنشر صفقاتها قبل حدوثها؟ هل تذكر خساراتها؟')
-                    : __('جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.')),
+                'text' => $check
+                    ? ChannelCheckBot::welcome()
+                    : __('👋 أهلاً بك في :site.', ['site' => config('app.name')])."\n\n"
+                        .__('جرّبت قناة توصيات؟ ابحث عنها واكتب تقييمك مجاناً، ويمكنك إخفاء اسمك. تجربتك قد تحمي متداولاً قبل أن يدفع.'),
                 'reply_markup' => ['inline_keyboard' => [
                     [$check
                         ? ['text' => '🔍 '.__('افحص من الموقع'), 'url' => self::adUrl($m[1])]
@@ -168,8 +169,7 @@ class TelegramAppLogin
         } elseif (ChannelCheckBot::handles($chatId, $text)) {
             // A channel link or @name: the report goes out once Telegram has its answer (ChannelCheckBot)
         } elseif (str_starts_with(trim($text), '/start')) {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => __('أهلاً بك في :site. ستصلك هنا إشعاراتك من الموقع.', ['site' => config('app.name')])
-                ."\n\n".ChannelCheckBot::help()]);
+            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::welcome()]);
         } else {
             self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help()]);
         }

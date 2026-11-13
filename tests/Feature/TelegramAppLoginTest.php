@@ -89,7 +89,7 @@ class TelegramAppLoginTest extends TestCase
         Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => []])]);
         $this->webhook(['message' => ['text' => '/start ads_check1', 'chat' => ['id' => 777, 'type' => 'private'], 'from' => ['id' => 777]]])->assertOk();
         Http::assertSent(fn ($request) => str_contains($request->url(), 'sendMessage')
-            && str_contains($request['text'], 'أرسل لي الآن رابطها')
+            && str_contains($request['text'], 'ثم تابعها، وأنبّهك هنا إذا:')
             && ! str_contains($request['text'], 'جرّبت قناة توصيات')
             && $request['reply_markup']['inline_keyboard'][0][0]['url']
                 === route('channel-check').'?utm_source=telegram&utm_medium=paid&utm_campaign=check&utm_content=check1');
