@@ -108,7 +108,10 @@ class TelegramAppLogin
         rescue(fn () => self::api('setMyCommands', ['commands' => [
             ['command' => 'channels', 'description' => 'القنوات التي أتابعها'],
             ['command' => 'start', 'description' => 'كيف أفحص قناة توصيات'],
+            ['command' => 'scam', 'description' => 'نُصب عليّ، ماذا أفعل؟'],
         ]]), report: false);
+        // What it says about itself before Start, and on its profile (BotMenu)
+        rescue(fn () => BotMenu::register(), report: false);
     }
 
     public static function disable(): void
@@ -162,6 +165,11 @@ class TelegramAppLogin
                         : ['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
             ]);
+        } elseif (preg_match('/^(\/scam(@\w+)?|نصب)$/u', trim($text))) {
+            // "/scam": where to start after being scammed (ScamHelpController)
+            BotMenu::scam($chatId);
+        } elseif (BotMenu::handles($chatId, $text)) {
+            // One of the keyboard buttons under the message box (BotMenu)
         } elseif (ChannelWatching::handlesList($chatId, $text)) {
             // "/channels": what this chat follows (ChannelWatching)
         } elseif (ChannelWatching::handlesStart($chatId, $text)) {
@@ -169,9 +177,10 @@ class TelegramAppLogin
         } elseif (ChannelCheckBot::handles($chatId, $text)) {
             // A channel link or @name: the report goes out once Telegram has its answer (ChannelCheckBot)
         } elseif (str_starts_with(trim($text), '/start')) {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::welcome()]);
+            BotMenu::welcome($chatId);
         } else {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help()]);
+            // Anything else: what the bot does, with the keyboard (members from before it existed get it here)
+            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help(), 'reply_markup' => BotMenu::keyboard()]);
         }
     }
 

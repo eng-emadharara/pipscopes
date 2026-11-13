@@ -117,9 +117,60 @@ class ChannelCheckBotTest extends TestCase
         $this->message('مرحبا');
         $this->assertSame(ChannelCheckBot::help(), $this->sent('sendMessage')->last()['text']);
 
+        // Start: the welcome with the site under it, then the keyboard (BotMenu)
         $this->message('/start');
-        $this->assertSame(ChannelCheckBot::welcome(), $this->sent('sendMessage')->last()['text']);
+        $this->assertSame(ChannelCheckBot::welcome(), $this->sent('sendMessage')->slice(-2, 1)->first()['text']);
+        $this->assertTrue($this->sent('sendMessage')->last()['reply_markup']['is_persistent']);
         $this->assertCount(0, $this->sent('sendPhoto'));
+    }
+
+    public function test_the_keyboard_buttons_answer_with_the_site(): void
+    {
+        $this->fakeTelegram();
+        $labels = \App\Support\BotMenu::labels();
+
+        // Anything unknown answers with the keyboard, so members from before it get it too
+        $this->message('مرحبا');
+        $this->assertSame($labels['check'], $this->sent('sendMessage')->last()['reply_markup']['keyboard'][0][0]['text']);
+
+        $this->message($labels['check']);
+        $this->assertStringContainsString('t.me/channel', $this->sent('sendMessage')->last()['text']);
+
+        $this->message($labels['scam']);
+        $scam = $this->sent('sendMessage')->last();
+        $this->assertStringStartsWith(route('scam-help'), $scam['reply_markup']['inline_keyboard'][0][0]['url']);
+        $this->assertStringStartsWith(route('scam-reports.create'), $scam['reply_markup']['inline_keyboard'][1][0]['url']);
+
+        $this->message($labels['channels']);
+        $this->assertStringContainsString(__('لا تتابع أي قناة بعد.'), $this->sent('sendMessage')->last()['text']);
+
+        $this->message($labels['tools']);
+        $this->assertStringStartsWith(route('tools.money-management'), $this->sent('sendMessage')->last()['reply_markup']['inline_keyboard'][0][0]['url']);
+
+        // None of them was taken for a channel to check
+        $this->assertCount(0, $this->sent('sendPhoto'));
+    }
+
+    public function test_a_worrying_report_offers_to_report_a_scam(): void
+    {
+        $this->assertTrue(ChannelCheckBot::worrying(['cards' => ['engagement' => ['level' => 'bad']]]));
+        $this->assertFalse(ChannelCheckBot::worrying(['cards' => ['engagement' => ['level' => 'good'], 'age' => ['level' => 'warn']]]));
+        $this->assertTrue(ChannelCheckBot::worrying(['cards' => [], 'scam_cases' => collect([new \App\Models\ScamCase])]));
+
+        $this->fakeTelegram();
+        $this->message('t.me/lowviews');
+        $buttons = collect($this->sent('sendPhoto')->last()['reply_markup']['inline_keyboard'])->flatten(1);
+        $this->assertTrue($buttons->contains(fn ($b) => str_starts_with($b['url'] ?? '', route('scam-reports.create', ['account' => '@lowviews']))));
+    }
+
+    public function test_turning_the_bot_on_sets_its_description(): void
+    {
+        Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => ['url' => '', 'username' => 'PipScopesBot']])]);
+        TelegramAppLogin::enable();
+
+        $this->assertStringContainsString('نُصب عليك', $this->sent('setMyDescription')->first()['description']);
+        $this->assertLessThanOrEqual(120, mb_strlen($this->sent('setMyShortDescription')->first()['short_description']));
+        $this->assertContains('scam', collect($this->sent('setMyCommands')->first()['commands'])->pluck('command')->all());
     }
 
     public function test_the_check_page_points_to_the_bot(): void

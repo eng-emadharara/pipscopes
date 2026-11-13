@@ -187,6 +187,18 @@
         </div>
     @endif
 
+    {{-- Published scam cases about the channel itself (App\Models\ScamCase) --}}
+    @foreach (\App\Models\ScamCase::published()->where('provider_id', $provider->id)->get() as $scamCase)
+        <div class="border-b border-red-200 bg-red-50" data-provider-scam-case>
+            <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm text-red-800">
+                <span aria-hidden="true">🚨</span>
+                <strong>{{ trans_choice('بلاغات نصب موثّقة عن هذه القناة: :count', $scamCase->reports_count, ['count' => $scamCase->reports_count]) }}</strong>
+                <span>{{ __('راجعها فريقنا مع إثباتاتها.') }}</span>
+                <a href="{{ route('scam-cases.show', $scamCase) }}" class="font-semibold underline">{{ __('اطّلع على الملف') }}</a>
+            </div>
+        </div>
+    @endforeach
+
     {{-- The tabs cover the whole grid: on phones and tablets the sidebar is the "about" tab; from lg up it's always beside them --}}
     <div class="mx-auto grid max-w-6xl grid-cols-1 gap-5 px-4 py-5 md:gap-6 md:py-8 lg:grid-cols-[1fr_320px] lg:grid-rows-[auto_1fr]" data-tabs data-tabs-url>
         @php

@@ -76,7 +76,22 @@ class ChannelReport
             // Our own indicators, when we've been following it (deletions and the rest)
             'followed' => $listed ? TelegramInsights::for($provider) : [],
             'pending' => ! $provider && SubmissionLinks::pendingSubmission($channel['url']),
+            // Published scam cases about this channel (by its link, or as the listed channel)
+            'scam_cases' => self::scamCases($channel['username'] ?? null, $provider?->id),
         ];
+    }
+
+    /** @return \Illuminate\Support\Collection<int, \App\Models\ScamCase> */
+    public static function scamCases(?string $username, ?int $providerId)
+    {
+        if (! $username && ! $providerId) {
+            return collect();
+        }
+
+        return \App\Models\ScamCase::published()
+            ->where(fn ($q) => $q->when($username, fn ($q) => $q->orWhereRaw('lower(target_key) = ?', ['telegram:'.strtolower($username)]))
+                ->when($providerId, fn ($q) => $q->orWhere('provider_id', $providerId)))
+            ->get();
     }
 
     /**

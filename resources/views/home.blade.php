@@ -58,6 +58,12 @@
                             <x-ui-icon name="search" class="h-4 w-4 shrink-0" /> {{ __('تصفح جميع القنوات') }}
                         </a>
                     </div>
+                    {{-- Scammed already: straight to the report (ScamHelpController) --}}
+                    <a href="{{ route('scam-reports.create') }}" data-hero-scam
+                       data-track="scam_report_start" data-track-params='{"location":"hero"}'
+                       class="btn mt-2 w-full border border-red-400/40 bg-red-500/10 px-6 py-2.5 text-red-100 hover:bg-red-500/20">
+                        🚨 {{ __('نُصب عليك؟ قدّم بلاغاً') }}
+                    </a>
                 </div>
             @endunless
 

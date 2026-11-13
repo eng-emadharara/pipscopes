@@ -168,6 +168,7 @@
             $prelaunch ? null : [route('providers.index'), __('تصفح مقدمي الخدمة'), request()->routeIs('providers.index', 'categories.show')],
             $prelaunch ? null : [route('channel-check'), __('افحص قناة'), request()->routeIs('channel-check')],
             [route('tools.index'), __('أدوات المتداول'), request()->routeIs('tools.*')],
+            [route('scam-help'), __('نُصب عليك؟'), request()->routeIs('scam-help', 'scam-reports.create')],
             [route('submissions.create'), __('أضف مقدم خدمة'), request()->routeIs('submissions.*')],
             ...$navPages->where('show_in_header', true)->map(fn ($p) => [$p->url(), $p->tr('title'), url()->current() === $p->url()])->all(),
         ]);
@@ -197,6 +198,9 @@
                     @if (auth()->user()->isVerifiedMember())
                         <a href="{{ route('profile.edit') }}" class="{{ $menuLink }}">{{ __('ملفي الشخصي') }}</a>
                         <a href="{{ route('notifications.edit') }}" class="{{ $menuLink }}">{{ __('إعدادات الإشعارات') }}</a>
+                        @if (\App\Models\ScamReport::where('user_id', auth()->id())->exists())
+                            <a href="{{ route('scam-reports.index') }}" class="{{ $menuLink }}">{{ __('بلاغاتي') }}</a>
+                        @endif
                         @if (auth()->user()->is_admin)
                             <a href="{{ url('/admin') }}" class="{{ $menuLink }}">{{ __('لوحة التحكم') }}</a>
                         @endif
@@ -327,6 +331,7 @@
                         <li><a href="{{ route('channel-compare') }}" class="hover:text-white">{{ __('قارن بين قناتين') }}</a></li>
                     @endunless
                     <li><a href="{{ route('tools.index') }}" class="hover:text-white">{{ __('أدوات المتداول') }}</a></li>
+                    <li><a href="{{ route('scam-help') }}" class="hover:text-white">{{ __('نُصب عليك؟ ماذا تفعل') }}</a></li>
                     <li><a href="{{ route('submissions.create') }}" class="hover:text-white">{{ __('أرسل بيانات مقدم خدمة') }}</a></li>
                     @if (\App\Models\Setting::get('owner_portal_enabled', false))
                         <li><a href="{{ route('owner.login') }}" class="hover:text-white">{{ __('دخول أصحاب القنوات') }}</a></li>

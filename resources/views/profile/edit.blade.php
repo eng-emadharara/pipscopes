@@ -223,6 +223,19 @@
                         <span class="inline-block text-gray-400 rtl:rotate-180">→</span>
                     </a>
 
+                    {{-- Scam reports (App\Http\Controllers\ScamHelpController) --}}
+                    <a href="{{ route('scam-reports.index') }}" class="card flex items-center gap-3 p-5 transition hover:border-gray-400" data-profile-scam-reports>
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-red-50 text-red-600"><x-ui-icon name="alert" class="h-5 w-5" /></span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block font-bold">{{ __('بلاغاتي') }}</span>
+                            <span class="block text-xs text-gray-500">
+                                @php($scamReports = \App\Models\ScamReport::where('user_id', auth()->id())->count())
+                                {{ $scamReports ? trans_choice('لديك :count بلاغ، تابع ما يحدث فيه', $scamReports, ['count' => $scamReports]) : __('نُصب عليك؟ قدّم بلاغاً وتابعه من هنا') }}
+                            </span>
+                        </span>
+                        <span class="inline-block text-gray-400 rtl:rotate-180">→</span>
+                    </a>
+
                     <section class="card p-5">
                         <div class="font-bold">{{ __('الأجهزة') }}</div>
                         <p class="mt-1 text-xs leading-relaxed text-gray-500">
