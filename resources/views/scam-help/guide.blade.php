@@ -13,6 +13,14 @@
             <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-gray-300 md:text-lg">
                 {{ __('لست وحدك، وليس الذنب ذنبك. اختر ما حدث معك وكيف دفعت، ونعطيك خطوات واضحة تبدأ بها الآن.') }}
             </p>
+            {{-- Reporting is offered right away, not only under the steps --}}
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3" data-scam-hero-actions>
+                <a href="{{ $reportUrl }}" class="btn-primary" data-scam-report-link>🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
+                @auth
+                    <a href="{{ route('scam-reports.index') }}" class="btn border border-white/30 text-white hover:bg-white/10">{{ __('بلاغاتي') }}</a>
+                @endauth
+            </div>
+            <p class="mt-3 text-xs text-gray-400">{{ __('بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.') }}</p>
         </div>
     </section>
 
@@ -55,7 +63,10 @@
 
         @if ($advice)
             <section id="advice" class="scroll-mt-4 space-y-4" data-scam-advice>
-                <h2 class="text-2xl font-bold">{{ __('ماذا تفعل الآن') }}</h2>
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="text-2xl font-bold">{{ __('ماذا تفعل الآن') }}</h2>
+                    <a href="{{ $reportUrl }}" class="btn-primary">🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
+                </div>
                 <ol class="space-y-3">
                     @foreach ($advice as $i => $step)
                         <li @class(['card flex items-start gap-4 p-5', 'border-red-200 bg-red-50/60' => $step['urgent']]) data-step="{{ $step['key'] }}">

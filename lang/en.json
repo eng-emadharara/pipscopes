@@ -1162,5 +1162,6 @@
     "انضم بلاغك إلى ملف :target، وفيه الآن :count بلاغ مؤكد.": "{1} Your report joined the :target case, which now has :count confirmed report.|[2,*] Your report joined the :target case, which now has :count confirmed reports.",
     "في الملف :count بلاغ مؤكد": "{1} :count confirmed report in the case|[2,*] :count confirmed reports in the case",
     ":count بلاغ نصب موثّق عن :target على :app. اطّلع عليها قبل أن تتعامل معه.": "{1} :count verified scam report about :target on :app. Read it before dealing with them.|[2,*] :count verified scam reports about :target on :app. Read them before dealing with them.",
-    "بلاغات نصب موثّقة عن هذه القناة: :count": "Verified scam reports about this channel: :count"
+    "بلاغات نصب موثّقة عن هذه القناة: :count": "Verified scam reports about this channel: :count",
+    "بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.": "Your report is gathered with others about the same party, and we try to act on it."
 }
