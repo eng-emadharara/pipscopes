@@ -1163,5 +1163,8 @@
     "في الملف :count بلاغ مؤكد": "{1} :count confirmed report in the case|[2,*] :count confirmed reports in the case",
     ":count بلاغ نصب موثّق عن :target على :app. اطّلع عليها قبل أن تتعامل معه.": "{1} :count verified scam report about :target on :app. Read it before dealing with them.|[2,*] :count verified scam reports about :target on :app. Read them before dealing with them.",
     "بلاغات نصب موثّقة عن هذه القناة: :count": "Verified scam reports about this channel: :count",
-    "بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.": "Your report is gathered with others about the same party, and we try to act on it."
+    "بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.": "Your report is gathered with others about the same party, and we try to act on it.",
+    "نُصب عليك؟ قدّم بلاغاً": "Scammed? Report it",
+    "نُصب عليك؟ قدّم بلاغاً وتابعه من هنا": "Scammed? Report it and follow it from here",
+    "لديك :count بلاغ، تابع ما يحدث فيه": "{1} You have :count report. See what is happening with it|[2,*] You have :count reports. See what is happening with them"
 }
