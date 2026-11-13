@@ -110,6 +110,8 @@ class TelegramAppLogin
             ['command' => 'start', 'description' => 'كيف أفحص قناة توصيات'],
             ['command' => 'scam', 'description' => 'نُصب عليّ، ماذا أفعل؟'],
         ]]), report: false);
+        // What it says about itself before Start, and on its profile (BotMenu)
+        rescue(fn () => BotMenu::register(), report: false);
     }
 
     public static function disable(): void
@@ -165,13 +167,9 @@ class TelegramAppLogin
             ]);
         } elseif (preg_match('/^(\/scam(@\w+)?|نصب)$/u', trim($text))) {
             // "/scam": where to start after being scammed (ScamHelpController)
-            self::api('sendMessage', [
-                'chat_id' => $chatId,
-                'text' => '🛟 '.__('نُصب عليك من قناة توصيات أو حساب على تيليجرام؟')."\n\n"
-                    .__('أوقف أي تحويل جديد، واحفظ صور المحادثات والإيصالات الآن. ثم افتح الصفحة لتعرف خطواتك حسب ما حدث وطريقة دفعك، وبلّغ حتى نجمع بلاغك مع بلاغات الآخرين عن نفس الجهة.')
-                    ."\n\n".__('لا نطلب منك أي مبلغ، وأي شخص يعدك باسترجاع أموالك مقابل رسوم فهو نصاب.'),
-                'reply_markup' => ['inline_keyboard' => [[['text' => '🛟 '.__('ماذا أفعل الآن؟'), 'url' => route('scam-help')]]]],
-            ]);
+            BotMenu::scam($chatId);
+        } elseif (BotMenu::handles($chatId, $text)) {
+            // One of the keyboard buttons under the message box (BotMenu)
         } elseif (ChannelWatching::handlesList($chatId, $text)) {
             // "/channels": what this chat follows (ChannelWatching)
         } elseif (ChannelWatching::handlesStart($chatId, $text)) {
@@ -179,9 +177,10 @@ class TelegramAppLogin
         } elseif (ChannelCheckBot::handles($chatId, $text)) {
             // A channel link or @name: the report goes out once Telegram has its answer (ChannelCheckBot)
         } elseif (str_starts_with(trim($text), '/start')) {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::welcome()]);
+            BotMenu::welcome($chatId);
         } else {
-            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help()]);
+            // Anything else: what the bot does, with the keyboard (members from before it existed get it here)
+            self::api('sendMessage', ['chat_id' => $chatId, 'text' => ChannelCheckBot::help(), 'reply_markup' => BotMenu::keyboard()]);
         }
     }
 

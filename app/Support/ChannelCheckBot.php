@@ -99,7 +99,10 @@ class ChannelCheckBot
             $real = $report['impersonators']->first()?->provider;
             self::send($chatId, '⚠️ '.__('تحذير: هذا حساب منتحل معروف')."\n\n"
                 .__('هذا الحساب ينتحل اسم «:name». لا ترسل له أموالاً ولا تشترك من خلاله.', ['name' => $real?->name]),
-                $real ? [['⭐ '.__('القناة الأصلية على :app', ['app' => config('app.name')]), route('providers.show', $real)]] : []);
+                array_values(array_filter([
+                    $real ? ['⭐ '.__('القناة الأصلية على :app', ['app' => config('app.name')]), route('providers.show', $real)] : null,
+                    ['🛟 '.__('أرسلت له مالاً؟ ماذا أفعل'), route('scam-help', ['type' => 'impersonator', 'utm_source' => 'telegram', 'utm_medium' => 'bot'])],
+                ])));
 
             return;
         }
@@ -117,10 +120,21 @@ class ChannelCheckBot
             $report['trading'] === TradingChannel::NOT_TRADING => [['📄 '.__('التقرير الكامل'), $url]],
             default => [['📄 '.__('التقرير الكامل وإضافتها للمراقبة'), $url]],
         };
+        // A worrying report: a way to report it, with the channel already filled in (ScamHelpController)
+        if (self::worrying($report)) {
+            $buttons[] = ['🛟 '.__('نُصب عليك من هذه القناة؟'), route('scam-reports.create', ['account' => '@'.$channel['username'], 'utm_source' => 'telegram', 'utm_medium' => 'bot'])];
+        }
 
         self::send($chatId, self::caption($report), $buttons, route('share-images.check', ['ar', $channel['username']]),
             // A channel on the platform can be followed right here (ChannelWatching)
             $report['provider'] ? ['🔔 '.__('تابع تنبيهات هذه القناة'), 'w:on:'.$report['provider']->id] : null);
+    }
+
+    /** Published scam reports about it, or at least one indicator in the red */
+    public static function worrying(array $report): bool
+    {
+        return collect($report['scam_cases'] ?? [])->isNotEmpty()
+            || collect(($report['cards'] ?? []) + ($report['followed'] ?? []))->contains(fn ($card) => ($card['level'] ?? null) === 'bad');
     }
 
     /** The report as text, the indicators one per line (under Telegram's 1024-character caption limit) */
@@ -146,6 +160,11 @@ class ChannelCheckBot
 
         if (! ($report['preview'] ?? false)) {
             $lines[] = __('صاحب القناة أغلق معاينة المنشورات للعامة، لذلك لا يمكن قياس التفاعل والنشاط. نعرض بيانات القناة الأساسية فقط.');
+        }
+
+        if ($scamReports = collect($report['scam_cases'] ?? [])->sum('reports_count')) {
+            $lines[] = '';
+            $lines[] = '🚨 '.__('بلاغات نصب موثّقة عن هذه القناة: :count', ['count' => $scamReports]);
         }
 
         if ($report['provider'] ?? null) {

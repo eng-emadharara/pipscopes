@@ -1166,5 +1166,12 @@
     "بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.": "Your report is gathered with others about the same party, and we try to act on it.",
     "نُصب عليك؟ قدّم بلاغاً": "Scammed? Report it",
     "نُصب عليك؟ قدّم بلاغاً وتابعه من هنا": "Scammed? Report it and follow it from here",
-    "لديك :count بلاغ، تابع ما يحدث فيه": "{1} You have :count report. See what is happening with it|[2,*] You have :count reports. See what is happening with them"
+    "لديك :count بلاغ، تابع ما يحدث فيه": "{1} You have :count report. See what is happening with it|[2,*] You have :count reports. See what is happening with them",
+    "أرسل لي رابط القناة أو معرّفها، مثل @channel أو t.me/channel، ويصلك تقرير مجاني خلال ثوانٍ.": "Send me the channel's link or @name, like @channel or t.me/channel, and get a free report in seconds.",
+    "أدوات مجانية للمتداول على :site:": "Free trader tools on :site:",
+    "قدّم بلاغاً": "Report it",
+    "افحص قناة من الموقع": "Check a channel on the site",
+    "أو استخدم الأزرار تحت للوصول السريع.": "Or use the buttons below for quick access.",
+    "أرسلت له مالاً؟ ماذا أفعل": "Sent them money? What to do",
+    "نُصب عليك من هذه القناة؟": "Scammed by this channel?"
 }

@@ -97,7 +97,7 @@ class TelegramAppLoginTest extends TestCase
         // Anything else after ads_ gets the plain welcome, and nothing signs in
         Http::fake(['api.telegram.org/*' => Http::response(['ok' => true, 'result' => []])]);
         $this->webhook(['message' => ['text' => '/start ads_<b>', 'chat' => ['id' => 777, 'type' => 'private'], 'from' => ['id' => 777]]])->assertOk();
-        Http::assertSent(fn ($request) => str_contains($request->url(), 'sendMessage') && ! isset($request['reply_markup']));
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'sendMessage') && $request['text'] === \App\Support\ChannelCheckBot::welcome());
         $this->assertGuest();
     }
 
