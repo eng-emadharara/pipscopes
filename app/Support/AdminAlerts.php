@@ -119,6 +119,42 @@ class AdminAlerts
         ));
     }
 
+    public static function scamReport(\App\Models\ScamReport $report): void
+    {
+        $case = $report->scamCase;
+
+        self::send(fn () => self::message(
+            '🚨', 'بلاغ نصب جديد',
+            [
+                '🎯 الجهة' => $case ? '<code>'.self::e($case->target_display).'</code>' : null,
+                '🧩 النوع' => self::e(\App\Support\ScamHelp::types()[$report->scam_type][1] ?? $report->scam_type),
+                '💸 المبلغ' => self::e($report->amountLabel()),
+                '💳 الدفع' => self::e(\App\Support\ScamHelp::payments()[$report->payment_method] ?? null),
+                '📎 الإثباتات' => (string) count($report->proofs ?? []),
+                '📁 بلاغات الملف' => $case ? (string) $case->reports()->count() : null,
+                '🙋 المُبلِّغ' => self::bold($report->user?->name),
+            ],
+            self::quote($report->story, 500, 'ماذا حدث'),
+            '#بلاغ_نصب',
+            ['🔍 مراجعة البلاغ', \App\Filament\Resources\ScamReportResource::getUrl('view', ['record' => $report])],
+        ));
+    }
+
+    public static function scamCaseReady(\App\Models\ScamCase $case): void
+    {
+        self::send(fn () => self::message(
+            '📁', 'ملف نصب جاهز للتحرك',
+            [
+                '🎯 الجهة' => '<code>'.self::e($case->target_display).'</code>',
+                '📊 البلاغات المؤكدة' => (string) $case->reports_count,
+                '💸 مجموع الخسائر' => '$'.number_format((float) $case->total_usd),
+            ],
+            'وصل الملف إلى '.\App\Support\ScamHelp::ACT_AT.' بلاغات مؤكدة. وعدنا المبلّغين بأن نحاول التحرك: أبلغوا تيليجرام أو الجهة المختصة وسجّلوا الإجراء في الملف.',
+            '#ملف_نصب',
+            ['📁 فتح الملف', \App\Filament\Resources\ScamCaseResource::getUrl('edit', ['record' => $case])],
+        ));
+    }
+
     public static function contact(ContactMessage $message): void
     {
         $deletion = $message->subject === 'account_deletion';

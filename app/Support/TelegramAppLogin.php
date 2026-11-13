@@ -108,6 +108,7 @@ class TelegramAppLogin
         rescue(fn () => self::api('setMyCommands', ['commands' => [
             ['command' => 'channels', 'description' => 'القنوات التي أتابعها'],
             ['command' => 'start', 'description' => 'كيف أفحص قناة توصيات'],
+            ['command' => 'scam', 'description' => 'نُصب عليّ، ماذا أفعل؟'],
         ]]), report: false);
     }
 
@@ -161,6 +162,15 @@ class TelegramAppLogin
                         ? ['text' => '🔍 '.__('افحص من الموقع'), 'url' => self::adUrl($m[1])]
                         : ['text' => '⭐ '.__('قيّم قناة'), 'url' => self::adUrl($m[1])]],
                 ]],
+            ]);
+        } elseif (preg_match('/^(\/scam(@\w+)?|نصب)$/u', trim($text))) {
+            // "/scam": where to start after being scammed (ScamHelpController)
+            self::api('sendMessage', [
+                'chat_id' => $chatId,
+                'text' => '🛟 '.__('نُصب عليك من قناة توصيات أو حساب على تيليجرام؟')."\n\n"
+                    .__('أوقف أي تحويل جديد، واحفظ صور المحادثات والإيصالات الآن. ثم افتح الصفحة لتعرف خطواتك حسب ما حدث وطريقة دفعك، وبلّغ حتى نجمع بلاغك مع بلاغات الآخرين عن نفس الجهة.')
+                    ."\n\n".__('لا نطلب منك أي مبلغ، وأي شخص يعدك باسترجاع أموالك مقابل رسوم فهو نصاب.'),
+                'reply_markup' => ['inline_keyboard' => [[['text' => '🛟 '.__('ماذا أفعل الآن؟'), 'url' => route('scam-help')]]]],
             ]);
         } elseif (ChannelWatching::handlesList($chatId, $text)) {
             // "/channels": what this chat follows (ChannelWatching)

@@ -46,6 +46,7 @@
             <div class="card border-red-200 bg-red-50 p-6 text-red-800" role="alert">
                 <h2 class="flex items-center gap-2 text-lg font-bold"><x-ui-icon name="alert" class="h-5 w-5" /> {{ __('تحذير: هذا حساب منتحل معروف') }}</h2>
                 <p class="mt-2 text-sm">{{ __('هذا الحساب ينتحل اسم قناة أخرى. لا ترسل له أموالاً ولا تشترك من خلاله.') }}</p>
+                <p class="mt-2 text-sm"><a href="{{ route('scam-help', ['type' => 'impersonator']) }}" class="font-semibold underline">{{ __('أرسلت له مالاً؟ اعرف ماذا تفعل الآن') }}</a></p>
                 <ul class="mt-4 space-y-2 text-sm">
                     @foreach ($report['impersonators'] as $impersonator)
                         <li>{{ __('ينتحل:') }} <a href="{{ route('providers.show', $impersonator->provider) }}" class="font-semibold underline"><bdi>{{ $impersonator->provider->name }}</bdi></a></li>
@@ -89,6 +90,18 @@
                     </div>
                     {{-- No channel description: its own claims ("أقوى قناة"، "نسبة نجاح 95%") could read as our findings --}}
                 </section>
+
+                {{-- Published scam cases about this channel (App\Models\ScamCase) --}}
+                @foreach ($report['scam_cases'] ?? [] as $scamCase)
+                    <section class="card flex flex-wrap items-center gap-3 border-red-200 bg-red-50 p-4 text-sm text-red-800 lg:col-start-1" role="alert" data-report-scam-case>
+                        <span class="text-xl" aria-hidden="true">🚨</span>
+                        <div class="min-w-0 flex-1">
+                            <strong class="block">{{ trans_choice('بلاغات نصب موثّقة عن هذه القناة: :count', $scamCase->reports_count, ['count' => $scamCase->reports_count]) }}</strong>
+                            <span>{{ __('راجعها فريقنا مع إثباتاتها. اطّلع عليها قبل أن تدفع.') }}</span>
+                        </div>
+                        <a href="{{ route('scam-cases.show', $scamCase) }}" class="font-semibold underline">{{ __('اطّلع على الملف') }}</a>
+                    </section>
+                @endforeach
 
                 {{-- The next step: follow it on PipScopes (listed) or add it for monitoring --}}
                 <aside class="lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
@@ -194,7 +207,10 @@
                 @endif
             </div>
 
-            <p class="mt-6 text-center text-xs leading-relaxed text-gray-400">{{ __('التقرير محسوب تلقائياً من بيانات القناة العامة على تيليجرام، وهو ليس نصيحة مالية.') }}</p>
+            <p class="mt-6 text-center text-sm">
+                <a href="{{ route('scam-help') }}" class="font-semibold text-red-700 hover:underline" data-report-scam-help>🛟 {{ __('نُصب عليك من هذه القناة؟ اعرف ماذا تفعل وبلّغ') }}</a>
+            </p>
+            <p class="mt-2 text-center text-xs leading-relaxed text-gray-400">{{ __('التقرير محسوب تلقائياً من بيانات القناة العامة على تيليجرام، وهو ليس نصيحة مالية.') }}</p>
         @endif
     </div>
 </x-layouts.app>

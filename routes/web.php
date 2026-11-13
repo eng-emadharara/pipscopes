@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewFeedbackController;
+use App\Http\Controllers\ScamHelpController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ShareImageController;
@@ -53,6 +54,16 @@ Route::view('/tools/money-management', 'tools.money-management')->name('tools.mo
 Route::view('/tools/lot-size', 'tools.lot-size')->name('tools.lot-size');
 Route::view('/tools/pip-value', 'tools.pip-value')->name('tools.pip-value');
 Route::view('/tools/profit', 'tools.profit')->name('tools.profit');
+// "I was scammed": the guide is open to everyone; reports need a confirmed member (App\Http\Controllers\ScamHelpController)
+Route::get('/scammed', [ScamHelpController::class, 'guide'])->name('scam-help');
+Route::get('/scam-cases/{scamCase}', [ScamHelpController::class, 'showCase'])->name('scam-cases.show');
+Route::middleware(['auth', EnsureEmailIsVerified::class])->group(function () {
+    Route::get('/scammed/report', [ScamHelpController::class, 'create'])->name('scam-reports.create');
+    Route::post('/scammed/report', [ScamHelpController::class, 'store'])->middleware('throttle:5,10')->name('scam-reports.store');
+    Route::get('/my-reports', [ScamHelpController::class, 'index'])->name('scam-reports.index');
+    Route::get('/my-reports/{report}/file', [ScamHelpController::class, 'file'])->name('scam-reports.file');
+    Route::get('/scam-proofs/{report}/{index}', [ScamHelpController::class, 'proof'])->whereNumber('index')->name('scam-reports.proof');
+});
 Route::get('/search/suggest', [SearchController::class, 'suggest'])->middleware('throttle:120,1')->name('search.suggest');
 Route::get('/category/{category}', [ProviderController::class, 'index'])->name('categories.show');
 Route::get('/p/{provider}', [ProviderController::class, 'show'])->name('providers.show');

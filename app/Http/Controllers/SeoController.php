@@ -55,6 +55,11 @@ class SeoController extends Controller
             foreach (['tools.index', 'tools.money-management', 'tools.lot-size', 'tools.pip-value', 'tools.profit'] as $tool) {
                 $urls[] = ['loc' => route($tool), 'priority' => '0.7', 'changefreq' => 'monthly'];
             }
+            // "I was scammed": people search for exactly this; and the published cases
+            $urls[] = ['loc' => route('scam-help'), 'priority' => '0.7', 'changefreq' => 'monthly'];
+            foreach (\App\Models\ScamCase::published()->get(['id', 'updated_at']) as $scamCase) {
+                $urls[] = ['loc' => route('scam-cases.show', $scamCase), 'lastmod' => $scamCase->updated_at, 'priority' => '0.5', 'changefreq' => 'weekly'];
+            }
             foreach (Page::published()->get() as $page) {
                 $urls[] = ['loc' => $page->url(), 'lastmod' => $page->updated_at, 'priority' => '0.4', 'changefreq' => 'monthly'];
             }
