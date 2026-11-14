@@ -6,7 +6,10 @@ use App\Filament\Resources\ScamReportResource\Pages;
 use App\Models\Impersonator;
 use App\Models\ScamCase;
 use App\Models\ScamReport;
+use App\Support\NotificationPrefs;
 use App\Support\ScamHelp;
+use App\Support\ScamReportContact;
+use App\Support\Site;
 use Filament\Forms;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
@@ -67,10 +70,33 @@ class ScamReportResource extends Resource
                 Infolists\Components\TextEntry::make('proofs')->label('الإثباتات (خاصة)')->columnSpanFull()
                     ->state(fn (ScamReport $record) => self::proofsHtml($record)),
             ]),
-            Infolists\Components\Section::make('المُبلِّغ والملف')->columns(3)->schema([
-                Infolists\Components\TextEntry::make('user.name')->label('العضو'),
-                Infolists\Components\TextEntry::make('user.email')->label('البريد')->placeholder('—')->copyable(),
-                Infolists\Components\TextEntry::make('contact')->label('تواصل إضافي')->placeholder('—'),
+            Infolists\Components\Section::make('المُبلِّغ')->columns(3)
+                ->headerActions(self::contactActions(Infolists\Components\Actions\Action::class))
+                ->schema([
+                    Infolists\Components\TextEntry::make('user.name')->label('العضو')
+                        ->url(fn (ScamReport $record) => $record->user ? UserResource::getUrl('index', ['tableSearch' => $record->user->email ?: $record->user->name]) : null),
+                    Infolists\Components\TextEntry::make('user.email')->label('البريد')->placeholder('—')->copyable()
+                        ->url(fn (ScamReport $record) => ($email = ScamReportContact::email($record->user)) ? 'mailto:'.$email : null)
+                        ->extraAttributes(['dir' => 'ltr']),
+                    Infolists\Components\TextEntry::make('telegram')->label('تيليجرام')->placeholder('لم يدخل عبر تيليجرام')
+                        ->state(fn (ScamReport $record) => ($u = ScamReportContact::telegramUsername($record->user)) ? '@'.$u
+                            : ($record->user && NotificationPrefs::telegramChatId($record->user) ? 'بدون اسم مستخدم (يمكن مراسلته عبر البوت)' : null))
+                        ->url(fn (ScamReport $record) => ($u = ScamReportContact::telegramUsername($record->user)) ? 'https://t.me/'.$u : null, true)
+                        ->color(fn (ScamReport $record) => $record->user?->telegram_blocked_at ? 'danger' : null)
+                        ->helperText(fn (ScamReport $record) => $record->user?->telegram_blocked_at ? 'أوقف البوت، لا تصله رسائلنا' : null),
+                    Infolists\Components\TextEntry::make('contact')->label('تواصل إضافي (كتبه في البلاغ)')->placeholder('—')->copyable()
+                        ->url(fn (ScamReport $record) => ScamReportContact::contactUrl($record->contact), true)
+                        ->extraAttributes(['dir' => 'auto']),
+                    Infolists\Components\TextEntry::make('user.created_at')->label('عضو منذ')->date('Y-m-d'),
+                    Infolists\Components\TextEntry::make('user_reports')->label('بلاغاته')
+                        ->state(function (ScamReport $record) {
+                            $all = ScamReport::where('user_id', $record->user_id);
+                            $confirmed = (clone $all)->where('status', ScamReport::STATUS_CONFIRMED)->count();
+
+                            return $all->count().' بلاغ'.($confirmed ? " ({$confirmed} مؤكد)" : '');
+                        }),
+                ]),
+            Infolists\Components\Section::make('الموافقات والملف')->columns(3)->schema([
                 Infolists\Components\IconEntry::make('consent_share')->label('يوافق على المشاركة مع الجهات')->boolean(),
                 Infolists\Components\IconEntry::make('consent_contact')->label('يوافق على التواصل لتحرك جماعي')->boolean(),
                 Infolists\Components\TextEntry::make('scamCase.target_display')->label('الملف')->placeholder('—')
@@ -80,6 +106,46 @@ class ScamReportResource extends Resource
                 Infolists\Components\TextEntry::make('admin_note')->label('ملاحظة للمُبلِّغ')->placeholder('—')->columnSpanFull(),
             ]),
         ]);
+    }
+
+    /**
+     * Reaching the member: their Telegram chat, a message from our bot, and an email (replies come
+     * to the admin who sent it). $class is the Action class of where they're shown.
+     *
+     * @param  class-string  $class
+     */
+    public static function contactActions(string $class): array
+    {
+        $notify = fn (?string $error) => $error
+            ? Notification::make()->title($error)->danger()->send()
+            : Notification::make()->title('أُرسلت الرسالة')->success()->send();
+
+        return [
+            $class::make('openTelegram')->label('محادثة تيليجرام')->icon('heroicon-o-chat-bubble-left-right')->color('info')
+                ->visible(fn (ScamReport $record) => ScamReportContact::telegramUsername($record->user) !== null)
+                ->url(fn (ScamReport $record) => 'https://t.me/'.ScamReportContact::telegramUsername($record->user), true),
+            $class::make('messageBot')->label('رسالة عبر البوت')->icon('heroicon-o-paper-airplane')->color('info')
+                ->visible(fn (ScamReport $record) => ScamReportContact::canMessageOnTelegram($record->user))
+                ->modalHeading('رسالة للعضو من البوت')
+                ->modalDescription('تصله من بوت الموقع، مع زر «بلاغاتي». لا يستطيع الرد عليها عبر البوت، فاطلب منه وسيلة تواصل إن احتجت رده.')
+                ->form([
+                    Forms\Components\Textarea::make('text')->label('الرسالة')->required()->rows(5)->maxLength(3500)
+                        ->placeholder('مثال: نحتاج صورة إيصال الدفع كاملة حتى نؤكد بلاغك.'),
+                ])
+                ->modalSubmitActionLabel('إرسال')
+                ->action(fn (ScamReport $record, array $data) => $notify(ScamReportContact::sendTelegram($record, $data['text']))),
+            $class::make('sendEmail')->label('بريد إلكتروني')->icon('heroicon-o-envelope')->color('gray')
+                ->visible(fn (ScamReport $record) => ScamReportContact::email($record->user) !== null)
+                ->modalHeading(fn (ScamReport $record) => 'بريد إلى '.ScamReportContact::email($record->user))
+                ->modalDescription('يُرسل من بريد الموقع، وإذا ردّ العضو يصلك الرد على بريدك.')
+                ->form([
+                    Forms\Components\TextInput::make('subject')->label('العنوان')->required()->maxLength(150)
+                        ->default(fn () => 'بخصوص بلاغك على '.Site::name('ar')),
+                    Forms\Components\Textarea::make('body')->label('الرسالة')->required()->rows(6)->maxLength(5000),
+                ])
+                ->modalSubmitActionLabel('إرسال')
+                ->action(fn (ScamReport $record, array $data) => $notify(ScamReportContact::sendEmail($record, $data['subject'], $data['body'], auth()->user()?->email))),
+        ];
     }
 
     protected static function proofsHtml(ScamReport $record): HtmlString
@@ -166,6 +232,7 @@ class ScamReportResource extends Resource
                     );
                     Notification::make()->title('أُضيف الحساب لقائمة المنتحلين المؤكدين')->success()->send();
                 }),
+            $table ? Tables\Actions\ActionGroup::make(self::contactActions(Tables\Actions\Action::class))->label('تواصل')->icon('heroicon-o-chat-bubble-left-ellipsis')->button()->color('gray') : null,
             $table ? Tables\Actions\ViewAction::make() : null,
         ]));
     }

@@ -208,6 +208,32 @@ class ScamHelpTest extends TestCase
         $this->assertNotNull($case->fresh()->published_at);
     }
 
+    public function test_the_team_can_reach_the_member_on_telegram_or_by_email(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        \Illuminate\Support\Facades\Http::fake(['api.telegram.org/*' => \Illuminate\Support\Facades\Http::response(['ok' => true, 'result' => []])]);
+        config(['services.telegram.bot_token' => '123456:TEST']);
+        $user = $this->member();
+        $user->socialAccounts()->create(['provider' => 'telegram', 'provider_id' => '5551234', 'nickname' => 'ahmad_trader']);
+        $report = $this->reportFor($user, ['contact' => '+962 79 123 4567']);
+        $admin = User::factory()->create(['is_admin' => true, 'email' => 'team@pipscopes.test']);
+
+        $this->actingAs($admin)->get("/admin/scam-reports/{$report->id}")->assertOk()
+            ->assertSee('https://t.me/ahmad_trader', false)
+            ->assertSee('https://wa.me/962791234567', false)
+            ->assertSee('mailto:'.$user->email, false);
+
+        $this->assertNull(\App\Support\ScamReportContact::sendTelegram($report->fresh(), 'We need the full receipt.'));
+        \Illuminate\Support\Facades\Http::assertSent(fn ($r) => str_ends_with($r->url(), '/sendMessage') && $r['chat_id'] === '5551234'
+            && str_contains($r['text'], 'We need the full receipt.') && str_contains($r['text'], '@goldpro_vip'));
+
+        $this->assertNull(\App\Support\ScamReportContact::sendEmail($report, 'About your report', 'Please send the receipt.', $admin->email));
+        \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\ScamReportMessageMail::class, fn ($m) => $m->hasTo($user->email) && $m->hasReplyTo('team@pipscopes.test'));
+
+        $this->assertSame('https://t.me/someone', \App\Support\ScamReportContact::contactUrl('@someone'));
+        $this->assertNull(\App\Support\ScamReportContact::contactUrl('call me after 5'));
+    }
+
     public function test_admin_pages_render(): void
     {
         $report = $this->reportFor($this->member());
