@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\ScamReport;
 use App\Models\User;
+use App\Support\ScamHelp;
 
 /** The team looked at a member's scam report: confirmed (and joined to its case) or not. */
 class ScamReportReviewed extends MemberNotification
@@ -43,8 +44,8 @@ class ScamReportReviewed extends MemberNotification
         $case = $this->report->scamCase;
 
         return array_values(array_filter([
-            $case ? trans_choice('انضم بلاغك إلى ملف :target، وفيه الآن :count بلاغ مؤكد.', $case->reports_count, [
-                'target' => $case->displayName(), 'count' => $case->reports_count,
+            $case ? __('انضم بلاغك إلى ملف :target، وفيه الآن :reports.', [
+                'target' => $case->displayName(), 'reports' => ScamHelp::confirmedReports($case->reports_count),
             ]) : null,
             __('كلما زادت البلاغات صار تحركنا أقوى. سنخبرك بكل خطوة نقوم بها في هذا الملف.'),
         ]));

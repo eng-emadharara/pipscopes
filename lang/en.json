@@ -1159,8 +1159,6 @@
     "خطوات عاجلة حسب ما حدث وطريقة دفعك، وبلاغ يُجمع مع بلاغات الآخرين.": "Urgent steps based on what happened and how you paid, and a report gathered with others.",
     "بلاغات النصب": "Scam reports",
     "عند مراجعة بلاغك، ومع كل خطوة نقوم بها في الملف الذي انضم إليه.": "When your report is reviewed, and with every step we take on the case it joined.",
-    "انضم بلاغك إلى ملف :target، وفيه الآن :count بلاغ مؤكد.": "{1} Your report joined the :target case, which now has :count confirmed report.|[2,*] Your report joined the :target case, which now has :count confirmed reports.",
-    "في الملف :count بلاغ مؤكد": "{1} :count confirmed report in the case|[2,*] :count confirmed reports in the case",
     ":count بلاغ نصب موثّق عن :target على :app. اطّلع عليها قبل أن تتعامل معه.": "{1} :count verified scam report about :target on :app. Read it before dealing with them.|[2,*] :count verified scam reports about :target on :app. Read them before dealing with them.",
     "بلاغات نصب موثّقة عن هذه القناة: :count": "Verified scam reports about this channel: :count",
     "بلاغك يُجمع مع بلاغات الآخرين عن نفس الجهة، ونحاول التحرك به.": "Your report is gathered with others about the same party, and we try to act on it.",
@@ -1173,5 +1171,11 @@
     "افحص قناة من الموقع": "Check a channel on the site",
     "أو استخدم الأزرار تحت للوصول السريع.": "Or use the buttons below for quick access.",
     "أرسلت له مالاً؟ ماذا أفعل": "Sent them money? What to do",
-    "نُصب عليك من هذه القناة؟": "Scammed by this channel?"
+    "نُصب عليك من هذه القناة؟": "Scammed by this channel?",
+    "بلاغ مؤكد واحد": "1 confirmed report",
+    "بلاغان مؤكدان": "2 confirmed reports",
+    ":n بلاغات مؤكدة": ":n confirmed reports",
+    ":n بلاغاً مؤكداً": ":n confirmed reports",
+    "في الملف :reports": ":reports in the case",
+    "انضم بلاغك إلى ملف :target، وفيه الآن :reports.": "Your report joined the :target case, which now has :reports."
 }

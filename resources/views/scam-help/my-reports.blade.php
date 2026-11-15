@@ -51,7 +51,7 @@
                 @if ($report->status === 'confirmed' && $case)
                     <div class="border-t border-gray-100 bg-gray-50 p-5">
                         <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-                            <span class="font-semibold">{{ trans_choice('في الملف :count بلاغ مؤكد', $case->reports_count, ['count' => $case->reports_count]) }}</span>
+                            <span class="font-semibold">{{ __('في الملف :reports', ['reports' => \App\Support\ScamHelp::confirmedReports($case->reports_count)]) }}</span>
                             @if ((float) $case->total_usd > 0)
                                 <span class="text-gray-600">{{ __('مجموع الخسائر المبلّغ عنها: ≈ $:n', ['n' => number_format((float) $case->total_usd)]) }}</span>
                             @endif

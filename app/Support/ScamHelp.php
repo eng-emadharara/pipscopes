@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class ScamHelp
 {
     /** Confirmed reports a case needs before the team acts on it (the admin is told when it gets there) */
-    public const ACT_AT = 3;
+    public const ACT_AT = 5;
 
     /** Card disputes are usually accepted within about this many days of paying */
     public const CARD_DAYS = 120;
@@ -180,6 +180,17 @@ class ScamHelp
         $address = preg_replace('/\s+/', '', (string) $input);
 
         return preg_match('/^[A-Za-z0-9]{20,100}$/', $address) ? $address : null;
+    }
+
+    /** "n confirmed reports" as Arabic counts it: one, two, three to ten, more */
+    public static function confirmedReports(int $n): string
+    {
+        return match (true) {
+            $n === 1 => __('بلاغ مؤكد واحد'),
+            $n === 2 => __('بلاغان مؤكدان'),
+            $n >= 3 && $n <= 10 => __(':n بلاغات مؤكدة', ['n' => $n]),
+            default => __(':n بلاغاً مؤكداً', ['n' => $n]),
+        };
     }
 
     public static function toUsd(?float $amount, ?string $currency): ?float
