@@ -17,10 +17,12 @@ class StructuredData
     public static function site(): array
     {
         return [
-            [
+            array_filter([
                 '@context' => 'https://schema.org',
                 '@type' => 'WebSite',
                 'name' => Site::name(),
+                // Google reads the site's name from here, alternate spellings included
+                'alternateName' => Site::alternateName(),
                 'url' => route('home'),
                 'inLanguage' => app()->getLocale(),
                 'potentialAction' => [
@@ -28,11 +30,12 @@ class StructuredData
                     'target' => ['@type' => 'EntryPoint', 'urlTemplate' => route('providers.index').'?q={search_term_string}'],
                     'query-input' => 'required name=search_term_string',
                 ],
-            ],
+            ]),
             array_filter([
                 '@context' => 'https://schema.org',
                 '@type' => 'Organization',
                 'name' => Site::name(),
+                'alternateName' => Site::alternateName(),
                 'url' => route('home'),
                 'logo' => Site::fileUrl('logo'),
                 'description' => Site::text('meta_description'),

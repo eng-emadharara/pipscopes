@@ -22,7 +22,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
-        $metaTitle = isset($title) ? $title.' | '.config('app.name') : config('app.name');
+        // The home page (no title of its own) also carries the name as written in this language: it's what people search for
+        $metaTitle = isset($title) ? $title.' | '.config('app.name')
+            : config('app.name').(($alternateName = \App\Support\Site::alternateName()) ? ' | '.$alternateName : '');
         $metaDescription = $description ?? \App\Support\Site::text('meta_description', __('منصة تقييمات مستقلة لقنوات التوصيات ومقدمي خدمات نسخ الصفقات والتداول.'));
         // Pages pass :og-image for their own preview; everything else uses the admin's image or the generated site card
         $customImage = ! isset($ogImage) ? \App\Support\Site::fileUrl('og_image') : null;

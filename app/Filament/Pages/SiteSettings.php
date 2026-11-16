@@ -88,6 +88,7 @@ class SiteSettings extends Page implements HasForms
             Forms\Components\Tabs::make('settings')->persistTabInQueryString()->tabs([
                 Forms\Components\Tabs\Tab::make('الهوية')->icon('heroicon-o-identification')->schema([
                     $this->perLanguage('name', 'اسم الموقع', helper: 'يظهر في الشعار، عنوان المتصفح، الرسائل البريدية وصور المشاركة.', max: 60, placeholder: config('trust.default_name')),
+                    $this->perLanguage('alternate_name', 'الاسم كما يُكتب بهذه اللغة', helper: 'مثل «بيب سكوبس»: يظهر في عنوان الصفحة الرئيسية ولمحركات البحث، ليجد الموقعَ من يبحث عنه بهذه الكتابة. اتركه فارغاً لهذه اللغة إن لم يكن له كتابة أخرى.', max: 60),
                     Forms\Components\Grid::make(2)->schema([
                         $this->image('logo', 'الشعار (اللوجو)')
                             ->helperText('صورة مربعة (PNG بخلفية شفافة هو الأفضل)، 256×256 على الأقل. بدونه تظهر النجمة الافتراضية.'),

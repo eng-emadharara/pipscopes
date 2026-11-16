@@ -16,6 +16,9 @@ return [
      | main admin fields is in this language, the others are stored as translations.
      | To add a language: add it here and create lang/{code}.json + lang/{code}/trust.php.
      */
+    // The site's name as written in each language, which people search for (Site::alternateName). Admin can change it.
+    'default_alternate_name' => ['ar' => 'بيب سكوبس'],
+
     // "شائع:" row of most reviewed channels under the homepage search; off until there are enough channels
     'home_popular' => (bool) env('HOME_POPULAR', false),
 

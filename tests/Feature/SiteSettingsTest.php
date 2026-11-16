@@ -19,10 +19,25 @@ class SiteSettingsTest extends TestCase
 
     public function test_defaults_apply_when_nothing_is_set(): void
     {
+        // The home page carries the name as it's written in Arabic, as people search for it, in its title and for Google
         $this->get('/')
-            ->assertSee('<title>'.config('trust.default_name').'</title>', false)
+            ->assertSee('<title>'.config('trust.default_name').' | بيب سكوبس</title>', false)
+            ->assertSee('"alternateName":"بيب سكوبس"', false)
             ->assertSee(route('share-images.site', 'ar'), false)
             ->assertDontSee('name="robots"', false);
+
+        // Not in English, and not on a page with a title of its own
+        $this->get('/?lang=en')->assertSee('<title>'.config('trust.default_name').'</title>', false)->assertDontSee('alternateName', false);
+        $this->get(route('scam-help'))->assertDontSee(' | بيب سكوبس</title>', false);
+    }
+
+    public function test_a_renamed_site_has_no_default_arabic_spelling_unless_given_one(): void
+    {
+        Setting::put([Site::KEY => ['name' => ['ar' => 'موثوق']]]);
+        $this->get('/')->assertSee('<title>موثوق</title>', false)->assertDontSee('بيب سكوبس');
+
+        Setting::put([Site::KEY => ['name' => ['ar' => 'موثوق'], 'alternate_name' => ['ar' => 'مَوثوق']]]);
+        $this->get('/')->assertSee('<title>موثوق | مَوثوق</title>', false);
     }
 
     public function test_name_meta_and_footer_follow_the_settings_per_language(): void

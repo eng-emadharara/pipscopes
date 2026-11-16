@@ -41,6 +41,22 @@ class Site
         return self::text('name', config('trust.default_name', 'TrustTrader'), $locale);
     }
 
+    /**
+     * The name as it's written in this language ("بيب سكوبس"), which people search for: in the home page title and
+     * the structured data. Only this language's own value (an Arabic spelling makes no sense in English); the
+     * default spelling only goes with the default name, as a renamed site has its own.
+     */
+    public static function alternateName(?string $locale = null): ?string
+    {
+        $locale ??= app()->getLocale();
+        $own = ((array) self::get('alternate_name', []))[$locale] ?? null;
+        if (filled($own)) {
+            return $own;
+        }
+
+        return array_filter((array) self::get('name', [])) ? null : (config('trust.default_alternate_name')[$locale] ?? null);
+    }
+
     /** Public URL of an uploaded file setting (logo, favicon, og_image), or null. */
     public static function fileUrl(string $key): ?string
     {
