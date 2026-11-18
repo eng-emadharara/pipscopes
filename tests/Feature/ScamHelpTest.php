@@ -223,9 +223,16 @@ class ScamHelpTest extends TestCase
             ->assertSee('https://wa.me/962791234567', false)
             ->assertSee('mailto:'.$user->email, false);
 
+        // The bot can't bring the answer back: a button opens a chat with the team
+        \App\Models\Setting::put([\App\Support\Site::KEY => ['telegram_contact' => 'https://t.me/pipscopes_team']]);
         $this->assertNull(\App\Support\ScamReportContact::sendTelegram($report->fresh(), 'We need the full receipt.'));
         \Illuminate\Support\Facades\Http::assertSent(fn ($r) => str_ends_with($r->url(), '/sendMessage') && $r['chat_id'] === '5551234'
-            && str_contains($r['text'], 'We need the full receipt.') && str_contains($r['text'], '@goldpro_vip'));
+            && str_contains($r['text'], 'We need the full receipt.') && str_contains($r['text'], '@goldpro_vip')
+            && $r['reply_markup']['inline_keyboard'][0][0]['url'] === 'https://t.me/pipscopes_team');
+
+        // No username on Telegram: the panel says so and offers the bot
+        $user->socialAccounts()->update(['nickname' => null]);
+        $this->actingAs($admin)->get("/admin/scam-reports/{$report->id}")->assertSee('ليس له اسم مستخدم على تيليجرام')->assertSee('رسالة عبر البوت');
 
         $this->assertNull(\App\Support\ScamReportContact::sendEmail($report, 'About your report', 'Please send the receipt.', $admin->email));
         \Illuminate\Support\Facades\Mail::assertSent(\App\Mail\ScamReportMessageMail::class, fn ($m) => $m->hasTo($user->email) && $m->hasReplyTo('team@pipscopes.test'));

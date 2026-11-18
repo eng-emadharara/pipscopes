@@ -80,7 +80,8 @@ class ScamReportResource extends Resource
                         ->extraAttributes(['dir' => 'ltr']),
                     Infolists\Components\TextEntry::make('telegram')->label('تيليجرام')->placeholder('لم يدخل عبر تيليجرام')
                         ->state(fn (ScamReport $record) => ($u = ScamReportContact::telegramUsername($record->user)) ? '@'.$u
-                            : ($record->user && NotificationPrefs::telegramChatId($record->user) ? 'بدون اسم مستخدم (يمكن مراسلته عبر البوت)' : null))
+                            : ($record->user && NotificationPrefs::telegramChatId($record->user)
+                                ? 'ليس له اسم مستخدم على تيليجرام (رقمه: '.NotificationPrefs::telegramChatId($record->user).'). راسله عبر البوت' : null))
                         ->url(fn (ScamReport $record) => ($u = ScamReportContact::telegramUsername($record->user)) ? 'https://t.me/'.$u : null, true)
                         ->color(fn (ScamReport $record) => $record->user?->telegram_blocked_at ? 'danger' : null)
                         ->helperText(fn (ScamReport $record) => $record->user?->telegram_blocked_at ? 'أوقف البوت، لا تصله رسائلنا' : null),
@@ -127,7 +128,9 @@ class ScamReportResource extends Resource
             $class::make('messageBot')->label('رسالة عبر البوت')->icon('heroicon-o-paper-airplane')->color('info')
                 ->visible(fn (ScamReport $record) => ScamReportContact::canMessageOnTelegram($record->user))
                 ->modalHeading('رسالة للعضو من البوت')
-                ->modalDescription('تصله من بوت الموقع، مع زر «بلاغاتي». لا يستطيع الرد عليها عبر البوت، فاطلب منه وسيلة تواصل إن احتجت رده.')
+                ->modalDescription(fn () => Site::telegramContact()
+                    ? 'تصله من بوت الموقع مع زر «💬 راسلنا مباشرة» يفتح محادثة مع حساب التواصل في إعدادات الموقع، فيرد عليك هناك.'
+                    : 'تصله من بوت الموقع، ولا يستطيع الرد عبر البوت. أضف رابط تيليجرام للتواصل في إعدادات الموقع ليظهر له زر «راسلنا مباشرة».')
                 ->form([
                     Forms\Components\Textarea::make('text')->label('الرسالة')->required()->rows(5)->maxLength(3500)
                         ->placeholder('مثال: نحتاج صورة إيصال الدفع كاملة حتى نؤكد بلاغك.'),

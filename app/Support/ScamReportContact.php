@@ -68,7 +68,11 @@ class ScamReportContact
                 'text' => '🛟 <b>'.e('بخصوص بلاغك'.($target ? ' عن '.$target : '')).'</b>'."\n\n".e(Str::limit($text, 3500)),
                 'parse_mode' => 'HTML',
                 'link_preview_options' => ['is_disabled' => true],
-                'reply_markup' => ['inline_keyboard' => [[['text' => 'بلاغاتي', 'url' => route('scam-reports.index')]]]],
+                // The bot can't carry their answer back, so the first button opens a chat with the team
+                'reply_markup' => ['inline_keyboard' => array_values(array_filter([
+                    Site::telegramContact() ? [['text' => '💬 راسلنا مباشرة', 'url' => Site::telegramContact()]] : null,
+                    [['text' => 'بلاغاتي', 'url' => route('scam-reports.index')]],
+                ]))],
             ]);
         } catch (Throwable $e) {
             if (str_contains($e->getMessage(), 'blocked') || str_contains($e->getMessage(), 'deactivated')) {
