@@ -256,6 +256,20 @@ class ScamReportResource extends Resource
                         ->placeholder('مثال: الإثباتات لا تظهر اسم الحساب أو عملية الدفع')->rows(2),
                 ])
                 ->action(fn (ScamReport $r, array $data) => $r->update(['status' => ScamReport::STATUS_REJECTED, 'admin_note' => $data['admin_note'] ?? null])),
+            // A wrong amount or currency: fixed quietly, and the case's total follows
+            $make('amount')->label('تعديل المبلغ')->icon('heroicon-o-banknotes')->color('gray')
+                ->fillForm(fn (ScamReport $r) => ['amount' => $r->amount, 'currency' => $r->currency ?: 'USD'])
+                ->modalDescription('يُعاد حساب المبلغ بالدولار ومجموع خسائر الملف. لا يصل العضو أي إشعار.')
+                ->form([
+                    Forms\Components\TextInput::make('amount')->label('المبلغ')->numeric()->minValue(0)->maxValue(100000000)
+                        ->helperText('اتركه فارغاً إذا لم يُعرف المبلغ.'),
+                    Forms\Components\Select::make('currency')->label('العملة')->required()
+                        ->options(array_combine(array_keys(ScamHelp::CURRENCIES), array_keys(ScamHelp::CURRENCIES))),
+                ])
+                ->action(function (ScamReport $r, array $data) {
+                    $r->update(['amount' => filled($data['amount']) ? $data['amount'] : null, 'currency' => $data['currency']]);
+                    Notification::make()->title('عُدّل المبلغ: '.($r->amountLabel() ?: '—'))->success()->send();
+                }),
             $make('move')->label('نقل لملف آخر')->icon('heroicon-o-folder-arrow-down')->color('gray')
                 ->form([
                     Forms\Components\Select::make('scam_case_id')->label('الملف أو القناة')->required()->searchable()

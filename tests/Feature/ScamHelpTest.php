@@ -284,6 +284,22 @@ class ScamHelpTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_the_team_corrects_the_amount_and_the_case_total_follows(): void
+    {
+        $report = $this->reportFor($this->member(), ['status' => ScamReport::STATUS_CONFIRMED]);
+        $this->assertEquals(300, $report->scamCase->fresh()->total_usd);
+        Notification::fake();
+
+        \Livewire\Livewire::actingAs(User::factory()->create(['is_admin' => true]))
+            ->test(\App\Filament\Resources\ScamReportResource\Pages\ViewScamReport::class, ['record' => $report->id])
+            ->callAction('amount', ['amount' => '3750', 'currency' => 'SAR'])
+            ->assertHasNoActionErrors();
+
+        $this->assertEquals(1000, $report->fresh()->amount_usd);
+        $this->assertEquals(1000, $report->scamCase->fresh()->total_usd);
+        Notification::assertNothingSent();
+    }
+
     public function test_admin_pages_render(): void
     {
         $report = $this->reportFor($this->member());
