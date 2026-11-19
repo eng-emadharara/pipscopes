@@ -241,6 +241,28 @@ class ScamHelpTest extends TestCase
         $this->assertNull(\App\Support\ScamReportContact::contactUrl('call me after 5'));
     }
 
+    public function test_a_report_moves_to_a_channel_by_its_name_or_link_even_without_a_case(): void
+    {
+        $provider = Provider::create(['name' => 'Dr Shaimaa', 'service_type' => 'Gold', 'telegram_url' => 'https://t.me/DR_shaimaa_khalid1', 'is_active' => true]);
+        $report = $this->reportFor($this->member(), ['account' => '@Drshamaaa']);
+
+        // By the channel's name, and by its link written any way
+        $this->assertArrayHasKey('new:https://t.me/DR_shaimaa_khalid1', \App\Filament\Resources\ScamReportResource::caseOptions('Shaimaa'));
+        $this->assertArrayHasKey('new:t.me/dr_shaimaa_khalid1', \App\Filament\Resources\ScamReportResource::caseOptions('t.me/dr_shaimaa_khalid1'));
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        \Livewire\Livewire::actingAs($admin)->test(\App\Filament\Resources\ScamReportResource\Pages\ViewScamReport::class, ['record' => $report->id])
+            ->callAction('move', ['scam_case_id' => 'new:https://t.me/DR_shaimaa_khalid1'])
+            ->assertHasNoActionErrors();
+
+        $case = $report->fresh()->scamCase;
+        $this->assertSame('telegram:dr_shaimaa_khalid1', $case->target_key);
+        $this->assertSame($provider->id, $case->provider_id);
+
+        // Now it has a case: found under the channel's name, no second "new"
+        $this->assertEquals([$case->id], array_keys(\App\Filament\Resources\ScamReportResource::caseOptions('Shaimaa')));
+    }
+
     public function test_admin_pages_render(): void
     {
         $report = $this->reportFor($this->member());

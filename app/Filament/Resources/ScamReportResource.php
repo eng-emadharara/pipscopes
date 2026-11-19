@@ -151,6 +151,43 @@ class ScamReportResource extends Resource
         ];
     }
 
+    /**
+     * Where a report can move: existing cases (by name or account, however the link is written),
+     * listed channels by name, and a new case for an account typed in. New ones are "new:<account>".
+     *
+     * @return array<string, string>
+     */
+    public static function caseOptions(string $search): array
+    {
+        $search = trim($search);
+        $target = ScamHelp::target($search, null, null);
+
+        $options = ScamCase::query()
+            ->where(fn ($q) => $q->where('target_display', 'like', "%{$search}%")
+                ->when($target, fn ($q) => $q->orWhere('target_key', $target['key'])))
+            ->limit(20)->get()
+            ->mapWithKeys(fn (ScamCase $case) => [(string) $case->id => '📁 '.$case->target_display.($case->reports_count ? " ({$case->reports_count} مؤكد)" : '')])
+            ->all();
+
+        // Listed channels found by their name: their case, or a new one
+        foreach (\App\Models\Provider::where('name', 'like', "%{$search}%")->whereNotNull('telegram_url')->limit(10)->get() as $provider) {
+            if (! $channel = ScamHelp::target($provider->telegram_url, null, null)) {
+                continue;
+            }
+            $case = ScamCase::where('target_key', $channel['key'])->first();
+            $case ? $options[(string) $case->id] ??= '📁 '.$case->target_display.' (قناة '.$provider->name.')'
+                : $options['new:'.$provider->telegram_url] = '➕ ملف جديد لقناة '.$provider->name.' ('.$channel['display'].')';
+        }
+
+        // A plain word is a channel name being searched, not an account to open a case for
+        $looksLikeAccount = (bool) preg_match('#[@/.]|^\+?[\d\s\-]{8,}$#', $search);
+        if ($target && $looksLikeAccount && ! ScamCase::where('target_key', $target['key'])->exists()) {
+            $options['new:'.$search] = '➕ ملف جديد: '.$target['display'];
+        }
+
+        return $options;
+    }
+
     protected static function proofsHtml(ScamReport $record): HtmlString
     {
         if (! $record->proofs) {
@@ -217,11 +254,26 @@ class ScamReportResource extends Resource
                 ->action(fn (ScamReport $r, array $data) => $r->update(['status' => ScamReport::STATUS_REJECTED, 'admin_note' => $data['admin_note'] ?? null])),
             $make('move')->label('نقل لملف آخر')->icon('heroicon-o-folder-arrow-down')->color('gray')
                 ->form([
-                    Forms\Components\Select::make('scam_case_id')->label('الملف')->required()->searchable()
-                        ->getSearchResultsUsing(fn (string $search) => ScamCase::where('target_display', 'like', "%{$search}%")->limit(30)->pluck('target_display', 'id'))
-                        ->getOptionLabelUsing(fn ($value) => ScamCase::find($value)?->target_display),
+                    Forms\Components\Select::make('scam_case_id')->label('الملف أو القناة')->required()->searchable()
+                        ->helperText('اكتب اسم قناة مدرجة، أو رابط/@ الحساب. إذا لم يكن له ملف يُنشأ ملف جديد ويُربط بالقناة.')
+                        ->getSearchResultsUsing(fn (string $search) => self::caseOptions($search))
+                        ->getOptionLabelUsing(fn ($value) => str_starts_with((string) $value, 'new:') ? '➕ '.substr($value, 4) : ScamCase::find($value)?->target_display),
                 ])
-                ->action(fn (ScamReport $r, array $data) => $r->update(['scam_case_id' => $data['scam_case_id']])),
+                ->action(function (ScamReport $r, array $data) {
+                    $value = (string) $data['scam_case_id'];
+                    $case = str_starts_with($value, 'new:')
+                        ? (($target = ScamHelp::target(substr($value, 4), null, null)) ? ScamCase::forTarget($target) : null)
+                        : ScamCase::find($value);
+
+                    if (! $case) {
+                        Notification::make()->title('لم أتعرف على الحساب')->danger()->send();
+
+                        return;
+                    }
+
+                    $r->update(['scam_case_id' => $case->id]);
+                    Notification::make()->title('نُقل البلاغ إلى ملف '.$case->target_display.($case->provider ? ' (قناة '.$case->provider->name.')' : ''))->success()->send();
+                }),
             $make('impersonator')->label('أضف الحساب للمنتحلين')->icon('heroicon-o-shield-exclamation')->color('danger')
                 ->visible(fn (ScamReport $r) => $r->scam_type === 'impersonator' && $r->scamCase && ! in_array($r->scamCase->target_type, ['wallet', 'broker'], true))
                 ->form([
