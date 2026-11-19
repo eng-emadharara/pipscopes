@@ -231,7 +231,11 @@ class ScamReportResource extends Resource
                     ->color(fn ($state) => ['pending' => 'warning', 'confirmed' => 'success'][$state] ?? 'gray'),
                 Tables\Columns\TextColumn::make('created_at')->label('أُرسل')->since()->sortable(),
             ])
-            ->actions(static::recordActions(table: true));
+            ->actions(static::recordActions(table: true))
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد')
+                    ->modalDescription('تُحذف البلاغات وإثباتاتها نهائياً. لا يصل الأعضاء أي إشعار.'),
+            ]);
     }
 
     /** The decisions, for both the table rows and the report's own page */
@@ -288,6 +292,11 @@ class ScamReportResource extends Resource
                     Notification::make()->title('أُضيف الحساب لقائمة المنتحلين المؤكدين')->success()->send();
                 }),
             $table ? Tables\Actions\ActionGroup::make(self::contactActions(Tables\Actions\Action::class))->label('تواصل')->icon('heroicon-o-chat-bubble-left-ellipsis')->button()->color('gray') : null,
+            // Duplicates and junk: gone without a word to the member (only a status change notifies them)
+            ($table ? Tables\Actions\DeleteAction::class : \Filament\Actions\DeleteAction::class)::make()->label('حذف')
+                ->modalHeading('حذف البلاغ')
+                ->modalDescription('يُحذف البلاغ وإثباتاته نهائياً ويُعاد حساب ملفه. لا يصل العضو أي إشعار.')
+                ->successNotificationTitle('حُذف البلاغ'),
             $table ? Tables\Actions\ViewAction::make() : null,
         ]));
     }

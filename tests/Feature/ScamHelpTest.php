@@ -263,6 +263,27 @@ class ScamHelpTest extends TestCase
         $this->assertEquals([$case->id], array_keys(\App\Filament\Resources\ScamReportResource::caseOptions('Shaimaa')));
     }
 
+    public function test_a_duplicate_is_deleted_without_telling_the_member(): void
+    {
+        Notification::fake();
+        Storage::fake('local');
+        $path = UploadedFile::fake()->image('p.jpg')->store('scam-proofs', 'local');
+        $user = $this->member();
+        $kept = $this->reportFor($user, ['status' => ScamReport::STATUS_CONFIRMED]);
+        $duplicate = $this->reportFor($user, ['status' => ScamReport::STATUS_CONFIRMED, 'proofs' => [$path]]);
+        $this->assertSame(2, $kept->scamCase->fresh()->reports_count);
+        Notification::fake(); // forget the setup's notices
+
+        \Livewire\Livewire::actingAs(User::factory()->create(['is_admin' => true]))
+            ->test(\App\Filament\Resources\ScamReportResource\Pages\ViewScamReport::class, ['record' => $duplicate->id])
+            ->callAction('delete');
+
+        $this->assertModelMissing($duplicate);
+        Storage::disk('local')->assertMissing($path);
+        $this->assertSame(1, $kept->scamCase->fresh()->reports_count);
+        Notification::assertNothingSent();
+    }
+
     public function test_admin_pages_render(): void
     {
         $report = $this->reportFor($this->member());
