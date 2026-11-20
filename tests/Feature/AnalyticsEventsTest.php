@@ -165,7 +165,9 @@ class AnalyticsEventsTest extends TestCase
         $guide->assertSee('data-track="scam_report_start" data-track-params=\'{"location":"guide_top"}\'', false)
             ->assertSee('data-track="scam_report_start" data-track-params=\'{"location":"guide_steps"}\'', false);
 
-        $events = $this->analytics($this->get(route('scam-help', ['type' => 'subscription', 'pay' => 'card'])))['events'];
+        $steps = $this->get(route('scam-help', ['type' => 'subscription', 'pay' => 'card']))
+            ->assertSee('data-track="scam_report_start" data-track-params=\'{"location":"guide_advice"}\'', false);
+        $events = $this->analytics($steps)['events'];
         $this->assertContains(['name' => 'scam_guide', 'params' => ['scam_type' => 'subscription', 'payment_method' => 'card']], $events);
 
         // Sent to sign in on the way: counted, an ordinary sign-in is not

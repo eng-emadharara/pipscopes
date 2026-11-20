@@ -65,7 +65,7 @@
             <section id="advice" class="scroll-mt-4 space-y-4" data-scam-advice>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <h2 class="text-2xl font-bold">{{ __('ماذا تفعل الآن') }}</h2>
-                    <a href="{{ $reportUrl }}" class="btn-primary">🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
+                    <a href="{{ $reportUrl }}" class="btn-primary" data-track="scam_report_start" data-track-params='{"location":"guide_advice"}'>🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
                 </div>
                 <ol class="space-y-3">
                     @foreach ($advice as $i => $step)

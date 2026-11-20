@@ -65,7 +65,7 @@
                 <h2 class="font-bold text-brand-700">{{ __('نُصب عليك من نفس الجهة؟') }}</h2>
                 <p class="mt-1 text-sm text-brand-700">{{ __('أضف بلاغك إلى الملف. كلما زادت البلاغات صار تحركنا أقوى.') }}</p>
             </div>
-            <a href="{{ $reportUrl }}" class="btn-primary">{{ __('أضف بلاغك') }}</a>
+            <a href="{{ $reportUrl }}" class="btn-primary" data-track="scam_report_start" data-track-params='{"location":"case_page"}'>{{ __('أضف بلاغك') }}</a>
         </section>
 
         <p class="rounded-xl bg-gray-100 p-4 text-xs leading-relaxed text-gray-600">

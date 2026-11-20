@@ -7,7 +7,7 @@
                 <h1 class="text-2xl font-bold">{{ __('بلاغاتي') }}</h1>
                 <p class="mt-1 text-sm text-gray-300">{{ __('تابع ما يحدث في كل بلاغ والملف الذي انضم إليه.') }}</p>
             </div>
-            <a href="{{ route('scam-reports.create') }}" class="btn-primary">{{ __('بلاغ جديد') }}</a>
+            <a href="{{ route('scam-reports.create') }}" class="btn-primary" data-track="scam_report_start" data-track-params='{"location":"my_reports"}'>{{ __('بلاغ جديد') }}</a>
         </div>
     </section>
 
