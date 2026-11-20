@@ -16,7 +16,7 @@
     </section>
 
     <div class="mx-auto -mt-10 grid max-w-5xl gap-5 px-4 pb-12 lg:grid-cols-[1fr_300px] lg:items-start">
-        <form method="POST" action="{{ route('scam-reports.store') }}" enctype="multipart/form-data" class="card space-y-7 p-5 shadow-sm md:p-8" data-scam-report-form>
+        <form method="POST" action="{{ route('scam-reports.store') }}" enctype="multipart/form-data" class="card space-y-7 p-5 shadow-sm md:p-8" data-scam-report-form data-track-start="scam_report_form_start">
             @csrf
 
             @if ($errors->any())

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ScamCase;
 use App\Models\ScamReport;
 use App\Support\AdminAlerts;
+use App\Support\Analytics;
 use App\Support\ScamHelp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -26,6 +27,13 @@ class ScamHelpController extends Controller
         $payment = ScamHelp::validPayment($request->query('pay'));
         $paidAt = self::date($request->query('paid_at'));
 
+        // The way into a report: who read the guide, who asked for their steps, who tapped "report" (data-track),
+        // who reached the form, who started it and who sent it, to see where people stop
+        Analytics::event('scam_help_view', ['with_steps' => $type || $payment ? 'yes' : 'no']);
+        if ($type || $payment) {
+            Analytics::event('scam_guide', array_filter(['scam_type' => $type, 'payment_method' => $payment]));
+        }
+
         return view('scam-help.guide', [
             'type' => $type,
             'payment' => $payment,
@@ -36,6 +44,8 @@ class ScamHelpController extends Controller
 
     public function create(Request $request)
     {
+        Analytics::event('scam_report_form', ['from_guide' => $request->has('type') || $request->has('pay') ? 'yes' : 'no']);
+
         return view('scam-help.report', [
             'type' => ScamHelp::validType($request->query('type')),
             'payment' => ScamHelp::validPayment($request->query('pay')),
@@ -101,6 +111,13 @@ class ScamHelpController extends Controller
         ]);
 
         AdminAlerts::scamReport($report);
+        // Nothing that identifies the report or the reporter, only what kind it was
+        Analytics::flash('scam_report_submit', [
+            'scam_type' => $report->scam_type,
+            'payment_method' => $report->payment_method,
+            'proofs' => count($proofs),
+            'with_amount' => $report->amount !== null ? 'yes' : 'no',
+        ]);
 
         return redirect()->route('scam-reports.index')->with('scam_reported', $report->id);
     }

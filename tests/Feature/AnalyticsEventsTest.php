@@ -155,6 +155,48 @@ class AnalyticsEventsTest extends TestCase
         $this->assertNotContains('sign_up', $this->eventNames($this->get('/')));
     }
 
+    public function test_every_step_on_the_way_to_a_scam_report_is_reported(): void
+    {
+        Storage::fake('local');
+
+        // The guide, then the steps for a situation; both "report" buttons are tracked by their place
+        $guide = $this->get(route('scam-help'));
+        $this->assertSame([['name' => 'scam_help_view', 'params' => ['with_steps' => 'no']]], $this->analytics($guide)['events']);
+        $guide->assertSee('data-track="scam_report_start" data-track-params=\'{"location":"guide_top"}\'', false)
+            ->assertSee('data-track="scam_report_start" data-track-params=\'{"location":"guide_steps"}\'', false);
+
+        $events = $this->analytics($this->get(route('scam-help', ['type' => 'subscription', 'pay' => 'card'])))['events'];
+        $this->assertContains(['name' => 'scam_guide', 'params' => ['scam_type' => 'subscription', 'payment_method' => 'card']], $events);
+
+        // Sent to sign in on the way: counted, an ordinary sign-in is not
+        $this->get(route('scam-reports.create'))->assertRedirect(route('login'));
+        $this->assertContains(['name' => 'login_view', 'params' => ['next' => 'scam_report']], $this->analytics($this->get(route('login')))['events']);
+        session()->forget('url.intended');
+        $this->assertNotContains('login_view', $this->eventNames($this->get(route('login'))));
+
+        // The form, started once typed in, then sent: what kind of report, nothing that identifies it
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $form = $this->actingAs($user)->get(route('scam-reports.create', ['type' => 'subscription']));
+        $this->assertContains(['name' => 'scam_report_form', 'params' => ['from_guide' => 'yes']], $this->analytics($form)['events']);
+        $form->assertSee('data-track-start="scam_report_form_start"', false);
+
+        $this->actingAs($user)->post(route('scam-reports.store'), [
+            'scam_type' => 'subscription',
+            'payment_method' => 'crypto',
+            'amount' => '150',
+            'currency' => 'USDT',
+            'account' => '@vip_gold_demo',
+            'story' => 'Paid 150 USDT for the VIP group, lost two trades, then they blocked me.',
+            'proofs' => [\Illuminate\Http\UploadedFile::fake()->image('chat.jpg')],
+            'consent_true' => '1',
+        ])->assertRedirect(route('scam-reports.index'));
+
+        $events = $this->analytics($this->actingAs($user)->get(route('scam-reports.index')))['events'];
+        $this->assertContains(['name' => 'scam_report_submit', 'params' => [
+            'scam_type' => 'subscription', 'payment_method' => 'crypto', 'proofs' => 1, 'with_amount' => 'yes',
+        ]], $events);
+    }
+
     public function test_telegram_buttons_are_tracked(): void
     {
         Setting::put([Site::KEY => ['ga_id' => 'G-TEST123', 'socials' => ['telegram' => 'https://t.me/pipscopes']]]);

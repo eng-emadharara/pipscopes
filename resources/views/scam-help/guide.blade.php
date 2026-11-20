@@ -15,7 +15,7 @@
             </p>
             {{-- Reporting is offered right away, not only under the steps --}}
             <div class="mt-6 flex flex-wrap items-center justify-center gap-3" data-scam-hero-actions>
-                <a href="{{ $reportUrl }}" class="btn-primary" data-scam-report-link>🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
+                <a href="{{ $reportUrl }}" class="btn-primary" data-scam-report-link data-track="scam_report_start" data-track-params='{"location":"guide_top"}'>🚨 {{ __('بلّغ عمّا حدث معك') }}</a>
                 @auth
                     <a href="{{ route('scam-reports.index') }}" class="btn border border-white/30 text-white hover:bg-white/10">{{ __('بلاغاتي') }}</a>
                 @endauth
@@ -108,7 +108,7 @@
                 @endforeach
             </div>
             <div class="flex flex-wrap items-center gap-3 border-t border-gray-100 p-6">
-                <a href="{{ $reportUrl }}" class="btn-primary" data-scam-report-link>{{ __('بلّغ عمّا حدث معك') }}</a>
+                <a href="{{ $reportUrl }}" class="btn-primary" data-scam-report-link data-track="scam_report_start" data-track-params='{"location":"guide_steps"}'>{{ __('بلّغ عمّا حدث معك') }}</a>
                 @auth
                     <a href="{{ route('scam-reports.index') }}" class="btn-outline">{{ __('بلاغاتي') }}</a>
                 @endauth

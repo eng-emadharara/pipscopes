@@ -19,6 +19,11 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
+        // Someone sent here on the way to a scam report: shows how many stop at signing in
+        if (str_contains((string) session('url.intended'), '/scammed/report')) {
+            Analytics::event('login_view', ['next' => 'scam_report']);
+        }
+
         return view('auth.login');
     }
 
